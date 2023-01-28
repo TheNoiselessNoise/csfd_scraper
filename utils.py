@@ -1,9 +1,15 @@
 import bs4
+import json as j
 
 class Globals:
     CSFD_URL = "https://www.csfd.cz"
     MOVIES_URL = "https://www.csfd.cz/film/"
     AWARDS_URL = "https://www.csfd.cz/<MID>/oceneni/"
+
+def tojson(o):
+    if type(o) not in [dict, list]:
+        return o
+    return j.dumps(o, indent=4, ensure_ascii=False)
 
 def url(s):
     if s.startswith("//"):

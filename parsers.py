@@ -1,6 +1,7 @@
 import json
 from utils import *
 from urllib.parse import urlsplit
+from objects import Movie
 
 class MovieParser:
     __MOVIE_LD_JSON = None
@@ -14,42 +15,54 @@ class MovieParser:
 
     def parse_movie_ld_json(self, s):
         if not self.__MOVIE_LD_JSON:
-            self.__MOVIE_LD_JSON = json.loads(text(s, ".main-movie > script"))
+            ld_json = sel(s, ".main-movie > script")
+            self.__MOVIE_LD_JSON = {} if ld_json is None else json.loads(text(ld_json))
         return self.__MOVIE_LD_JSON
 
     def parse_movie_type(self, s):
-        return self.parse_movie_ld_json(s)["@type"]
+        return self.parse_movie_ld_json(s).get("@type", None)
 
     def parse_movie_title(self, s):
-        return self.parse_movie_ld_json(s)["name"]
+        return self.parse_movie_ld_json(s).get("name", None)
 
     def parse_movie_year(self, s):
-        return self.parse_movie_ld_json(s)["dateCreated"]
+        return self.parse_movie_ld_json(s).get("dateCreated", None)
 
     def parse_movie_duration(self, s):
-        return self.parse_movie_ld_json(s)["duration"]
+        return self.parse_movie_ld_json(s).get("duration", None)
 
     @staticmethod
     def parse_movie_genres(s):
-        return text(s, ".genres").split(" / ")
+        genres = sel(s, ".genres")
+        return None if genres is None else text(genres).split(" / ")
 
     @staticmethod
     def parse_movie_origins(s):
-        return text(s, ".origin").split(", ")[0].split(" / ")
+        origin = sel(s, ".origin")
+        return None if origin is None else text(origin).split(", ")[0].split(" / ")
 
     def parse_movie_rating(self, s):
         ld_json = self.parse_movie_ld_json(s)
+        rating = ld_json.get("aggregateRating", None)
         return {
-            "value": ld_json["aggregateRating"]["ratingValue"],
-            "count": ld_json["aggregateRating"]["ratingCount"]
+            "value": rating["ratingValue"] if rating else -1,
+            "count": rating["ratingCount"] if rating else -1
         }
 
     @staticmethod
+    def parse_movie_ranks(s):
+        ranks = {}
+        for div in asel(s, ".film-ranking"):
+            div_a = sel(div, "a")
+            ranks[text(div_a)] = Globals.CSFD_URL + div_a.get("href")
+        return ranks
+
+    @staticmethod
     def parse_movie_other_names(s):
-        return {
-            sel(li, "img").get("title"): text(li)
-            for li in asel(s, ".film-names li")
-        }
+        other_names = {}
+        for li in asel(s, ".film-names li"):
+            other_names[sel(li, "img").get("title")] = text(li)
+        return other_names
 
     @staticmethod
     def parse_movie_creators(s):
@@ -88,9 +101,13 @@ class MovieParser:
         return tags
 
     @staticmethod
-    def parse_movie_reviews(s):
+    def parse_movie_reviews_count(s):
+        count = sel(s, ".box-reviews .count")
+        return -1 if count is None else int(text(count)[1:-1])
+
+    def parse_movie_reviews(self, s):
         reviews = {
-            "count": int(text(s, ".box-reviews .count")[1:-1]),
+            "count": self.parse_movie_reviews_count(s),
             "items": []
         }
         for article in asel(s, ".box-reviews .box-content article"):
@@ -106,20 +123,28 @@ class MovieParser:
         return reviews
 
     @staticmethod
-    def parse_movie_gallery(s):
-        section = sel(s, ".tab-content section:nth-child(3)")
+    def parse_movie_gallery_count(s):
+        count = sel(s, ".tab-content section:nth-child(3) .count")
+        return -1 if count is None else int(text(count)[1:-1])
+
+    def parse_movie_gallery(self, s):
+        img = sel(s, ".gallery-item picture img")
         return {
-            "count": int(text(section, ".count")[1:-1]),
-            "initial": url(sel(section, "img").get("src"))
+            "count": self.parse_movie_gallery_count(s),
+            "image": None if img is None else url(img.get("src"))
         }
 
     @staticmethod
-    def parse_movie_trivia(s):
+    def parse_movie_trivia_count(s):
+        count = sel(s, ".tab-content section:nth-child(4) .count")
+        return -1 if count is None else int(text(count)[1:-1])
+
+    def parse_movie_trivia(self, s):
         trivia = {
-            "count": int(text(s, ".tab-content section:last-child .count")[1:-1]),
+            "count": self.parse_movie_trivia_count(s),
             "items": []
         }
-        for article in asel(s, ".tab-content section:last-child article"):
+        for article in asel(s, ".tab-content section:nth-child(4) article"):
             user_a = sel(article, ".span-more-small a")
             user_id = -1 if user_a is None else extract_id(user_a.get("href"))
             user_a = user_a or sel(article, ".span-more-small")
@@ -146,14 +171,15 @@ class MovieParser:
         return premieres
 
     @staticmethod
-    def parse_movie_description(s):
-        return text(s, ".plot-preview > p", rec_tags=["a"])
+    def parse_movie_plot(s):
+        plot = sel(s, ".plot-full > p")
+        return None if plot is None else text(plot, rec_tags=["a"])
 
     def parse_movie_cover(self, s):
-        return self.parse_movie_ld_json(s)["image"]
+        return self.parse_movie_ld_json(s).get("image", None)
 
     def parse_movie(self, s, mid):
-        return {
+        return Movie({
             "id": mid,
             "url": Globals.MOVIES_URL + str(mid),
             "type": self.parse_movie_type(s),
@@ -163,6 +189,7 @@ class MovieParser:
             "genres": self.parse_movie_genres(s),
             "origins": self.parse_movie_origins(s),
             "rating": self.parse_movie_rating(s),
+            "ranks": self.parse_movie_ranks(s),
             "otherNames": self.parse_movie_other_names(s),
             "creators": self.parse_movie_creators(s),
             "vods": self.parse_movie_vods(s),
@@ -171,6 +198,6 @@ class MovieParser:
             "gallery": self.parse_movie_gallery(s),
             "trivia": self.parse_movie_trivia(s),
             "premieres": self.parse_movie_premieres(s),
-            "description": self.parse_movie_description(s),
-            "cover": self.parse_movie_cover(s),
-        }
+            "plot": self.parse_movie_plot(s),
+            "cover": self.parse_movie_cover(s)
+        })
