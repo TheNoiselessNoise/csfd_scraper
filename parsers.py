@@ -1,7 +1,148 @@
 import json
 from utils import *
 from urllib.parse import urlsplit
-from objects import Movie
+from objects import Movie, Creator
+
+class CreatorParser:
+    __CREATOR_LD_JSON = None
+
+    def reset(self):
+        self.__CREATOR_LD_JSON = None
+
+    def parse_movie_ld_json(self, s):
+        if not self.__CREATOR_LD_JSON:
+            ld_json = sel(s, ".creator-main > script")
+            self.__CREATOR_LD_JSON = {} if ld_json is None else json.loads(text(ld_json))
+        return self.__CREATOR_LD_JSON
+
+    def parse_creator_type(self, s):
+        return self.parse_movie_ld_json(s).get("@type", None)
+
+    def parse_creator_name(self, s):
+        return self.parse_movie_ld_json(s).get("name", None)
+
+    @staticmethod
+    def parse_creator_age(s):
+        content = sel(s, ".creator-profile-content-desc > p")
+        age = None if content is None else clean(text(content))
+        return None if not age else int(age.split(" ")[2][1:])
+
+    def parse_creator_birth_date(self, s):
+        return self.parse_movie_ld_json(s).get("birthDate", None)
+
+    def parse_creator_birth_place(self, s):
+        place = self.parse_movie_ld_json(s).get("birthPlace", None)
+        return None if place is None else place.get("name", None)
+
+    @staticmethod
+    def parse_creator_bio(s):
+        bio = sel(s, ".article-content p")
+        return None if bio is None else clean(text(bio))
+
+    @staticmethod
+    def parse_creator_trivia_count(s):
+        article = sel(s, ".article-trivia")
+        section = None if article is None else article.find_parent("section")
+        count = None if section is None else sel(section, ".count")
+        return -1 if count is None else int(text(count)[1:-1])
+
+    def parse_creator_trivia(self, s):
+        trivia = {
+            "total": self.parse_creator_trivia_count(s),
+            "items": []
+        }
+        for article in asel(s, ".article-trivia"):
+            a = sel(article, "header a")
+            user_a = sel(article, ".span-more-small a")
+            user_id = -1 if user_a is None else extract_id(user_a.get("href"))
+            user_a = user_a or sel(article, ".span-more-small")
+            trivia["items"].append({
+                "movie_id": extract_id(a.get("href")),
+                "movie": text(a),
+                "author_id": user_id,
+                "author": text(user_a),
+                "text": clean(text(article, "li", rec_tags=["a", "em"]))
+            })
+        return trivia
+
+    @staticmethod
+    def parse_creator_ranks(s):
+        ranks = {}
+        for div in asel(s, ".ranking"):
+            div_a = sel(div, "a")
+            ranks[text(div_a)] = Globals.CSFD_URL + div_a.get("href")
+        return ranks
+
+    @staticmethod
+    def parse_creator_gallery_count(s):
+        gallery_item = sel(s, ".gallery-item")
+        section = None if gallery_item is None else gallery_item.find_parent("section")
+        count = None if section is None else sel(section, ".count")
+        return -1 if count is None else int(text(count)[1:-1])
+
+    def parse_creator_gallery(self, s):
+        img = sel(s, ".gallery-item picture img")
+        return {
+            "total": self.parse_creator_gallery_count(s),
+            "image": None if img is None else url(img.get("src"))
+        }
+
+    @staticmethod
+    def parse_creator_filmography(s):
+        div = sel(s, ".creator-filmography")
+
+        if div is None:
+            return None
+
+        filmography = {}
+
+        for section in asel(div, "section"):
+            section_name = text(section, "header h2")
+            year = None
+
+            filmography[section_name] = {}
+            for table in asel(section, "table"):
+                table_name = text(table, "th")
+
+                filmography[section_name][table_name] = {}
+                for tr in asel(table, "tr:not(:first-child)"):
+                    tr_year = clean(text(tr, "td.year"))
+                    if tr_year.isnumeric():
+                        year = int(tr_year)
+
+                    if year not in filmography[section_name][table_name]:
+                        filmography[section_name][table_name][year] = []
+
+                    td_name = sel(tr, "td.name")
+                    td_a = sel(td_name, "a")
+                    filmography[section_name][table_name][year].append({
+                        "id": extract_id(td_a.get("href")),
+                        "name": text(td_a)
+                    })
+
+        return filmography
+
+    def parse_creator_image(self, s):
+        return url(self.parse_movie_ld_json(s).get("image", None))
+
+    def parse_creator(self, s, cid):
+        return Creator({
+            "id": cid,
+            "url": Globals.CREATORS_URL + str(cid),
+            "type": self.parse_creator_type(s),
+            "name": self.parse_creator_name(s),
+            "age": self.parse_creator_age(s),
+            "birth": {
+                "date": self.parse_creator_birth_date(s),
+                "place": self.parse_creator_birth_place(s)
+            },
+            "bio": self.parse_creator_bio(s),
+            "trivia": self.parse_creator_trivia(s),
+            "ranks": self.parse_creator_ranks(s),
+            "gallery": self.parse_creator_gallery(s),
+            "filmography": self.parse_creator_filmography(s),
+            "image": self.parse_creator_image(s),
+        })
 
 class MovieParser:
     __MOVIE_LD_JSON = None
@@ -76,8 +217,7 @@ class MovieParser:
                 if href.startswith("/tvurce/") and href.endswith("/"):
                     creators_by_type.append({
                         "id": extract_id(link.get("href")),
-                        "name": text(link),
-                        "url": Globals.CSFD_URL + href,
+                        "name": text(link)
                     })
             creators[name] = creators_by_type
         return creators
@@ -94,10 +234,7 @@ class MovieParser:
     def parse_movie_tags(s):
         tags = {}
         for a in asel(s, "aside > section:last-child > .box-content > a"):
-            tags[text(a)] = {
-                "id": a.get("href").split("=")[1],
-                "url": Globals.CSFD_URL + a.get("href"),
-            }
+            tags[text(a)] = a.get("href").split("=")[1]
         return tags
 
     @staticmethod
@@ -107,14 +244,14 @@ class MovieParser:
 
     def parse_movie_reviews(self, s):
         reviews = {
-            "count": self.parse_movie_reviews_count(s),
+            "total": self.parse_movie_reviews_count(s),
             "items": []
         }
-        for article in asel(s, ".box-reviews .box-content article"):
+        for article in asel(s, ".box-reviews article"):
             user_a = sel(article, ".user-title a")
             stars = sel(article, ".user-title .stars").get("class")
             reviews["items"].append({
-                "user_id": extract_id(user_a.get("href")),
+                "author_id": extract_id(user_a.get("href")),
                 "author": text(user_a),
                 "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
                 "date": text(article, ".comment-date time"),
@@ -124,32 +261,36 @@ class MovieParser:
 
     @staticmethod
     def parse_movie_gallery_count(s):
-        count = sel(s, ".tab-content section:nth-child(3) .count")
+        gallery_item = sel(s, ".gallery-item")
+        section = None if gallery_item is None else gallery_item.find_parent("section")
+        count = None if section is None else sel(section, ".count")
         return -1 if count is None else int(text(count)[1:-1])
 
     def parse_movie_gallery(self, s):
         img = sel(s, ".gallery-item picture img")
         return {
-            "count": self.parse_movie_gallery_count(s),
+            "total": self.parse_movie_gallery_count(s),
             "image": None if img is None else url(img.get("src"))
         }
 
     @staticmethod
     def parse_movie_trivia_count(s):
-        count = sel(s, ".tab-content section:nth-child(4) .count")
+        article = sel(s, ".article-trivia")
+        section = None if article is None else article.find_parent("section")
+        count = None if section is None else sel(section, ".count")
         return -1 if count is None else int(text(count)[1:-1])
 
     def parse_movie_trivia(self, s):
         trivia = {
-            "count": self.parse_movie_trivia_count(s),
+            "total": self.parse_movie_trivia_count(s),
             "items": []
         }
-        for article in asel(s, ".tab-content section:nth-child(4) article"):
+        for article in asel(s, ".article-trivia"):
             user_a = sel(article, ".span-more-small a")
             user_id = -1 if user_a is None else extract_id(user_a.get("href"))
             user_a = user_a or sel(article, ".span-more-small")
             trivia["items"].append({
-                "user_id": user_id,
+                "author_id": user_id,
                 "author": text(user_a),
                 "text": clean(text(article, "li", rec_tags=["a", "em"]))
             })

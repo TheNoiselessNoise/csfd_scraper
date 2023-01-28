@@ -4,14 +4,22 @@ import json as j
 class Globals:
     CSFD_URL = "https://www.csfd.cz"
     MOVIES_URL = "https://www.csfd.cz/film/"
-    AWARDS_URL = "https://www.csfd.cz/<MID>/oceneni/"
+    CREATORS_URL = "https://www.csfd.cz/tvurce/"
+    CREATORS_SORT_URL = "https://www.csfd.cz/tvurce/<cid>?sort=<sort>"
 
 def tojson(o):
     if type(o) not in [dict, list]:
         return o
     return j.dumps(o, indent=4, ensure_ascii=False)
 
+def url_prepare(s, d):
+    for k, v in d.items():
+        s = s.replace("<" + str(k) + ">", str(v))
+    return s
+
 def url(s):
+    if not s:
+        return None
     if s.startswith("//"):
         return "https:" + s
     return s
