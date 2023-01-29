@@ -1,7 +1,7 @@
 import json
 from utils import *
 from urllib.parse import urlsplit
-from objects import Movie, Creator
+from objects import *
 
 class CreatorParser:
     __CREATOR_LD_JSON = None
@@ -142,6 +142,37 @@ class CreatorParser:
             "gallery": self.parse_creator_gallery(s),
             "filmography": self.parse_creator_filmography(s),
             "image": self.parse_creator_image(s),
+        })
+
+class SearchParser:
+    @staticmethod
+    def parse_movies_search_movies(s):
+        movies = []
+        for tr in asel(s, "table tbody tr"):
+            movie_a = sel(tr, "a")
+            movies.append(SearchedMovie({
+                "id": extract_id(movie_a.get("href")),
+                "name": text(movie_a),
+                "year": int(text(tr, "span.info")[1:-1]),
+                "origins": text(tr, "td.origin").split(" / "),
+                "genres": text(tr, "td.genre").split(" / "),
+            }))
+        return movies
+
+    @staticmethod
+    def parse_movies_search_has_prev_page(s):
+        return sel(s, ".page-prev") is not None
+
+    @staticmethod
+    def parse_movies_search_has_next_page(s):
+        return sel(s, ".page-next") is not None
+
+    def parse_movies_search(self, s, page) -> SearchMoviesResult:
+        return SearchMoviesResult({
+            "page": page,
+            "movies": self.parse_movies_search_movies(s),
+            "has_prev_page": self.parse_movies_search_has_prev_page(s),
+            "has_next_page": self.parse_movies_search_has_next_page(s),
         })
 
 class MovieParser:

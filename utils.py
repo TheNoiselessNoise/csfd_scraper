@@ -1,16 +1,24 @@
 import bs4
-import json as j
+import json
+import codecs
+from base64 import b64encode
 
 class Globals:
     CSFD_URL = "https://www.csfd.cz"
     MOVIES_URL = "https://www.csfd.cz/film/"
     CREATORS_URL = "https://www.csfd.cz/tvurce/"
     CREATORS_SORT_URL = "https://www.csfd.cz/tvurce/<cid>?sort=<sort>"
+    SEARCH_AUTOCOMPLETE_URL = "https://www.csfd.cz/api/autocomplete/?s=<type>&q=<search>"
+    SEARCH_MOVIES_URL = "https://www.csfd.cz/podrobne-vyhledavani/?page=<page>&sort=<sort>&searchParams=<params>"
+
+def encode_params(params):
+    params_raw = json.dumps(params).replace(" ", "").encode('ascii')
+    return codecs.encode(b64encode(params_raw).decode('ascii'), 'rot_13')
 
 def tojson(o):
     if type(o) not in [dict, list]:
         return o
-    return j.dumps(o, indent=4, ensure_ascii=False)
+    return json.dumps(o, indent=4, ensure_ascii=False)
 
 def url_prepare(s, d):
     for k, v in d.items():
