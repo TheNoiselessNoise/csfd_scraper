@@ -1,8 +1,9 @@
 import json
 import requests
-from utils import encode_params, url_prepare, soup, Globals
-from parsers import MovieParser, CreatorParser, SearchParser
-from objects import *
+from datetime import datetime
+from src.csfd_objects import *
+from src.csfd_utils import encode_params, url_prepare, soup, Globals
+from src.csfd_parsers import MovieParser, CreatorParser, SearchParser
 
 class CsfdScraper:
     __LAST_SOUP = None
@@ -50,9 +51,14 @@ class CsfdScraper:
         url = url_prepare(Globals.CREATORS_SORT_URL, {"cid": cid, "sort": sort.value})
         return self.__get_soup() or self.__get_soup(self.__get(url).content)
 
-    def __get_search_soup(self, params, sort, page):
+    def __get_search_movies_soup(self, params, sort, page):
         params = encode_params(params)
         url = url_prepare(Globals.SEARCH_MOVIES_URL, {"page": page, "sort": sort.value, "params": params})
+        return self.__get_soup() or self.__get_soup(self.__get(url).content)
+
+    def __get_search_creators_soup(self, params, sort, page):
+        params = encode_params(params)
+        url = url_prepare(Globals.SEARCH_CREATORS_URL, {"page": page, "sort": sort.value, "params": params})
         return self.__get_soup() or self.__get_soup(self.__get(url).content)
 
     # SEARCH GENERICS
@@ -89,7 +95,41 @@ class CsfdScraper:
             else:
                 params[name] = opt_value
 
-        return self.__SEARCH_PARSER.parse_movies_search(self.__get_search_soup(params, sort, page), page)
+        s = self.__get_search_movies_soup(params, sort, page)
+        return self.__SEARCH_PARSER.parse_movies_search(s, page)
+
+    def search_creators(self, options, sort=CreatorSearchSort.BY_FAN_COUNT, page=1):
+        params = {}
+        for key, param in CreatorSearchParameters.__members__.items():
+            name = param.value[0]
+            default = param.value[1]
+
+            opt = CreatorSearchOptions.__members__[key]
+            opt_value = options.get(param, default)
+
+            if opt == CreatorSearchOptions.TYPES:
+                params[name] = [x.value[0] for x in opt_value]
+            elif opt in [CreatorSearchOptions.BIRTH_FROM, CreatorSearchOptions.BIRTH_TO]:
+                params[name] = {
+                    "date": None if opt_value is None else opt_value,
+                    "year": None if opt_value is None else datetime.strptime(opt_value, "%d.%m.%Y").strftime("%Y")
+                }
+            elif opt in [CreatorSearchOptions.DEATH_FROM, CreatorSearchOptions.DEATH_TO]:
+                params[name] = {
+                    "date": None if opt_value is None else opt_value,
+                    "year": None if opt_value is None else datetime.strptime(opt_value, "%d.%m.%Y").strftime("%Y")
+                }
+            elif opt in [CreatorSearchOptions.BIRTH_COUNTRY, CreatorSearchOptions.DEATH_COUNTRY]:
+                params[name] = None if opt_value is None else opt_value.value[0]
+            elif opt == CreatorSearchOptions.ADDITIONAL_FILTERS:
+                params[name] = [x.value for x in opt_value]
+            elif opt == CreatorSearchOptions.GENDER:
+                params[name] = opt_value.value
+            else:
+                params[name] = opt_value
+
+        s = self.__get_search_creators_soup(params, sort, page)
+        return self.__SEARCH_PARSER.parse_creators_search(s, page)
 
     # SEARCH FILM CREATORS
 

@@ -1,7 +1,6 @@
-import json
-from utils import *
 from urllib.parse import urlsplit
-from objects import *
+from src.csfd_utils import *
+from src.csfd_objects import *
 
 class CreatorParser:
     __CREATOR_LD_JSON = None
@@ -145,6 +144,9 @@ class CreatorParser:
         })
 
 class SearchParser:
+
+    # MOVIES
+
     @staticmethod
     def parse_movies_search_movies(s):
         movies = []
@@ -173,6 +175,38 @@ class SearchParser:
             "movies": self.parse_movies_search_movies(s),
             "has_prev_page": self.parse_movies_search_has_prev_page(s),
             "has_next_page": self.parse_movies_search_has_next_page(s),
+        })
+
+    # CREATORS
+
+    @staticmethod
+    def parse_creators_search_creators(s):
+        movies = []
+        for tr in asel(s, "table tbody tr"):
+            movie_a = sel(tr, "a")
+            birth_year = text(tr, ".author-birthday").split(" ")
+            movies.append(SearchedCreator({
+                "id": extract_id(movie_a.get("href")),
+                "name": text(movie_a),
+                "birth_year": None if len(birth_year) == 1 else int(birth_year[1]),
+                "types": text(tr, ".author-dos").split(" / "),
+            }))
+        return movies
+
+    @staticmethod
+    def parse_creators_search_has_prev_page(s):
+        return sel(s, ".page-prev") is not None
+
+    @staticmethod
+    def parse_creators_search_has_next_page(s):
+        return sel(s, ".page-next") is not None
+
+    def parse_creators_search(self, s, page):
+        return SearchCreatorsResult({
+            "page": page,
+            "creators": self.parse_creators_search_creators(s),
+            "has_prev_page": self.parse_creators_search_has_prev_page(s),
+            "has_next_page": self.parse_creators_search_has_next_page(s),
         })
 
 class MovieParser:

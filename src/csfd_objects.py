@@ -1,15 +1,15 @@
-from utils import tojson
 from enum import Enum
-from typing import List, Dict, Any
+from typing import List, Dict
+from src.csfd_utils import tojson
 
 class CzechEnum(Enum):
     @classmethod
     def get_by_czech_name(cls, name: str):
         """Vrátí enum podle českého názvu"""
-        name_map: Dict[str, MovieSearchGenres] = {v.value[1]: v for k, v in cls.__members__.items()}
-        if name not in name_map:
-            raise ValueError("Genre not found")
-        return name_map[name]
+        for k, v in cls.__members__.items():
+            if name in v.value[1:]:
+                return v
+        raise ValueError(f"Enum for '{name}' not found")
 
     @classmethod
     def search_by_czech_name(cls, search: str):
@@ -17,7 +17,26 @@ class CzechEnum(Enum):
         name_map: Dict[str, MovieSearchGenres] = {v.value[1]: v for k, v in cls.__members__.items()}
         return [v for k, v in name_map.items() if search.lower() in k.lower()]
 
+class GenderableCzechEnum(Enum):
+    @classmethod
+    def get_by_czech_name(cls, name: str):
+        """Vrátí enum podle českého názvu"""
+        for k, v in cls.__members__.items():
+            if name in v.value[1:]:
+                return v
+        raise ValueError(f"Enum for '{name}' not found")
+
+    @classmethod
+    def search_by_czech_name(cls, search: str):
+        """Vrátí enum podle českého názvu"""
+        found = []
+        for k, v in cls.__members__.items():
+            if search.lower() in [x.lower() for x in v.value[1:]]:
+                found.append(v)
+        return found
+
 # MOVIE SEARCH TYPES
+
 class MovieSearchSort(Enum):
     """Možnosti řazení filmů pro vyhledávání"""
 
@@ -42,31 +61,31 @@ class MovieSearchSort(Enum):
 class MovieSearchTypes(Enum):
     """Typy filmů pro vyhledávání"""
 
-    MOVIE = 0
+    MOVIE             = 0
     """Film"""
 
-    SERIES = 3
+    SERIES            = 3
     """Seriál"""
 
-    TV_MOVIE = 2
+    TV_MOVIE          = 2
     """TV film"""
 
-    TV_SHOW = 4
+    TV_SHOW           = 4
     """Pořad"""
 
-    STUDENT_MOVIE = 7
+    STUDENT_MOVIE     = 7
     """Studentský film"""
 
-    AMATER_MOVIE = 8
+    AMATER_MOVIE      = 8
     """Amaterský film"""
 
-    THEATER_REC = 5
+    THEATER_REC       = 5
     """Divadelní záznam"""
 
-    MUSIC_VIDEO = 9
+    MUSIC_VIDEO       = 9
     """Hudební videoklip"""
 
-    CONCERT = 6
+    CONCERT           = 6
     """Koncert"""
 
     VIDEO_COMPILATION = 14
@@ -359,49 +378,49 @@ class MovieSearchGenres(CzechEnum):
 class MovieSearchAdditionalFilters(Enum):
     """Doplňující filtry pro vyhledávání filmů"""
 
-    IN_CINEMAS = "in_cinemas"
+    IN_CINEMAS      = "in_cinemas"
     """běží v kinech"""
 
-    ON_TV = "on_tv"
+    ON_TV           = "on_tv"
     """poběží na TV"""
 
-    ON_VOD = "on_vod"
+    ON_VOD          = "on_vod"
     """k přehrání na VOD"""
 
     WITH_COLLECTION = "with_collection"
     """ve filmotéce"""
 
-    WITH_BAZAAR = "with_bazaar"
+    WITH_BAZAAR     = "with_bazaar"
     """ve filmotéce prodej/sháňka"""
 
-    ON_BLURAY = "on_bluray"
+    ON_BLURAY       = "on_bluray"
     """ke koupi na Blu-ray"""
 
-    ON_DVD = "on_dvd"
+    ON_DVD          = "on_dvd"
     """ke koupi na DVD"""
 
-    WITH_COMMENTS = "with_comments"
+    WITH_COMMENTS   = "with_comments"
     """s recenzemi"""
 
-    WITH_PHOTOS = "with_photos"
+    WITH_PHOTOS     = "with_photos"
     """s galerií"""
 
-    WITH_VIDEOS = "with_videos"
+    WITH_VIDEOS     = "with_videos"
     """s videi"""
 
-    WITH_AWARDS = "with_awards"
+    WITH_AWARDS     = "with_awards"
     """s oceněními"""
 
-    WITH_TRIVIA = "with_trivia"
+    WITH_TRIVIA     = "with_trivia"
     """se zajímavostmi"""
 
 class MovieSearchOriginFilters(Enum):
     """Filtry pro vyhledávání filmů podle původu"""
 
-    AT_LEAST_ALL_SELECTED = 2
+    AT_LEAST_ALL_SELECTED        = 2
     """minimálně všechny zvolené"""
 
-    EXACTLY_AND_ONLY_SELECTED = 1
+    EXACTLY_AND_ONLY_SELECTED    = 1
     """přesně a pouze zvolené"""
 
     AT_LEAST_ONE_OF_THE_SELECTED = 3
@@ -416,20 +435,20 @@ class MovieSearchOriginOptions(Enum):
     EXCLUDE = 1
     """
         Původy, které se mají vynechat.
-        Platí pouze pokud je nastavený ORIGIN_FILTER na:
+        Platí pouze pokud je nastavený FILTER na:
             AT_LEAST_ONE_OF_THE_SELECTED nebo AT_LEAST_ALL_SELECTED
     """
 
-    FILTER = 2
+    FILTER  = 2
     """Nastavení filtru pro vyhledávání původu"""
 
 class MovieSearchGenreFilters(Enum):
     """Filtry pro vyhledávání filmů podle žánrů"""
 
-    AT_LEAST_ALL_SELECTED = 2
+    AT_LEAST_ALL_SELECTED        = 2
     """minimálně všechny zvolené"""
 
-    EXACTLY_AND_ONLY_SELECTED = 1
+    EXACTLY_AND_ONLY_SELECTED    = 1
     """přesně a pouze zvolené"""
 
     AT_LEAST_ONE_OF_THE_SELECTED = 3
@@ -438,81 +457,81 @@ class MovieSearchGenreFilters(Enum):
 class MovieSearchGenreOptions(Enum):
     """Specifikace žánrů pro vyhledávání"""
 
-    GENRES = 0
+    GENRES  = 0
     """Žánry, které se mají vyhledávat"""
 
     EXCLUDE = 1
     """
         Žánry, které se mají vynechat.
-        Platí pouze pokud je nastavený GENRE_FILTER na:
+        Platí pouze pokud je nastavený FILTER na:
             AT_LEAST_ONE_OF_THE_SELECTED nebo AT_LEAST_ALL_SELECTED
     """
 
-    FILTER = 2
+    FILTER  = 2
     """Nastavení filtru pro vyhledávání žánrů"""
 
 class MovieSearchOptions(Enum):
     """Možnosti pro vyhledávání filmů"""
 
-    TYPES = 0
-    """Typy filmů, které se mají vyhledávat"""
+    TYPES              = 0
+    """Typy filmů, podle kterých se má vyhledávat"""
 
-    GENRES = 1
-    """Žánry, které se mají vyhledávat"""
+    GENRES             = 1
+    """Žánry, podle kterých se má vyhledávat"""
 
-    ORIGINS = 2
-    """Původy, které se mají vyhledávat"""
+    ORIGINS            = 2
+    """Původy, podle kterých se má vyhledávat"""
 
-    YEAR_FROM = 3
-    """Rok od kterého se mají vyhledávat filmy, např. 'None' pro všechny nebo 2010"""
+    YEAR_FROM          = 3
+    """Rok od kterého se mají vyhledávat filmy"""
 
-    YEAR_TO = 4
-    """Rok do kterého se mají vyhledávat filmy, např. 'None' pro všechny nebo 2019"""
+    YEAR_TO            = 4
+    """Rok do kterého se mají vyhledávat filmy"""
 
-    RATING_FROM = 5
-    """Hodnocení od kterého se mají vyhledávat filmy, např. 'None' pro všechny nebo 80"""
+    RATING_FROM        = 5
+    """Hodnocení od kterého se mají vyhledávat filmy"""
 
-    RATING_TO = 6
-    """Hodnocení do kterého se mají vyhledávat filmy, např. 'None' pro všechny or 100"""
+    RATING_TO          = 6
+    """Hodnocení do kterého se mají vyhledávat filmy"""
 
-    TAGS = 7
-    """Tagy, které se mají vyhledávat"""
+    TAGS               = 7
+    """Tagy, podle kterých se má vyhledávat"""
 
-    ACTORS = 8
-    """ID herců, které se mají vyhledávat"""
+    ACTORS             = 8
+    """ID herců, podle kterých se má vyhledávat"""
 
-    DIRECTORS = 9
-    """ID režisérů, které se mají vyhledávat"""
+    DIRECTORS          = 9
+    """ID režisérů, podle kterých se má vyhledávat"""
 
-    COMPOSERS = 10
-    """ID skladatelů, které se mají vyhledávat"""
+    COMPOSERS          = 10
+    """ID skladatelů, podle kterých se má vyhledávat"""
 
-    SCREENWRITERS = 11
-    """ID scénáristů, které se mají vyhledávat"""
+    SCREENWRITERS      = 11
+    """ID scénáristů, podle kterých se má vyhledávat"""
 
-    AUTHORS = 12
-    """ID autorů předlohy, které se mají vyhledávat"""
+    AUTHORS            = 12
+    """ID autorů předlohy, podle kterých se má vyhledávat"""
 
-    CINEMATOGRAPHERS = 13
-    """ID kameramanů, které se mají vyhledávat"""
+    CINEMATOGRAPHERS   = 13
+    """ID kameramanů, podle kterých se má vyhledávat"""
 
-    PRODUCERS = 14
-    """ID producentů, které se mají vyhledávat"""
+    PRODUCERS          = 14
+    """ID producentů, podle kterých se má vyhledávat"""
 
-    EDITORS = 15
-    """ID střihačů, které se mají vyhledávat"""
+    EDITORS            = 15
+    """ID střihačů, podle kterých se má vyhledávat"""
 
-    SOUND_ENGINEERS = 16
-    """ID zvukařů, které se mají vyhledávat"""
+    SOUND_ENGINEERS    = 16
+    """ID zvukařů, podle kterých se má vyhledávat"""
 
-    SCENOGRAPHERS = 17
-    """ID scenografů, které se mají vyhledávat"""
+    SCENOGRAPHERS      = 17
+    """ID scenografů, podle kterých se má vyhledávat"""
 
-    MASK_DESIGNERS = 18
-    """ID maskérů, které se mají vyhledávat"""
+    MASK_DESIGNERS     = 18
+    """ID maskérů, podle kterých se má vyhledávat"""
 
-    COSTUME_DESIGNERS = 19
-    """ID kostymérů, které se mají vyhledávat"""
+    COSTUME_DESIGNERS  = 19
+    """ID kostymérů, podle kterých se má vyhledávat"""
 
     ADDITIONAL_FILTERS = 20
     """Doplňující filtry pro vyhledávání filmů"""
@@ -540,6 +559,107 @@ class MovieSearchParameters(Enum):
     COSTUME_DESIGNERS  = "costumes",        []
     ADDITIONAL_FILTERS = "conditions",      []
 
+# CREATOR SEARCH TYPES
+
+class CreatorSearchGenders(Enum):
+    MALE = 1
+    """Muž"""
+
+    FEMALE = 2
+    """Žena"""
+
+class CreatorSearchSort(Enum):
+    """Možnosti řazení tvůrců pro vyhledávání"""
+
+    BY_FAN_COUNT = "fanclub_count"
+    """podle počtu fanoušků"""
+
+    BY_YOUNGEST  = "birth_date"
+    """od nejmladšího"""
+
+    BY_OLDEST    = "birth_date_asc"
+    """od nejstaršího"""
+
+class CreatorSearchTypes(GenderableCzechEnum):
+    """Typy tvůrců pro vyhledávání"""
+
+    COMPOSER         = 3,  "skladatel",  "skladatelka"
+    CINEMATOGRAPHER  = 6,  "kameraman",  "kameramanka"
+    SOUND_ENGINEER   = 9,  "zvukař",     "zvukařka"
+    COSTUME_DESIGNER = 12, "kostymér",   "kostymérka"
+    ACTOR            = 1,  "herec",      "herečka"
+    SCREENWRITER     = 4,  "scenárista", "scenáristka"
+    PRODUCER         = 7,  "producent",  "producentka"
+    SCENOGRAPHER     = 10, "scénograf",  "scénografka"
+    AUTHOR           = 13, "tvůrce",     "tvůrce"
+    DIRECTOR         = 2,  "režisér",    "režisérka"
+    WRITER           = 5,  "spisovatel", "spisovatelka"
+    EDITOR           = 8,  "střihač",    "střihačka"
+    MASK_DESIGNER    = 11, "maskér",     "maskérka"
+    PERFORMER        = 14, "účinkující", "účinkující"
+
+class CreatorSearchAdditionalFilters(Enum):
+    """Doplňující filtry pro vyhledávání tvůrců"""
+
+    WITH_BIOGRAPHY   = "with_biography"
+    """s biografií"""
+
+    WITH_PHOTOS      = "with_photos"
+    """s galerií"""
+
+    WITH_CONTACT     = "with_contact"
+    """s kontakty"""
+
+    WITH_AWARDS      = "with_awards"
+    """s oceněními"""
+
+    WITH_FORUM_POSTS = "with_forum_posts"
+    """s diskuzí"""
+
+    WITH_TRIVIA      = "with_trivia"
+    """se zajímavostmi"""
+
+class CreatorSearchOptions(Enum):
+    """Možnosti pro vyhledávání tvůrců"""
+
+    TYPES              = 0
+    """Typy tvůrců, podle kterých se má vyhledávat"""
+
+    BIRTH_FROM         = 1
+    """Datum narození od kterého se má vyhledávat (DD.MM.RRRR)"""
+
+    BIRTH_TO           = 2
+    """Datum narození do kterého se má vyhledávat (DD.MM.RRRR)"""
+
+    BIRTH_COUNTRY      = 3
+    """ID země narození, podle kterého se má vyhledávat"""
+
+    DEATH_FROM         = 4
+    """Datum úmrtí od kterého se má vyhledávat (DD.MM.RRRR)"""
+
+    DEATH_TO           = 5
+    """Datum úmrtí do kterého se má vyhledávat (DD.MM.RRRR)"""
+
+    DEATH_COUNTRY      = 6
+    """ID země úmrtí, podle kterého se má vyhledávat"""
+
+    ADDITIONAL_FILTERS = 7
+    """Doplňující filtry pro vyhledávání tvůrců"""
+
+    GENDER             = 8
+    """Pohlaví tvůrce podle kterého se má vyhledávat"""
+
+class CreatorSearchParameters(Enum):
+    TYPES              = "type",             []
+    BIRTH_FROM         = "birth_from",       None
+    BIRTH_TO           = "birth_to",         None
+    BIRTH_COUNTRY      = "birth_country_id", None
+    DEATH_FROM         = "death_from",       None
+    DEATH_TO           = "death_to",         None
+    DEATH_COUNTRY      = "death_country_id", None
+    ADDITIONAL_FILTERS = "conditions",       []
+    GENDER             = "gender",           None
+
 class CreatorFilmographySort(Enum):
     """Možnosti řazení filmografie"""
 
@@ -551,6 +671,8 @@ class CreatorFilmographySort(Enum):
 
     BY_RATING_COUNT = "rating_count"
     """podle počtu hodnocení"""
+
+# AUTOCOMPLETE SEARCH TYPES
 
 class SearchJsonWrapper:
     __JSON_OBJECT = None
@@ -580,6 +702,8 @@ class Tag(SearchJsonWrapper):
         self.text = getattr(self, "text", None)
         self.info = getattr(self, "info", None)
         self.hide_image = getattr(self, "hide_image", None)
+
+# ADVANCED SEARCH TYPES
 
 class PrintableObject:
     args = None
@@ -614,6 +738,32 @@ class SearchMoviesResult(PrintableObject):
         args = self.args
         args["movies"] = [m.args for m in self.movies]
         return tojson(args)
+
+class SearchedCreator(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.birth_year = args.get("birth_year", None)
+        self.types = args.get("types", [])
+
+    def get_types(self):
+        return [CreatorSearchTypes.get_by_czech_name(g) for g in self.types]
+
+class SearchCreatorsResult(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.page = args.get("page", None)
+        self.creators: List[SearchedCreator] = args.get("creators", [])
+        self.has_prev_page = args.get("has_prev_page", None)
+        self.has_next_page = args.get("has_next_page", None)
+
+    def __str__(self):
+        args = self.args
+        args["creators"] = [c.args for c in self.creators]
+        return tojson(args)
+
+# OTHER TYPES
 
 class Movie(PrintableObject):
     def __init__(self, args):
@@ -654,6 +804,8 @@ class Creator(PrintableObject):
         self.gallery = args.get("gallery", None)
         self.filmography = args.get("filmography", None)
         self.image = args.get("image", None)
+
+# EXCEPTIONS
 
 class CsfdScraperInvalidRequest(Exception):
     """Exception for invalid request"""

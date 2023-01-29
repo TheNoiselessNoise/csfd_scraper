@@ -10,6 +10,7 @@ class Globals:
     CREATORS_SORT_URL = "https://www.csfd.cz/tvurce/<cid>?sort=<sort>"
     SEARCH_AUTOCOMPLETE_URL = "https://www.csfd.cz/api/autocomplete/?s=<type>&q=<search>"
     SEARCH_MOVIES_URL = "https://www.csfd.cz/podrobne-vyhledavani/?page=<page>&sort=<sort>&searchParams=<params>"
+    SEARCH_CREATORS_URL = "https://www.csfd.cz/podrobne-vyhledavani/tvurci/?page=<page>&sort=<sort>&searchParams=<params>"
 
 def encode_params(params):
     params_raw = json.dumps(params).replace(" ", "").encode('ascii')
