@@ -1,14 +1,22 @@
 # CSFD.cz Scraper
 
 ### What else to do?
+- [ ] Better naming of Enums 
 - [ ] Scraping News
-- [ ] Scraping Users by ID
 - [ ] Scraping Users by ["the most popular"](https://www.csfd.cz/uzivatele/)
 - [ ] Scraping Users by ["the most active"](https://www.csfd.cz/uzivatele/nejaktivnejsi/)
 - [ ] Scraping DVDs by ["monthly overview"](https://www.csfd.cz/dvd/)
 - [ ] Scraping DVDs by ["yearly overview"](https://www.csfd.cz/dvd/rocne/)
 - [ ] Scraping Blu-rays by ["monthly overview"](https://www.csfd.cz/bluray/)
 - [ ] Scraping Blu-rays by ["yearly overview"](https://www.csfd.cz/bluray/rocne/)
+- [ ] Scraping User
+  - [ ] Scraping "Ratings"
+  - [ ] Scraping "Reviews"
+  - [ ] Scraping "Favorites"
+  - [ ] Scraping "Film Library"
+  - [ ] Scraping "Trivia"
+  - [ ] Scraping "Contents"
+  - [ ] Scraping "Biography"
 - [ ] Scraping Leaderboards
   - [ ] Scraping "Movies"
   - [ ] Scraping "Series"
@@ -21,8 +29,10 @@
 - [ ] Scraping VODS
 - [ ] Scraping Theaters
 - [ ] Scraping Television
+- [ ] Scraping user's diary
 
 ### Completed ✓
+- [x] Scraping Users by ID
 - [x] Scraping text search results
 - [x] Scraping Movies by ID
 - [x] Scraping Creators by ID

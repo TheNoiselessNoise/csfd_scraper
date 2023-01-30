@@ -822,7 +822,7 @@ class Movie(PrintableObject):
         self.origins = args.get("origins", None)
         self.rating = args.get("rating", None)
         self.ranks = args.get("ranks", None)
-        self.otherNames = args.get("otherNames", None)
+        self.other_names = args.get("other_names", None)
         self.creators = args.get("creators", None)
         self.vods = args.get("vods", None)
         self.tags = args.get("tags", None)
@@ -847,6 +847,27 @@ class Creator(PrintableObject):
         self.trivia = args.get("trivia", None)
         self.gallery = args.get("gallery", None)
         self.filmography = args.get("filmography", None)
+        self.image = args.get("image", None)
+
+class User(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.url = args.get("url", None)
+        self.name = args.get("name", None)
+        self.real_name = args.get("real_name", None)
+        self.origin = args.get("origin", None)
+        self.about = args.get("about", None)
+        self.registered = args.get("registered", None)
+        self.last_login = args.get("last_login", None)
+        self.points = args.get("points", None)
+        self.awards = args.get("awards", None)
+        self.most_watched_genres = args.get("most_watched_genres", {})
+        self.most_watched_types = args.get("most_watched_types", {})
+        self.most_watched_origins = args.get("most_watched_origins", {})
+        self.reviews = args.get("reviews", {})
+        self.ratings = args.get("ratings", {})
+        self.is_currently_online = args.get("is_currently_online", None)
         self.image = args.get("image", None)
 
 # EXCEPTIONS

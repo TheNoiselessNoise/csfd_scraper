@@ -4,24 +4,24 @@ from src.csfd_objects import *
 def main():
     scraper = CsfdScraper()
 
-    # search by text
+    # --- SEARCH BY TEXT
 
-    result = scraper.text_search("spielberg")
-    print(result.movies[0])
+    # result = scraper.text_search("spielberg")
+    # print(result.movies[0])
+    #
+    # movies = scraper.text_search_movies("spielberg")
+    # print(movies[0])
+    #
+    # creators = scraper.text_search_creators("spielberg")
+    # print(creators[0])
+    #
+    # series = scraper.text_search_series("spielberg")
+    # print(series[0])
+    #
+    # users = scraper.text_search_users("spielberg")
+    # print(users[0])
 
-    movies = scraper.text_search_movies("spielberg")
-    print(movies[0])
-
-    creators = scraper.text_search_creators("spielberg")
-    print(creators[0])
-
-    series = scraper.text_search_series("spielberg")
-    print(series[0])
-
-    users = scraper.text_search_users("spielberg")
-    print(users[0])
-
-    # search creators
+    # --- SEARCH CREATORS
 
     # result = scraper.search_creators({
     #     CreatorSearchParameters.TYPES: [
@@ -44,7 +44,7 @@ def main():
     #     print(creator.get_types())
     #     print(creator)
 
-    # search movies
+    # --- SEARCH MOVIES
 
     # result = scraper.search_movies({
     #     MovieSearchParameters.TYPES: [MovieSearchTypes.MOVIE],
@@ -66,8 +66,9 @@ def main():
     #     print(movie.get_origins())
     #     print(movie)
 
-    # generic scraping
+    # --- GENERIC SCRAPING
 
+    # print(scraper.user(27877))
     # print(scraper.movie(264179)) # Herukules
     # print(scraper.movie(450398)) # Chata
     # print(scraper.movie(478500)) # Noční mlha (only gallery)

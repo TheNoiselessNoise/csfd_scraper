@@ -43,7 +43,7 @@ class CreatorParser:
         article = sel(s, ".article-trivia")
         section = None if article is None else article.find_parent("section")
         count = None if section is None else sel(section, ".count")
-        return -1 if count is None else int(text(count)[1:-1])
+        return -1 if count is None else toint(text(count)[1:-1])
 
     def parse_creator_trivia(self, s):
         trivia = {
@@ -77,7 +77,7 @@ class CreatorParser:
         gallery_item = sel(s, ".gallery-item")
         section = None if gallery_item is None else gallery_item.find_parent("section")
         count = None if section is None else sel(section, ".count")
-        return -1 if count is None else int(text(count)[1:-1])
+        return -1 if count is None else toint(text(count)[1:-1])
 
     def parse_creator_gallery(self, s):
         img = sel(s, ".gallery-item picture img")
@@ -392,7 +392,7 @@ class MovieParser:
     @staticmethod
     def parse_movie_reviews_count(s):
         count = sel(s, ".box-reviews .count")
-        return -1 if count is None else int(text(count)[1:-1])
+        return -1 if count is None else toint(text(count)[1:-1])
 
     def parse_movie_reviews(self, s):
         reviews = {
@@ -416,7 +416,7 @@ class MovieParser:
         gallery_item = sel(s, ".gallery-item")
         section = None if gallery_item is None else gallery_item.find_parent("section")
         count = None if section is None else sel(section, ".count")
-        return -1 if count is None else int(text(count)[1:-1])
+        return -1 if count is None else toint(text(count)[1:-1])
 
     def parse_movie_gallery(self, s):
         img = sel(s, ".gallery-item picture img")
@@ -430,7 +430,7 @@ class MovieParser:
         article = sel(s, ".article-trivia")
         section = None if article is None else article.find_parent("section")
         count = None if section is None else sel(section, ".count")
-        return -1 if count is None else int(text(count)[1:-1])
+        return -1 if count is None else toint(text(count)[1:-1])
 
     def parse_movie_trivia(self, s):
         trivia = {
@@ -483,7 +483,7 @@ class MovieParser:
             "origins": self.parse_movie_origins(s),
             "rating": self.parse_movie_rating(s),
             "ranks": self.parse_movie_ranks(s),
-            "otherNames": self.parse_movie_other_names(s),
+            "other_names": self.parse_movie_other_names(s),
             "creators": self.parse_movie_creators(s),
             "vods": self.parse_movie_vods(s),
             "tags": self.parse_movie_tags(s),
@@ -493,4 +493,148 @@ class MovieParser:
             "premieres": self.parse_movie_premieres(s),
             "plot": self.parse_movie_plot(s),
             "cover": self.parse_movie_cover(s)
+        })
+
+class UserParser:
+
+    @staticmethod
+    def parse_user_name(s):
+        return text(s, ".user-profile h1")
+
+    @staticmethod
+    def parse_user_real_name(s):
+        return text(s, ".user-profile-content > p > strong")
+
+    @staticmethod
+    def parse_user_origin(s):
+        p = sel(s, ".user-profile-content > p")
+        return clean(p.contents[3]).split(", ")
+
+    @staticmethod
+    def parse_user_about(s):
+        p = sel(s, ".user-profile-content > p")
+        return clean(p.contents[5])
+
+    @staticmethod
+    def parse_user_registered(s):
+        user_footer = sel(s, ".user-profile-footer-left")
+        return clean(text(user_footer)).split(" ")[3]
+
+    @staticmethod
+    def parse_user_last_login(s):
+        user_footer = sel(s, ".user-profile-footer-left")
+        parts = clean(text(user_footer)).split(" ")
+        return f"{parts[6]} {parts[7]}"
+
+    @staticmethod
+    def parse_user_points(s):
+        points_a = sel(s, ".ranking-points a")
+        return None if points_a is None else int("".join(clean(text(points_a)).split(" ")[:-1]))
+
+    @staticmethod
+    def parse_user_awards(s):
+        awards = {}
+        for a in asel(s, ".ranking:not(.ranking-points) a"):
+            awards[text(a)] = a.get("href")
+        return awards
+
+    @staticmethod
+    def parse_user_most_watched_genres(s):
+        most_watched_genres = {}
+        for li in asel(s, ".genres-switch li"):
+            meter = int(sel(li, ".meter").get("style").split(" ")[1][:-1])
+            most_watched_genres[text(li)] = meter
+        return most_watched_genres
+
+    @staticmethod
+    def parse_user_most_watched_types(s):
+        most_watched_types = {}
+        for li in asel(s, ".types-switch li"):
+            span_text = sel(li, "span").get("title")
+            meter = int(sel(li, ".meter").get("style").split(" ")[1][:-1])
+            most_watched_types[span_text] = meter
+        return most_watched_types
+
+    @staticmethod
+    def parse_user_most_watched_origins(s):
+        most_watched_origins = {}
+        for li in asel(s, ".origins-switch li"):
+            span_text = sel(li, "span").get("title")
+            meter = int(sel(li, ".meter").get("style").split(" ")[1][:-1])
+            most_watched_origins[span_text] = meter
+        return most_watched_origins
+
+    @staticmethod
+    def parse_user_reviews_count(s):
+        section = sel(s, ".user-reviews")
+        return -1 if section is None else toint(clean(text(section, ".count"))[1:-1])
+
+    def parse_user_reviews(self, s):
+        reviews = {
+            "total": self.parse_user_reviews_count(s),
+            "last": []
+        }
+        for article in asel(s, ".user-reviews article.article"):
+            article_a = sel(article, "header a")
+            img_href = sel(article, "img").get("src")
+            stars = sel(article, ".stars").get("class")
+            reviews["last"].append({
+                "id": extract_id(article_a.get("href")),
+                "name": text(article_a),
+                "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
+                "date": text(article, "time"),
+                "text": text(article, ".user-reviews-text p", rec_tags=["a", "em"]),
+                "image": None if img_href.startswith("data:image") else url(img_href)
+            })
+        return reviews
+
+    @staticmethod
+    def parse_user_ratings_count(s):
+        section = sel(s, ".last-ratings section")
+        return -1 if section is None else toint(clean(text(section, ".count"))[1:-1])
+
+    def parse_user_ratings(self, s):
+        ratings = {
+            "total": self.parse_user_ratings_count(s),
+            "last": []
+        }
+        for tr in asel(s, ".last-ratings tr"):
+            tr_a = sel(tr, "a")
+            stars = sel(tr, ".stars").get("class")
+            ratings["last"].append({
+                "id": extract_id(tr_a.get("href")),
+                "name": text(tr_a),
+                "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
+                "date": text(tr, ".date-only")
+            })
+        return ratings
+
+    @staticmethod
+    def parse_user_is_currently_online(s):
+        return sel(s, ".user-profile-status") is not None
+
+    @staticmethod
+    def parse_user_image(s):
+        img_href = sel(s, ".user-profile-content img").get("src")
+        return None if img_href.startswith("data:image") else url(img_href)
+
+    def parse_user(self, s, uid):
+        return User({
+            "id": uid,
+            "url": Globals.USERS_URL + str(uid),
+            "name": self.parse_user_name(s),
+            "real_name": self.parse_user_real_name(s),
+            "origin": self.parse_user_origin(s),
+            "about": self.parse_user_about(s),
+            "registered": self.parse_user_registered(s),
+            "last_login": self.parse_user_last_login(s),
+            "points": self.parse_user_points(s),
+            "awards": self.parse_user_awards(s),
+            "most_watched_genres": self.parse_user_most_watched_genres(s),
+            "most_watched_types": self.parse_user_most_watched_types(s),
+            "most_watched_origins": self.parse_user_most_watched_origins(s),
+            "reviews": self.parse_user_reviews(s),
+            "ratings": self.parse_user_ratings(s),
+            "is_currently_online": self.parse_user_is_currently_online(s),
+            "image": self.parse_user_image(s),
         })

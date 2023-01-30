@@ -8,6 +8,7 @@ class Globals:
     MOVIES_URL = "https://www.csfd.cz/film/"
     CREATORS_URL = "https://www.csfd.cz/tvurce/"
     CREATORS_SORT_URL = "https://www.csfd.cz/tvurce/<cid>?sort=<sort>"
+    USERS_URL = "https://www.csfd.cz/uzivatel/"
     SEARCH_AUTOCOMPLETE_URL = "https://www.csfd.cz/api/autocomplete/?s=<type>&q=<search>"
     SEARCH_MOVIES_URL = "https://www.csfd.cz/podrobne-vyhledavani/?page=<page>&sort=<sort>&searchParams=<params>"
     SEARCH_CREATORS_URL = "https://www.csfd.cz/podrobne-vyhledavani/tvurci/?page=<page>&sort=<sort>&searchParams=<params>"
@@ -25,6 +26,11 @@ def tojson(o):
     if type(o) not in [dict, list]:
         return o
     return json.dumps(o, indent=4, ensure_ascii=False)
+
+def toint(s):
+    if type(s) is str:
+        return int(s.replace(" ", ""))
+    return s
 
 def url_prepare(s, d):
     for k, v in d.items():

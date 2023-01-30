@@ -25,6 +25,11 @@ movie = scraper.movie(31881)
 creator = scraper.creator(84039)
 ```
 
+### Get user by ID
+```python
+user = scraper.user(447317)
+```
+
 ### Search movies/creators/series/users by text
 ```python
 result = scraper.text_search("spielberg")
