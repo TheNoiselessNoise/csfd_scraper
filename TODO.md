@@ -1,7 +1,6 @@
 # CSFD.cz Scraper
 
 ### What else to do?
-- [ ] Scraping text search results
 - [ ] Scraping News
 - [ ] Scraping Users by ID
 - [ ] Scraping Users by ["the most popular"](https://www.csfd.cz/uzivatele/)
@@ -24,6 +23,7 @@
 - [ ] Scraping Television
 
 ### Completed ✓
+- [x] Scraping text search results
 - [x] Scraping Movies by ID
 - [x] Scraping Creators by ID
 - [x] Advanced Movie Search

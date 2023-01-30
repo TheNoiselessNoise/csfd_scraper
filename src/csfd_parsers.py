@@ -209,6 +209,93 @@ class SearchParser:
             "has_next_page": self.parse_creators_search_has_next_page(s),
         })
 
+    # TEXT SEARCH
+
+    @staticmethod
+    def __parse_text_search_parse_creators(s, name):
+        creators = []
+        for p in asel(s, ".film-creators"):
+            if text(p).split(":")[0] == name:
+                for a in asel(p, "a"):
+                    creators.append({
+                        "id": extract_id(a.get("href")),
+                        "name": text(a),
+                    })
+        return creators
+
+    def parse_text_search_movies(self, s) -> List[TextSearchedMovie]:
+        movies = []
+        for article in asel(s, ".main-movies article.article"):
+            img_url = sel(article, "img").get("src")
+            articla_a = sel(article, ".article-content a")
+            origins_genres = text(article, ".film-origins-genres .info").split(", ")
+            movies.append(TextSearchedMovie({
+                "id": extract_id(articla_a.get("href")),
+                "name": text(articla_a),
+                "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
+                "origins": origins_genres[:-1],
+                "directors": self.__parse_text_search_parse_creators(article, "Režie"),
+                "actors": self.__parse_text_search_parse_creators(article, "Hrají"),
+                "performers": self.__parse_text_search_parse_creators(article, "Účinkují"),
+                "image": None if img_url.startswith("data:image") else url(img_url)
+            }))
+        return movies
+
+    @staticmethod
+    def parse_text_search_creators(s) -> List[TextSearchedCreator]:
+        creators = []
+        for article in asel(s, ".main-authors article.article"):
+            img_url = sel(article, "img").get("src")
+            articla_a = sel(article, ".article-content a")
+            creators.append(TextSearchedCreator({
+                "id": extract_id(articla_a.get("href")),
+                "name": text(articla_a),
+                "types": text(article, ".article-content .info").split(" / "),
+                "image": None if img_url.startswith("data:image") else url(img_url)
+            }))
+        return creators
+
+    def parse_text_search_series(self, s) -> List[TextSearchedSeries]:
+        series = []
+        for article in asel(s, ".main-series article.article"):
+            img_url = sel(article, "img").get("src")
+            articla_a = sel(article, ".article-content a")
+            origins_genres = text(article, ".film-origins-genres .info").split(", ")
+            series.append(TextSearchedSeries({
+                "id": extract_id(articla_a.get("href")),
+                "name": text(articla_a),
+                "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
+                "origins": origins_genres[:-1],
+                "directors": self.__parse_text_search_parse_creators(article, "Režie"),
+                "actors": self.__parse_text_search_parse_creators(article, "Hrají"),
+                "performers": self.__parse_text_search_parse_creators(article, "Účinkují"),
+                "image": None if img_url.startswith("data:image") else url(img_url)
+            }))
+        return series
+
+    @staticmethod
+    def parse_text_search_users(s) -> List[TextSearchedUser]:
+        users = []
+        for article in asel(s, ".main-users article.article"):
+            img_url = sel(article, "img").get("src")
+            articla_a = sel(article, ".article-content a")
+            users.append(TextSearchedUser({
+                "id": extract_id(articla_a.get("href")),
+                "name": text(articla_a),
+                "real_name": text(article, ".article-content .user-real-name"),
+                "points": int(text(article, ".article-content p:last-child").split(" ")[0]),
+                "image": None if img_url.startswith("data:image") else url(img_url)
+            }))
+        return users
+
+    def parse_text_search(self, s) -> TextSearchResult:
+        return TextSearchResult({
+            "movies": self.parse_text_search_movies(s),
+            "creators": self.parse_text_search_creators(s),
+            "series": self.parse_text_search_series(s),
+            "users": self.parse_text_search_users(s)
+        })
+
 class MovieParser:
     __MOVIE_LD_JSON = None
     __VOD_BLOCKED_HOSTS = [

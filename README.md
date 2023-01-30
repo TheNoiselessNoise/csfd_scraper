@@ -25,6 +25,31 @@ movie = scraper.movie(31881)
 creator = scraper.creator(84039)
 ```
 
+### Search movies/creators/series/users by text
+```python
+result = scraper.text_search("spielberg")
+```
+
+### Search movies by text
+```python
+result = scraper.text_search_movies("spielberg")
+```
+
+### Search creators by text
+```python
+result = scraper.text_search_creators("spielberg")
+```
+
+### Search series by text
+```python
+result = scraper.text_search_series("spielberg")
+```
+
+### Search users by text
+```python
+result = scraper.text_search_users("spielberg")
+```
+
 ### Search movies by Advanced Search
 ```python
 result = scraper.search_movies({

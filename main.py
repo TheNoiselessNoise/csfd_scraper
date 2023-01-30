@@ -4,28 +4,45 @@ from src.csfd_objects import *
 def main():
     scraper = CsfdScraper()
 
+    # search by text
+
+    result = scraper.text_search("spielberg")
+    print(result.movies[0])
+
+    movies = scraper.text_search_movies("spielberg")
+    print(movies[0])
+
+    creators = scraper.text_search_creators("spielberg")
+    print(creators[0])
+
+    series = scraper.text_search_series("spielberg")
+    print(series[0])
+
+    users = scraper.text_search_users("spielberg")
+    print(users[0])
+
     # search creators
 
-    result = scraper.search_creators({
-        CreatorSearchParameters.TYPES: [
-            CreatorSearchTypes.COMPOSER,
-            CreatorSearchTypes.DIRECTOR,
-            CreatorSearchTypes.CINEMATOGRAPHER
-        ],
-        CreatorSearchParameters.BIRTH_COUNTRY: SearchOrigins.USA,
-        CreatorSearchParameters.ADDITIONAL_FILTERS: [
-            CreatorSearchAdditionalFilters.WITH_BIOGRAPHY,
-            CreatorSearchAdditionalFilters.WITH_AWARDS,
-            CreatorSearchAdditionalFilters.WITH_TRIVIA
-        ],
-        CreatorSearchParameters.GENDER: CreatorSearchGenders.FEMALE
-    })
-
-    if len(result.creators):
-        creator = result.creators[0]
-        print(creator.name)
-        print(creator.get_types())
-        print(creator)
+    # result = scraper.search_creators({
+    #     CreatorSearchParameters.TYPES: [
+    #         CreatorSearchTypes.COMPOSER,
+    #         CreatorSearchTypes.DIRECTOR,
+    #         CreatorSearchTypes.CINEMATOGRAPHER
+    #     ],
+    #     CreatorSearchParameters.BIRTH_COUNTRY: SearchOrigins.USA,
+    #     CreatorSearchParameters.ADDITIONAL_FILTERS: [
+    #         CreatorSearchAdditionalFilters.WITH_BIOGRAPHY,
+    #         CreatorSearchAdditionalFilters.WITH_AWARDS,
+    #         CreatorSearchAdditionalFilters.WITH_TRIVIA
+    #     ],
+    #     CreatorSearchParameters.GENDER: CreatorSearchGenders.FEMALE
+    # })
+    #
+    # if len(result.creators):
+    #     creator = result.creators[0]
+    #     print(creator.name)
+    #     print(creator.get_types())
+    #     print(creator)
 
     # search movies
 

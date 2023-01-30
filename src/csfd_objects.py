@@ -2,6 +2,12 @@ from enum import Enum
 from typing import List, Dict
 from src.csfd_utils import tojson
 
+class PrintableObject:
+    args = None
+
+    def __str__(self):
+        return tojson(self.args)
+
 class CzechEnum(Enum):
     @classmethod
     def get_by_czech_name(cls, name: str):
@@ -9,22 +15,7 @@ class CzechEnum(Enum):
         for k, v in cls.__members__.items():
             if name in v.value[1:]:
                 return v
-        raise ValueError(f"Enum for '{name}' not found")
-
-    @classmethod
-    def search_by_czech_name(cls, search: str):
-        """Vrátí enum podle českého názvu"""
-        name_map: Dict[str, MovieSearchGenres] = {v.value[1]: v for k, v in cls.__members__.items()}
-        return [v for k, v in name_map.items() if search.lower() in k.lower()]
-
-class GenderableCzechEnum(Enum):
-    @classmethod
-    def get_by_czech_name(cls, name: str):
-        """Vrátí enum podle českého názvu"""
-        for k, v in cls.__members__.items():
-            if name in v.value[1:]:
-                return v
-        raise ValueError(f"Enum for '{name}' not found")
+        return None
 
     @classmethod
     def search_by_czech_name(cls, search: str):
@@ -580,7 +571,7 @@ class CreatorSearchSort(Enum):
     BY_OLDEST    = "birth_date_asc"
     """od nejstaršího"""
 
-class CreatorSearchTypes(GenderableCzechEnum):
+class CreatorSearchTypes(CzechEnum):
     """Typy tvůrců pro vyhledávání"""
 
     COMPOSER         = 3,  "skladatel",  "skladatelka"
@@ -672,9 +663,68 @@ class CreatorFilmographySort(Enum):
     BY_RATING_COUNT = "rating_count"
     """podle počtu hodnocení"""
 
+# TEXT SEARCH TYPES
+
+class TextSearchedMovie(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.genres = args.get("genres", [])
+        self.origins = args.get("origins", [])
+        self.directors = args.get("directors", [])
+        self.actors = args.get("actors", [])
+        self.performes = args.get("performes", [])
+        self.image = args.get("image", None)
+
+class TextSearchedCreator(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", -1)
+        self.name = args.get("name", None)
+        self.types = args.get("types", [])
+        self.image = args.get("image", None)
+
+class TextSearchedSeries(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", -1)
+        self.name = args.get("name", None)
+        self.genres = args.get("genres", [])
+        self.origins = args.get("origins", [])
+        self.directors = args.get("directors", [])
+        self.actors = args.get("actors", [])
+        self.performes = args.get("performes", [])
+        self.image = args.get("image", None)
+
+class TextSearchedUser(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", -1)
+        self.name = args.get("name", None)
+        self.real_name = args.get("real_name", None)
+        self.points = args.get("points", -1)
+        self.image = args.get("image", None)
+
+class TextSearchResult(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.movies: List[TextSearchedMovie] = args.get("movies", [])
+        self.creators: List[TextSearchedCreator] = args.get("creators", [])
+        self.series: List[TextSearchedSeries] = args.get("series", [])
+        self.users: List[TextSearchedUser] = args.get("users", [])
+
+    def __str__(self):
+        args = self.args
+        args["movies"] = [m.args for m in self.movies]
+        args["creators"] = [c.args for c in self.creators]
+        args["series"] = [s.args for s in self.series]
+        args["users"] = [u.args for u in self.users]
+        return tojson(args)
+
 # AUTOCOMPLETE SEARCH TYPES
 
-class SearchJsonWrapper:
+class AutoCompleteSearchJsonWrapper:
     __JSON_OBJECT = None
 
     def __init__(self, json_object):
@@ -687,7 +737,7 @@ class SearchJsonWrapper:
     def __str__(self):
         return tojson(self.__JSON_OBJECT)
 
-class FilmCreator(SearchJsonWrapper):
+class FilmCreator(AutoCompleteSearchJsonWrapper):
     def __init__(self, *args):
         super().__init__(*args)
         self.id = getattr(self, "id", None)
@@ -695,7 +745,7 @@ class FilmCreator(SearchJsonWrapper):
         self.image = getattr(self, "image", None)
         self.info = getattr(self, "info", None)
 
-class Tag(SearchJsonWrapper):
+class Tag(AutoCompleteSearchJsonWrapper):
     def __init__(self, *args):
         super().__init__(*args)
         self.id = getattr(self, "id", None)
@@ -704,12 +754,6 @@ class Tag(SearchJsonWrapper):
         self.hide_image = getattr(self, "hide_image", None)
 
 # ADVANCED SEARCH TYPES
-
-class PrintableObject:
-    args = None
-
-    def __str__(self):
-        return tojson(self.args)
 
 class SearchedMovie(PrintableObject):
     def __init__(self, args):
@@ -729,10 +773,10 @@ class SearchedMovie(PrintableObject):
 class SearchMoviesResult(PrintableObject):
     def __init__(self, args):
         self.args = args
-        self.page = args.get("page", None)
+        self.page = args.get("page", -1)
         self.movies: List[SearchedMovie] = args.get("movies", [])
-        self.has_prev_page = args.get("has_prev_page", None)
-        self.has_next_page = args.get("has_next_page", None)
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args
@@ -753,10 +797,10 @@ class SearchedCreator(PrintableObject):
 class SearchCreatorsResult(PrintableObject):
     def __init__(self, args):
         self.args = args
-        self.page = args.get("page", None)
+        self.page = args.get("page", -1)
         self.creators: List[SearchedCreator] = args.get("creators", [])
-        self.has_prev_page = args.get("has_prev_page", None)
-        self.has_next_page = args.get("has_next_page", None)
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args

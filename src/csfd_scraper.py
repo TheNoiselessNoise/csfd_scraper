@@ -47,6 +47,10 @@ class CsfdScraper:
     def __get_creator_soup(self, cid):
         return self.__get_soup() or self.__get_soup(self.__get(Globals.CREATORS_URL + str(cid)).content)
 
+    def __get_text_search_soup(self, search, page):
+        url = url_prepare(Globals.TEXT_SEARCH_URL, {"search": search, "page": page})
+        return self.__get_soup() or self.__get_soup(self.__get(url).content)
+
     def __get_creator_sort_soup(self, cid, sort):
         url = url_prepare(Globals.CREATORS_SORT_URL, {"cid": cid, "sort": sort.value})
         return self.__get_soup() or self.__get_soup(self.__get(url).content)
@@ -130,6 +134,21 @@ class CsfdScraper:
 
         s = self.__get_search_creators_soup(params, sort, page)
         return self.__SEARCH_PARSER.parse_creators_search(s, page)
+
+    def text_search(self, search, page=1):
+        return self.__SEARCH_PARSER.parse_text_search(self.__get_text_search_soup(search, page))
+
+    def text_search_movies(self, search, page=1):
+        return self.__SEARCH_PARSER.parse_text_search_movies(self.__get_text_search_soup(search, page))
+
+    def text_search_creators(self, search, page=1):
+        return self.__SEARCH_PARSER.parse_text_search_creators(self.__get_text_search_soup(search, page))
+
+    def text_search_series(self, search, page=1):
+        return self.__SEARCH_PARSER.parse_text_search_series(self.__get_text_search_soup(search, page))
+
+    def text_search_users(self, search, page=1):
+        return self.__SEARCH_PARSER.parse_text_search_users(self.__get_text_search_soup(search, page))
 
     # SEARCH FILM CREATORS
 
