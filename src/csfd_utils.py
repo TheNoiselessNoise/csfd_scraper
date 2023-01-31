@@ -13,6 +13,7 @@ class Globals:
     NEWS_LIST_URL = "https://www.csfd.cz/novinky/?page=<page>"
     MOST_FAVORITE_USERS_URL = "https://www.csfd.cz/uzivatele/"
     MOST_ACTIVE_USERS_URL = "https://www.csfd.cz/uzivatele/nejaktivnejsi/?period=<sort>&country=<origin>"
+    ALL_MOST_ACTIVE_USERS_URL = "https://www.csfd.cz/uzivatele/nejaktivnejsi/?period=<sort>"
     SEARCH_AUTOCOMPLETE_URL = "https://www.csfd.cz/api/autocomplete/?s=<type>&q=<search>"
     SEARCH_MOVIES_URL = "https://www.csfd.cz/podrobne-vyhledavani/?page=<page>&sort=<sort>&searchParams=<params>"
     SEARCH_CREATORS_URL = "https://www.csfd.cz/podrobne-vyhledavani/tvurci/?page=<page>&sort=<sort>&searchParams=<params>"

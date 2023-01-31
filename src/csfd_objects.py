@@ -948,6 +948,56 @@ class FavoriteUsers(PrintableObject):
         args["by_country"] = {k.value[1]: [u.args for u in v] for k, v in self.by_country.items()}
         return tojson(args)
 
+class ActiveUser(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.image = args.get("image", None)
+
+class ActiveUserByReviews(ActiveUser):
+    def __init__(self, args):
+        super().__init__(args)
+        self.reviews = args.get("reviews", None)
+
+class ActiveUserByDiaries(ActiveUser):
+    def __init__(self, args):
+        super().__init__(args)
+        self.diaries = args.get("diaries", None)
+
+class ActiveUserByContent(ActiveUser):
+    def __init__(self, args):
+        super().__init__(args)
+        self.content = args.get("content", None)
+
+class ActiveUserByTrivia(ActiveUser):
+    def __init__(self, args):
+        super().__init__(args)
+        self.trivia = args.get("trivia", None)
+
+class ActiveUserByBiography(ActiveUser):
+    def __init__(self, args):
+        super().__init__(args)
+        self.biography = args.get("biography", None)
+
+class ActiveUsers(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.by_reviews: List[ActiveUserByReviews] = args.get("by_reviews", [])
+        self.by_diaries: List[ActiveUserByDiaries] = args.get("by_diaries", [])
+        self.by_content: List[ActiveUserByContent] = args.get("by_content", [])
+        self.by_trivia: List[ActiveUserByTrivia] = args.get("by_trivia", [])
+        self.by_biography: List[ActiveUserByBiography] = args.get("by_biography", [])
+
+    def __str__(self):
+        args = self.args
+        args["by_reviews"] = [u.args for u in self.by_reviews]
+        args["by_diaries"] = [u.args for u in self.by_diaries]
+        args["by_content"] = [u.args for u in self.by_content]
+        args["by_trivia"] = [u.args for u in self.by_trivia]
+        args["by_biography"] = [u.args for u in self.by_biography]
+        return tojson(args)
+
 # EXCEPTIONS
 
 class CsfdScraperInvalidRequest(Exception):

@@ -54,8 +54,11 @@ class CsfdScraper:
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
     def __get_most_favorite_users_soup(self):
         return self.__get_soup() or self.__get_soup(self.__get(Globals.MOST_FAVORITE_USERS_URL).content)
-    def __get_most_active_users_soup(self, sort, origin):
-        u = url_prepare(Globals.MOST_ACTIVE_USERS_URL, {"sort": sort.value, "origin": origin.value})
+    def __get_most_active_users_soup(self, origin, sort):
+        if origin is None:
+            u = url_prepare(Globals.ALL_MOST_ACTIVE_USERS_URL, {"sort": sort.value})
+        else:
+            u = url_prepare(Globals.MOST_ACTIVE_USERS_URL, {"sort": sort.value, "origin": origin.value[0]})
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
     def __get_text_search_soup(self, search, page):
         u = url_prepare(Globals.TEXT_SEARCH_URL, {"search": search, "page": page})
@@ -63,18 +66,18 @@ class CsfdScraper:
     def __get_creator_sort_soup(self, cid, sort):
         u = url_prepare(Globals.CREATORS_SORT_URL, {"cid": cid, "sort": sort.value})
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_search_movies_soup(self, params, sort, page):
+    def __get_search_movies_soup(self, params, page, sort):
         params = encode_params(params)
         u = url_prepare(Globals.SEARCH_MOVIES_URL, {"page": page, "sort": sort.value, "params": params})
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_search_creators_soup(self, params, sort, page):
+    def __get_search_creators_soup(self, params, page, sort):
         params = encode_params(params)
         u = url_prepare(Globals.SEARCH_CREATORS_URL, {"page": page, "sort": sort.value, "params": params})
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
 
     # SEARCH GENERICS
 
-    def search_movies(self, options, sort=MovieSorts.BY_RATING_COUNT, page=1):
+    def search_movies(self, options, page=1, sort=MovieSorts.BY_RATING_COUNT):
         params = {}
         for key, param in MovieParams.__members__.items():
             name = param.value[0]
@@ -102,9 +105,9 @@ class CsfdScraper:
             else:
                 params[name] = opt_value
 
-        s = self.__get_search_movies_soup(params, sort, page)
+        s = self.__get_search_movies_soup(params, page, sort)
         return self.__SEARCH_PARSER.parse_movies_search(s, page)
-    def search_creators(self, options, sort=CreatorSorts.BY_FAN_COUNT, page=1):
+    def search_creators(self, options, page=1, sort=CreatorSorts.BY_FAN_COUNT):
         params = {}
         for key, param in CreatorParams.__members__.items():
             name = param.value[0]
@@ -134,7 +137,7 @@ class CsfdScraper:
             else:
                 params[name] = opt_value
 
-        s = self.__get_search_creators_soup(params, sort, page)
+        s = self.__get_search_creators_soup(params, page, sort)
         return self.__SEARCH_PARSER.parse_creators_search(s, page)
 
     def text_search(self, search, page=1):
@@ -326,8 +329,8 @@ class CsfdScraper:
 
     # USER
 
-    def user(self, mid) -> User:
-        return self.__USER_PARSER.parse_user(self.__get_user_soup(mid), mid)
+    def user(self, uid) -> User:
+        return self.__USER_PARSER.parse_user(self.__get_user_soup(uid), uid)
     @staticmethod
     def user_url(uid):
         return Globals.USERS_URL + str(uid)
@@ -370,8 +373,24 @@ class CsfdScraper:
 
     def favorite_users(self):
         return self.__USERS_PARSER.parse_favorite_users(self.__get_most_favorite_users_soup())
+    def favorite_users_most_favorite_users(self):
+        return self.__USERS_PARSER.parse_favorite_users_most_favorite_users(self.__get_most_favorite_users_soup())
+    def favorite_users_by_regions(self):
+        return self.__USERS_PARSER.parse_favorite_users_by_regions(self.__get_most_favorite_users_soup())
+    def favorite_users_by_country(self):
+        return self.__USERS_PARSER.parse_favorite_users_by_country(self.__get_most_favorite_users_soup())
 
     # MOST ACTIVE USERS
 
-    # def active_users(self, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME, origin: Origins = None):
-    #     return self.__USERS_PARSER.parse_active_users(self.__get_most_active_users_soup(sort, origin))
+    def active_users(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+        return self.__USERS_PARSER.parse_active_users(self.__get_most_active_users_soup(origin, sort))
+    def active_users_by_reviews(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+        return self.__USERS_PARSER.parse_active_users_by_reviews(self.__get_most_active_users_soup(origin, sort))
+    def active_users_by_diaries(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+        return self.__USERS_PARSER.parse_active_users_by_diaries(self.__get_most_active_users_soup(origin, sort))
+    def active_users_by_content(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+        return self.__USERS_PARSER.parse_active_users_by_content(self.__get_most_active_users_soup(origin, sort))
+    def active_users_by_trivia(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+        return self.__USERS_PARSER.parse_active_users_by_trivia(self.__get_most_active_users_soup(origin, sort))
+    def active_users_by_biography(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+        return self.__USERS_PARSER.parse_active_users_by_biography(self.__get_most_active_users_soup(origin, sort))

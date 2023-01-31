@@ -8,6 +8,11 @@ def main():
     # users = scraper.favorite_users()
     # print(users.by_country[Origins.GREAT_BRITAIN])
 
+    # users = scraper.active_users()
+    # users = scraper.active_users(sort=ActiveUsersSorts.LAST_MONTH)
+    # users = scraper.active_users(origin=Origins.USA, sort=ActiveUsersSorts.LAST_MONTH)
+    # print(users)
+
     # --- SEARCH BY TEXT
 
     # result = scraper.text_search("spielberg")

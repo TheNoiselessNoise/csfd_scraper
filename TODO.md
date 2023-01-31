@@ -1,7 +1,7 @@
 # CSFD.cz Scraper
 
 ### What else to do?
-- [ ] Scraping Users by ["the most active"](https://www.csfd.cz/uzivatele/nejaktivnejsi/)
+- [ ] Make project pip installable
 - [ ] Scraping DVDs by ["monthly overview"](https://www.csfd.cz/dvd/)
 - [ ] Scraping DVDs by ["yearly overview"](https://www.csfd.cz/dvd/rocne/)
 - [ ] Scraping Blu-rays by ["monthly overview"](https://www.csfd.cz/bluray/)
@@ -30,6 +30,7 @@
 
 ### Completed ✓
 - [x] Scraping Users by ["the most popular"](https://www.csfd.cz/uzivatele/)
+- [x] Scraping Users by ["the most active"](https://www.csfd.cz/uzivatele/nejaktivnejsi/)
 - [x] Scraping News
   - [x] News by ID
   - [x] News List

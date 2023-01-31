@@ -6,6 +6,9 @@ This is a simple scraper for [CSFD.cz](https://www.csfd.cz/), a Czech movie data
 #### I am *NOT* responsible for any misuse of this scraper.
 
 ## Usage
+Here is just sample usage of the scraper.\
+If you want to know what else you can do with it,\
+check out the [LIST OF METHODS](USAGE.md)
 
 ### Imports
 ```python
@@ -45,6 +48,14 @@ news = scraper.news(8360)
 ```python
 users = scraper.favorite_users()
 in_great_britain = users.by_country[Origins.GREAT_BRITAIN]
+```
+
+### Most active users
+```python
+users = scraper.active_users()
+users = scraper.active_users(sort=ActiveUsersSorts.LAST_MONTH)
+users = scraper.active_users(sort=ActiveUsersSorts.LAST_MONTH, origin=Origins.USA)
+users = scraper.active_users(origin=Origins.USA)
 ```
 
 ### Search movies/creators/series/users by text

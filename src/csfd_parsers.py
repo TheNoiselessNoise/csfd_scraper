@@ -811,6 +811,8 @@ class NewsParser:
 
 class UsersParser:
 
+    # MOST FAVORITE USERS
+
     @staticmethod
     def __parse_favorite_users_article(s):
         img = sel(s, "img")
@@ -885,7 +887,64 @@ class UsersParser:
             "by_country": self.parse_favorite_users_by_country(s)
         })
 
-    # def parse_active_users(self, s):
-    #     return ActiveUsers({
-    #
-    #     })
+    # MOST ACTIVE USERS
+
+    @staticmethod
+    def __parse_active_users_article(s, cls, prop):
+        img = sel(s, "img").get("src")
+        article_a = sel(s, ".user-title a")
+        return cls({
+            "id": extract_id(article_a.get("href")),
+            "name": text(article_a),
+            prop: toint(text(s, ".article-content > p")),
+            "image": None if img.startswith("data:image") else url(img),
+        })
+
+    def parse_active_users_by_reviews(self, s) -> List[ActiveUserByReviews]:
+        section = sel(s, ".row .column:nth-child(1) section")
+        by_reviews = []
+        for article in asel(section, "article"):
+            user = self.__parse_active_users_article(article, ActiveUserByReviews, "reviews")
+            by_reviews.append(user)
+        return by_reviews
+
+    def parse_active_users_by_diaries(self, s) -> List[ActiveUserByDiaries]:
+        section = sel(s, ".row .column:nth-child(2) section")
+        by_diaries = []
+        for article in asel(section, "article"):
+            user = self.__parse_active_users_article(article, ActiveUserByDiaries, "diaries")
+            by_diaries.append(user)
+        return by_diaries
+
+    def parse_active_users_by_content(self, s) -> List[ActiveUserByContent]:
+        section = sel(s, ".row .column:nth-child(3) section")
+        by_content = []
+        for article in asel(section, "article"):
+            user = self.__parse_active_users_article(article, ActiveUserByContent, "content")
+            by_content.append(user)
+        return by_content
+
+    def parse_active_users_by_trivia(self, s) -> List[ActiveUserByTrivia]:
+        section = sel(s, ".row .column:nth-child(4) section")
+        by_trivia = []
+        for article in asel(section, "article"):
+            user = self.__parse_active_users_article(article, ActiveUserByTrivia, "trivia")
+            by_trivia.append(user)
+        return by_trivia
+
+    def parse_active_users_by_biography(self, s) -> List[ActiveUserByBiography]:
+        section = sel(s, ".row .column:nth-child(5) section")
+        by_biography = []
+        for article in asel(section, "article"):
+            user = self.__parse_active_users_article(article, ActiveUserByBiography, "biography")
+            by_biography.append(user)
+        return by_biography
+
+    def parse_active_users(self, s) -> ActiveUsers:
+        return ActiveUsers({
+            "by_reviews": self.parse_active_users_by_reviews(s),
+            "by_diaries": self.parse_active_users_by_diaries(s),
+            "by_content": self.parse_active_users_by_content(s),
+            "by_trivia": self.parse_active_users_by_trivia(s),
+            "by_biography": self.parse_active_users_by_biography(s),
+        })
