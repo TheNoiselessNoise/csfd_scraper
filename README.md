@@ -30,6 +30,17 @@ creator = scraper.creator(84039)
 user = scraper.user(447317)
 ```
 
+### News list
+```python
+news_list = scraper.news_list()
+news_list_2 = scraper.news_list(page=2)
+```
+
+### Get News by ID
+```python
+news = scraper.news(8360)
+```
+
 ### Search movies/creators/series/users by text
 ```python
 result = scraper.text_search("spielberg")

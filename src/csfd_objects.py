@@ -870,6 +870,35 @@ class User(PrintableObject):
         self.is_currently_online = args.get("is_currently_online", None)
         self.image = args.get("image", None)
 
+# NEWS TYPES
+
+class News(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.title = args.get("title", None)
+        self.text = args.get("text", None)
+        self.date = args.get("date", None)
+        self.author_id = args.get("author_id", None)
+        self.author_name = args.get("author_name", None)
+        self.most_read_news = args.get("most_read_news", [])
+        self.most_latest_news = args.get("most_latest_news", [])
+        self.related_news = args.get("related_news", [])
+        self.image = args.get("image", None)
+        self.prev_news_id = args.get("prev_news_id", None)
+        self.next_news_id = args.get("next_news_id", None)
+
+class NewsList(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.page = args.get("page", -1)
+        self.main_news = args.get("main_news", {})
+        self.news = args.get("news", [])
+        self.most_read_news = args.get("most_read_news", [])
+        self.most_latest_news = args.get("most_latest_news", [])
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
+
 # EXCEPTIONS
 
 class CsfdScraperInvalidRequest(Exception):

@@ -9,6 +9,8 @@ class Globals:
     CREATORS_URL = "https://www.csfd.cz/tvurce/"
     CREATORS_SORT_URL = "https://www.csfd.cz/tvurce/<cid>?sort=<sort>"
     USERS_URL = "https://www.csfd.cz/uzivatel/"
+    NEWS_URL = "https://www.csfd.cz/novinky/"
+    NEWS_LIST_URL = "https://www.csfd.cz/novinky/?page=<page>"
     SEARCH_AUTOCOMPLETE_URL = "https://www.csfd.cz/api/autocomplete/?s=<type>&q=<search>"
     SEARCH_MOVIES_URL = "https://www.csfd.cz/podrobne-vyhledavani/?page=<page>&sort=<sort>&searchParams=<params>"
     SEARCH_CREATORS_URL = "https://www.csfd.cz/podrobne-vyhledavani/tvurci/?page=<page>&sort=<sort>&searchParams=<params>"

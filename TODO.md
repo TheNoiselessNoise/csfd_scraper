@@ -1,7 +1,6 @@
 # CSFD.cz Scraper
 
 ### What else to do?
-- [ ] Scraping News
 - [ ] Scraping Users by ["the most popular"](https://www.csfd.cz/uzivatele/)
 - [ ] Scraping Users by ["the most active"](https://www.csfd.cz/uzivatele/nejaktivnejsi/)
 - [ ] Scraping DVDs by ["monthly overview"](https://www.csfd.cz/dvd/)
@@ -31,6 +30,9 @@
 - [ ] Scraping user's diary
 
 ### Completed ✓
+- [x] Scraping News
+  - [x] News by ID
+  - [x] News List
 - [x] Better Enums naming ... i guess
 - [x] Scraping Users by ID
 - [x] Scraping text search results

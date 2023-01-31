@@ -74,6 +74,8 @@ def main():
 
     # --- GENERIC SCRAPING
 
+    # print(scraper.news(8360))
+    # print(scraper.news_list())
     # print(scraper.user(27877))
     # print(scraper.movie(264179)) # Herukules
     # print(scraper.movie(450398)) # Chata

@@ -638,3 +638,173 @@ class UserParser:
             "is_currently_online": self.parse_user_is_currently_online(s),
             "image": self.parse_user_image(s),
         })
+
+class NewsParser:
+
+    # NEWS
+
+    @staticmethod
+    def __parse_news_article(s):
+        section_a = sel(s, "header a")
+        return {
+            "id": extract_id(section_a.get("href")),
+            "title": text(section_a),
+            "text": text(s, ".article-news-textshort p"),
+            "date": text(s, ".info .date"),
+            "image": url(sel(s, "img").get("src")),
+        }
+
+    @staticmethod
+    def parse_news_title(s):
+        header = sel(s, ".box-news-detail header")
+        return None if header is None else text(header, "h1")
+
+    @staticmethod
+    def parse_news_text(s):
+        contents = asel(s, ".article-news-content-detail > p")
+        content = []
+        for p in contents:
+            txt = clean(text(p, rec_tags=["a", "em"]))
+            if txt:
+                content.append(txt)
+        return " ".join(content)
+
+    @staticmethod
+    def parse_news_date(s):
+        header = sel(s, ".box-news-detail header")
+        return None if header is None else text(header, ".info .date")
+
+    @staticmethod
+    def parse_news_author_id(s):
+        header = sel(s, ".box-news-detail header")
+        author_a = None if header is None else sel(header, ".info a")
+        return None if author_a is None else extract_id(author_a.get("href"))
+
+    @staticmethod
+    def parse_news_author_name(s):
+        header = sel(s, ".box-news-detail header")
+        author_a = None if header is None else sel(header, ".info a")
+        return None if author_a is None else text(author_a)
+
+    def parse_news_most_read_news(self, s):
+        most_read_news = []
+        contents = asel(s, ".box-content-news-right")
+        if len(contents) > 0:
+            for article in asel(contents[0], "article"):
+                most_read_news.append(self.__parse_news_list_article(article))
+        return most_read_news
+
+    def parse_news_most_latest_news(self, s):
+        most_latest_news = []
+        contents = asel(s, ".box-content-news-right")
+        if len(contents) > 1:
+            for article in asel(contents[1], "article"):
+                most_latest_news.append(self.__parse_news_list_article(article))
+        return most_latest_news
+
+    def parse_news_related_news(self, s):
+        related_news = []
+        for article in asel(s, ".newslist article"):
+            related_news.append(self.__parse_news_list_article(article))
+        return related_news
+
+    @staticmethod
+    def parse_news_image(s):
+        image = sel(s, ".box-news-detail img")
+        return None if image is None else url(image.get("src"))
+
+    @staticmethod
+    def parse_news_prev_news_id(s):
+        prev_news = sel(s, "a.prev-news")
+        return None if prev_news is None else extract_id(prev_news.get("href"))
+
+    @staticmethod
+    def parse_news_next_news_id(s):
+        next_news = sel(s, "a.next-news")
+        return None if next_news is None else extract_id(next_news.get("href"))
+
+    def parse_news(self, s, nid):
+        return News({
+            "id": nid,
+            "title": self.parse_news_title(s),
+            "text": self.parse_news_text(s),
+            "date": self.parse_news_date(s),
+            "author_id": self.parse_news_author_id(s),
+            "author_name": self.parse_news_author_name(s),
+            "most_read_news": self.parse_news_most_read_news(s),
+            "most_latest_news": self.parse_news_most_latest_news(s),
+            "related_news": self.parse_news_related_news(s),
+            "image": self.parse_news_image(s),
+            "prev_news_id": self.parse_news_prev_news_id(s),
+            "next_news_id": self.parse_news_next_news_id(s),
+        })
+
+    # NEWS LIST
+
+    @staticmethod
+    def __parse_news_list_article(s):
+        section_a = sel(s, "header a")
+        return {
+            "id": extract_id(section_a.get("href")),
+            "title": text(section_a),
+            "text": text(s, ".article-news-textshort p"),
+            "date": text(s, ".info .date"),
+            "image": url(sel(s, "img").get("src")),
+        }
+
+    @staticmethod
+    def parse_news_list_main_news(s):
+        first = sel(s, ".box-firstnews")
+        first_a = sel(first, "header a")
+        first_info = sel(first, ".info")
+        first_info_a = sel(first_info, "a")
+        return {
+            "id": extract_id(first_a.get("href")),
+            "title": text(first_a),
+            "text": text(first, ".article-news-textshort p"),
+            "date": text(first_info, ".date"),
+            "image": url(sel(first, "img").get("src")),
+            "author_id": extract_id(first_info_a.get("href")),
+            "author_name": text(first_info_a),
+        }
+
+    def parse_news_list_news_list(self, s):
+        news_list = []
+        for article in asel(s, ".newslist article"):
+            news_list.append(self.__parse_news_list_article(article))
+        return news_list
+
+    def parse_news_list_most_read_news(self, s):
+        most_read_news = []
+        contents = asel(s, ".box-content-news-right")
+        if len(contents) > 0:
+            for article in asel(contents[0], "article"):
+                most_read_news.append(self.__parse_news_list_article(article))
+        return most_read_news
+
+    def parse_news_list_most_latest_news(self, s):
+        most_latest_news = []
+        contents = asel(s, ".box-content-news-right")
+        if len(contents) > 1:
+            for article in asel(contents[1], "article"):
+                most_latest_news.append(self.__parse_news_list_article(article))
+        return most_latest_news
+
+    @staticmethod
+    def parse_news_list_has_prev_page(s):
+        return sel(s, ".page-prev") is not None
+
+    @staticmethod
+    def parse_news_list_has_next_page(s):
+        return sel(s, ".page-next") is not None
+
+    def parse_news_list(self, s, page):
+        return NewsList({
+            "page": page,
+            "main_news": self.parse_news_list_main_news(s),
+            "news": self.parse_news_list_news_list(s),
+            "most_read_news": self.parse_news_list_most_read_news(s),
+            "most_latest_news": self.parse_news_list_most_latest_news(s),
+            "has_prev_page": self.parse_news_list_has_prev_page(s),
+            "has_next_page": self.parse_news_list_has_next_page(s)
+        })

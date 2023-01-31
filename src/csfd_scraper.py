@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 from src.csfd_objects import *
 from src.csfd_utils import encode_params, url_prepare, soup, Globals
-from src.csfd_parsers import MovieParser, CreatorParser, SearchParser, UserParser
+from src.csfd_parsers import MovieParser, CreatorParser, SearchParser, UserParser, NewsParser
 
 class CsfdScraper:
     __LAST_SOUP = None
@@ -11,6 +11,7 @@ class CsfdScraper:
     __CREATOR_PARSER = CreatorParser()
     __SEARCH_PARSER = SearchParser()
     __USER_PARSER = UserParser()
+    __NEWS_PARSER = NewsParser()
 
     def __reset(self):
         self.__LAST_SOUP = None
@@ -45,6 +46,11 @@ class CsfdScraper:
         return self.__get_soup() or self.__get_soup(self.__get(Globals.CREATORS_URL + str(cid)).content)
     def __get_user_soup(self, uid):
         return self.__get_soup() or self.__get_soup(self.__get(Globals.USERS_URL + str(uid)).content)
+    def __get_news_soup(self, nid):
+        return self.__get_soup() or self.__get_soup(self.__get(Globals.NEWS_URL + str(nid)).content)
+    def __get_news_list_soup(self, page):
+        url = url_prepare(Globals.NEWS_LIST_URL, {"page": page})
+        return self.__get_soup() or self.__get_soup(self.__get(url).content)
     def __get_text_search_soup(self, search, page):
         url = url_prepare(Globals.TEXT_SEARCH_URL, {"search": search, "page": page})
         return self.__get_soup() or self.__get_soup(self.__get(url).content)
@@ -177,6 +183,56 @@ class CsfdScraper:
     def search_costume_designers(self, search):
         url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "costumes", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+
+    # NEWS
+
+    def news(self, nid):
+        return self.__NEWS_PARSER.parse_news(self.__get_news_soup(nid), nid)
+    @staticmethod
+    def news_url(nid):
+        return Globals.NEWS_URL + str(nid)
+    def news_title(self, nid):
+        return self.__NEWS_PARSER.parse_news_title(self.__get_news_soup(nid))
+    def news_text(self, nid):
+        return self.__NEWS_PARSER.parse_news_text(self.__get_news_soup(nid))
+    def news_date(self, nid):
+        return self.__NEWS_PARSER.parse_news_date(self.__get_news_soup(nid))
+    def news_author_id(self, nid):
+        return self.__NEWS_PARSER.parse_news_author_id(self.__get_news_soup(nid))
+    def news_author_name(self, nid):
+        return self.__NEWS_PARSER.parse_news_author_name(self.__get_news_soup(nid))
+    def news_most_read_news(self, nid):
+        return self.__NEWS_PARSER.parse_news_most_read_news(self.__get_news_soup(nid))
+    def news_most_latest_news(self, nid):
+        return self.__NEWS_PARSER.parse_news_most_latest_news(self.__get_news_soup(nid))
+    def news_related_news(self, nid):
+        return self.__NEWS_PARSER.parse_news_related_news(self.__get_news_soup(nid))
+    def news_image(self, nid):
+        return self.__NEWS_PARSER.parse_news_image(self.__get_news_soup(nid))
+    def news_prev_news_id(self, nid):
+        return self.__NEWS_PARSER.parse_news_prev_news_id(self.__get_news_soup(nid))
+    def news_next_news_id(self, nid):
+        return self.__NEWS_PARSER.parse_news_next_news_id(self.__get_news_soup(nid))
+
+    # NEWS LIST
+
+    def news_list(self, page=1):
+        return self.__NEWS_PARSER.parse_news_list(self.__get_news_list_soup(page), page)
+    @staticmethod
+    def news_list_url(page=1):
+        return url_prepare(Globals.NEWS_LIST_URL, {"page": page})
+    def news_list_main_news(self):
+        return self.__NEWS_PARSER.parse_news_list_main_news(self.__get_news_list_soup(1))
+    def news_list_news(self, page=1):
+        return self.__NEWS_PARSER.parse_news_list_news_list(self.__get_news_list_soup(page))
+    def news_list_most_read_news(self):
+        return self.__NEWS_PARSER.parse_news_list_most_read_news(self.__get_news_list_soup(1))
+    def news_list_most_latest_news(self):
+        return self.__NEWS_PARSER.parse_news_list_most_latest_news(self.__get_news_list_soup(1))
+    def news_list_has_prev_page(self, page=1):
+        return self.__NEWS_PARSER.parse_news_list_has_prev_page(self.__get_news_list_soup(page))
+    def news_list_has_next_page(self, page=1):
+        return self.__NEWS_PARSER.parse_news_list_has_next_page(self.__get_news_list_soup(page))
 
     # MOVIE
 
