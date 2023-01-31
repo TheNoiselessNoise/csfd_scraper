@@ -18,6 +18,14 @@ class CzechEnum(Enum):
         return None
 
     @classmethod
+    def get_by_value(cls, value):
+        """Vrátí enum podle hodnoty"""
+        for k, v in cls.__members__.items():
+            if value == v.value[0]:
+                return v
+        return None
+
+    @classmethod
     def search_by_czech_name(cls, search: str):
         """Vrátí enum podle českého názvu"""
         found = []
@@ -26,61 +34,7 @@ class CzechEnum(Enum):
                 found.append(v)
         return found
 
-# MOVIE SEARCH TYPES
-
-class MovieSorts(Enum):
-    """Možnosti řazení filmů pro vyhledávání"""
-
-    BY_RATING_COUNT = "rating_count"
-    """podle počtu hodnocení"""
-
-    BY_BEST_RATING  = "rating_average"
-    """od nejlepšího"""
-
-    BY_WORST_RATING = "rating_average_asc"
-    """od nejhoršího"""
-
-    BY_FAN_COUNT    = "fanclub_count"
-    """podle počtu fanoušků"""
-
-    BY_NEWEST       = "year"
-    """od nejnovějšího"""
-
-    BY_OLDEST       = "year_asc"
-    """od nejstaršího"""
-
-class MovieTypes(Enum):
-    """Typy filmů pro vyhledávání"""
-
-    MOVIE             = 0
-    """Film"""
-
-    SERIES            = 3
-    """Seriál"""
-
-    TV_MOVIE          = 2
-    """TV film"""
-
-    TV_SHOW           = 4
-    """Pořad"""
-
-    STUDENT_MOVIE     = 7
-    """Studentský film"""
-
-    AMATER_MOVIE      = 8
-    """Amaterský film"""
-
-    THEATER_REC       = 5
-    """Divadelní záznam"""
-
-    MUSIC_VIDEO       = 9
-    """Hudební videoklip"""
-
-    CONCERT           = 6
-    """Koncert"""
-
-    VIDEO_COMPILATION = 14
-    """Video kompilace"""
+# <editor-fold desc="GLOBAL TYPES">
 
 class Origins(CzechEnum):
     """Původy filmů/místa narození tvůrců pro vyhledávání"""
@@ -317,6 +271,80 @@ class Origins(CzechEnum):
     WEST_GERMANY                        = 207, "Západní Německo"
     ZIMBABWE                            = 184, "Zimbabwe"
 
+class Months(CzechEnum):
+    """Měsíce v roce"""
+
+    JANUARY   = 1, "Leden"
+    FEBRUARY  = 2, "Únor"
+    MARCH     = 3, "Březen"
+    APRIL     = 4, "Duben"
+    MAY       = 5, "Květen"
+    JUNE      = 6, "Červen"
+    JULY      = 7, "Červenec"
+    AUGUST    = 8, "Srpen"
+    SEPTEMBER = 9, "Září"
+    OCTOBER   = 10, "Říjen"
+    NOVEMBER  = 11, "Listopad"
+    DECEMBER  = 12, "Prosinec"
+
+# </editor-fold>
+
+# <editor-fold desc="MOVIE SEARCH TYPES">
+
+class MovieSorts(Enum):
+    """Možnosti řazení filmů pro vyhledávání"""
+
+    BY_RATING_COUNT = "rating_count"
+    """podle počtu hodnocení"""
+
+    BY_BEST_RATING  = "rating_average"
+    """od nejlepšího"""
+
+    BY_WORST_RATING = "rating_average_asc"
+    """od nejhoršího"""
+
+    BY_FAN_COUNT    = "fanclub_count"
+    """podle počtu fanoušků"""
+
+    BY_NEWEST       = "year"
+    """od nejnovějšího"""
+
+    BY_OLDEST       = "year_asc"
+    """od nejstaršího"""
+
+class MovieTypes(Enum):
+    """Typy filmů pro vyhledávání"""
+
+    MOVIE             = 0
+    """Film"""
+
+    SERIES            = 3
+    """Seriál"""
+
+    TV_MOVIE          = 2
+    """TV film"""
+
+    TV_SHOW           = 4
+    """Pořad"""
+
+    STUDENT_MOVIE     = 7
+    """Studentský film"""
+
+    AMATER_MOVIE      = 8
+    """Amaterský film"""
+
+    THEATER_REC       = 5
+    """Divadelní záznam"""
+
+    MUSIC_VIDEO       = 9
+    """Hudební videoklip"""
+
+    CONCERT           = 6
+    """Koncert"""
+
+    VIDEO_COMPILATION = 14
+    """Video kompilace"""
+
 class MovieGenres(CzechEnum):
     """Žánry filmů pro vyhledávání"""
 
@@ -550,7 +578,9 @@ class MovieParams(Enum):
     COSTUME_DESIGNERS  = "costumes",        []
     ADDITIONAL_FILTERS = "conditions",      []
 
-# CREATOR SEARCH TYPES
+# </editor-fold>
+
+# <editor-fold desc="CREATOR SEARCH TYPES">
 
 class CreatorGenders(Enum):
     MALE = 1
@@ -663,7 +693,9 @@ class CreatorFilmographySorts(Enum):
     BY_RATING_COUNT = "rating_count"
     """podle počtu hodnocení"""
 
-# MOST ACTIVE USERS TYPES
+# </editor-fold>
+
+# <editor-fold desc="MOST ACTIVE USERS TYPES">
 
 class ActiveUsersSorts(Enum):
     """Možnosti řazení nejaktivnějších uživatelů"""
@@ -674,7 +706,9 @@ class ActiveUsersSorts(Enum):
     LAST_MONTH = 1
     """za poslední měsíc"""
 
-# TEXT SEARCH TYPES
+# </editor-fold>
+
+# <editor-fold desc="TEXT SEARCH TYPES">
 
 class TextSearchedMovie(PrintableObject):
     def __init__(self, args):
@@ -733,7 +767,9 @@ class TextSearchResult(PrintableObject):
         args["users"] = [u.args for u in self.users]
         return tojson(args)
 
-# AUTOCOMPLETE SEARCH TYPES
+# </editor-fold>
+
+# <editor-fold desc="AUTOCOMPLETE SEARCH TYPES">
 
 class AutoCompleteSearchJsonWrapper:
     __JSON_OBJECT = None
@@ -764,7 +800,9 @@ class Tag(AutoCompleteSearchJsonWrapper):
         self.info = getattr(self, "info", None)
         self.hide_image = getattr(self, "hide_image", None)
 
-# ADVANCED SEARCH TYPES
+# </editor-fold>
+
+# <editor-fold desc="ADVANCED SEARCH TYPES">
 
 class SearchedMovie(PrintableObject):
     def __init__(self, args):
@@ -818,7 +856,9 @@ class SearchCreatorsResult(PrintableObject):
         args["creators"] = [c.args for c in self.creators]
         return tojson(args)
 
-# OTHER TYPES
+# </editor-fold>
+
+# <editor-fold desc="OTHER TYPES">
 
 class Movie(PrintableObject):
     def __init__(self, args):
@@ -881,7 +921,9 @@ class User(PrintableObject):
         self.is_currently_online = args.get("is_currently_online", None)
         self.image = args.get("image", None)
 
-# NEWS TYPES
+# </editor-fold>
+
+# <editor-fold desc="NEWS TYPES">
 
 class News(PrintableObject):
     def __init__(self, args):
@@ -910,7 +952,9 @@ class NewsList(PrintableObject):
         self.has_prev_page = args.get("has_prev_page", False)
         self.has_next_page = args.get("has_next_page", False)
 
-# USERS
+# </editor-fold>
+
+# <editor-fold desc="USERS TYPES">
 
 class FavoriteUser(PrintableObject):
     def __init__(self, args):
@@ -998,8 +1042,81 @@ class ActiveUsers(PrintableObject):
         args["by_biography"] = [u.args for u in self.by_biography]
         return tojson(args)
 
-# EXCEPTIONS
+# </editor-fold>
+
+# <editor-fold desc="DVDS TYPES">
+
+class DVDMonthly(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.year = args.get("year", None)
+        self.genres = args.get("genres", [])
+        self.origins = args.get("origins", [])
+        self.directors = args.get("directors", [])
+        self.actors = args.get("actors", [])
+        self.distributor = args.get("distributor", None)
+        self.image = args.get("image", None)
+
+class DVDSMonthlyByReleaseDate(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.dvds: Dict[str, List[DVDMonthly]] = args.get("dvds", {})
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
+
+    def __str__(self):
+        args = self.args
+        args["dvds"] = {k: [d.args for d in v] for k, v in self.dvds.items()}
+        return tojson(args)
+
+class DVDSMonthlyByRating(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.dvds: List[DVDMonthly] = args.get("dvds", {})
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
+
+    def __str__(self):
+        args = self.args
+        args["dvds"] = [d.args for d in self.dvds]
+        return tojson(args)
+
+class DVDYearly(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.year = args.get("year", None)
+        self.date = args.get("date", None)
+
+class DVDSYearlyByReleaseDate(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.dvds: Dict[Months, List[DVDYearly]] = args.get("dvds", {})
+
+    def __str__(self):
+        args = self.args
+        args["dvds"] = {k.value[1]: {m: [d.args for d in v] for m, v in v.items()} for k, v in self.dvds.items()}
+        return tojson(args)
+
+class DVDSYearlyByRating(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.dvds: List[DVDYearly] = args.get("dvds", {})
+
+    def __str__(self):
+        args = self.args
+        args["dvds"] = [d.args for d in self.dvds]
+        return tojson(args)
+
+# </editor-fold>
+
+# <editor-fold desc="EXCEPTIONS">
 
 class CsfdScraperInvalidRequest(Exception):
     """Exception for invalid request"""
     pass
+
+# </editor-fold>

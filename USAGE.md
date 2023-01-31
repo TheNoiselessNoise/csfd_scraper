@@ -127,3 +127,9 @@
 - `active_users_by_content(origin=None, sort=ActiveUsersSorts.ALL_TIME)`
 - `active_users_by_trivia(origin=None, sort=ActiveUsersSorts.ALL_TIME)`
 - `active_users_by_biography(origin=None, sort=ActiveUsersSorts.ALL_TIME)`
+
+#### Methods for getting DVDs information
+- `dvds_monthly_by_release_date(year=None, page=1, month=Months.JANUARY)`
+- `dvds_monthly_by_rating(year=None, page=1, month=Months.JANUARY)`
+- `dvds_yearly_by_release_date(year=None)`
+- `dvds_yearly_by_rating(year=None)`

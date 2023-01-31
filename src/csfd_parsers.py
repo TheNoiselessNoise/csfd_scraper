@@ -1,4 +1,7 @@
 from urllib.parse import urlsplit
+
+import bs4.element
+
 from src.csfd_utils import *
 from src.csfd_objects import *
 
@@ -233,7 +236,7 @@ class SearchParser:
                 "id": extract_id(articla_a.get("href")),
                 "name": text(articla_a),
                 "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
-                "origins": origins_genres[:-1],
+                "origins": origins_genres[0].split(" / ") if len(origins_genres) > 1 else [],
                 "directors": self.__parse_text_search_parse_creators(article, "Režie"),
                 "actors": self.__parse_text_search_parse_creators(article, "Hrají"),
                 "performers": self.__parse_text_search_parse_creators(article, "Účinkují"),
@@ -948,3 +951,131 @@ class UsersParser:
             "by_trivia": self.parse_active_users_by_trivia(s),
             "by_biography": self.parse_active_users_by_biography(s),
         })
+
+class DvdParser:
+
+    # DVDS MONTHLY
+
+    @staticmethod
+    def __parse_dvds_monthly_parse_creators(s, name):
+        creators = []
+        for p in asel(s, ".film-creators"):
+            if text(p).split(":")[0] == name:
+                for a in asel(p, "a"):
+                    creators.append({
+                        "id": extract_id(a.get("href")),
+                        "name": text(a),
+                    })
+        return creators
+
+    def __parse_dvds_monthly_article(self, s) -> DVDMonthly:
+        img = sel(s, "img")
+        img_src = None if img is None else img.get("src")
+        header = sel(s, ".article-header")
+        try:
+            header_a = sel(header, "a")
+        except:
+            print(s)
+            raise Exception("Cannot parse header")
+        origins_genres = text(s, ".film-origins-genres .info").split(", ")
+
+        return DVDMonthly({
+            "id": extract_id(header_a.get("href")),
+            "name": text(header_a),
+            "year": int(text(header, ".info")[1:-1]),
+            "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
+            "origins": origins_genres[0].split(" / ") if len(origins_genres) > 1 else [],
+            "directors": self.__parse_dvds_monthly_parse_creators(s, "Režie"),
+            "actors": self.__parse_dvds_monthly_parse_creators(s, "Hrají"),
+            "distributor": clean(text(s, ".article-content > p:last-of-type")).split(": ")[-1],
+            "image": None if img_src.startswith("data:image") else url(img_src),
+        })
+
+    @staticmethod
+    def parse_dvds_monthly_has_prev_page(s) -> bool:
+        return sel(s, ".page-prev") is not None
+
+    @staticmethod
+    def parse_dvds_monthly_has_next_page(s) -> bool:
+        return sel(s, ".page-next") is not None
+
+    def parse_dvds_monthly_by_release_date(self, s) -> DVDSMonthlyByReleaseDate:
+        content = sel(s, ".box-content.box-content-striped-articles")
+        dvds = {}
+        current_date = None
+
+        for tag in content.children:
+            if tag.name not in ["div", "article"]:
+                continue
+
+            if tag.name == "div":
+                if tag.get("class") != ["box-sub-header"]:
+                    continue
+                current_date = text(tag).split(" ")[-1]
+                dvds[current_date] = []
+                continue
+
+            dvd = self.__parse_dvds_monthly_article(tag)
+            dvds[current_date].append(dvd)
+
+        return DVDSMonthlyByReleaseDate({
+            "dvds": dvds,
+            "has_prev_page": self.parse_dvds_monthly_has_prev_page(s),
+            "has_next_page": self.parse_dvds_monthly_has_next_page(s),
+        })
+
+    def parse_dvds_monthly_by_rating(self, s) -> DVDSMonthlyByRating:
+        content = sel(s, ".box-content.box-content-striped-articles")
+        dvds = []
+        for article in asel(content, "article"):
+            dvd = self.__parse_dvds_monthly_article(article)
+            dvds.append(dvd)
+        return DVDSMonthlyByRating({
+            "dvds": dvds,
+            "has_prev_page": self.parse_dvds_monthly_has_prev_page(s),
+            "has_next_page": self.parse_dvds_monthly_has_next_page(s),
+        })
+
+    # DVDS YEARLY
+
+    @staticmethod
+    def __parse_dvds_yearly_tr(s, date) -> DVDYearly:
+        tr_a = sel(s, ".movies a")
+        return DVDYearly({
+            "id": extract_id(tr_a.get("href")),
+            "name": text(tr_a),
+            "year": toint(text(s, ".movies .info")),
+            "date": date,
+        })
+
+    def parse_dvds_yearly_by_release_date(self, s) -> DVDSYearlyByReleaseDate:
+        dvds = {}
+        for content in asel(s, ".box-content:not(.box-content-striped-articles)"):
+            month_name = text(content, ".box-sub-header").split(" ")[0]
+            month = Months.get_by_czech_name(month_name)
+            dvds[month] = []
+            current_date = None
+
+            for tr in asel(content, "table tbody tr"):
+                date_td = sel(tr, "td.date-only")
+
+                if date_td is not None:
+                    current_date = text(date_td)
+
+                dvd = self.__parse_dvds_yearly_tr(tr, current_date)
+                dvds[month].append(dvd)
+
+        return DVDSYearlyByReleaseDate({"dvds": dvds})
+
+    def parse_dvds_yearly_by_rating(self, s) -> DVDSYearlyByRating:
+        dvds = []
+        current_date = None
+        for tr in asel(s, "table tbody tr"):
+            date_td = sel(tr, "td.date-only")
+
+            if date_td is not None:
+                current_date = text(date_td)
+
+            dvds.append(self.__parse_dvds_yearly_tr(tr, current_date))
+
+        return DVDSYearlyByRating({"dvds": dvds})

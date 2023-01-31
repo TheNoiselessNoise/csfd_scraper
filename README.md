@@ -58,6 +58,20 @@ users = scraper.active_users(sort=ActiveUsersSorts.LAST_MONTH, origin=Origins.US
 users = scraper.active_users(origin=Origins.USA)
 ```
 
+### DVDs yearly
+```python
+result = scraper.scraper.dvds_yearly_by_release_date(2023)
+in_january = result.dvds[Months.JANUARY]
+
+result = scraper.dvds_yearly_by_rating(2023)
+```
+
+### DVDs monthly
+```python
+result = scraper.dvds_monthly_by_release_date(2023, Months.JANUARY, page=2)
+result = scraper.dvds_monthly_by_rating(2023, Months.JANUARY, page=2)
+```
+
 ### Search movies/creators/series/users by text
 ```python
 result = scraper.text_search("spielberg")

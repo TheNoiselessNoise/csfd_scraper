@@ -4,6 +4,22 @@ from src.csfd_objects import *
 def main():
     scraper = CsfdScraper()
 
+    # TODO: fix origins in text_search_movies("rambo")[0].origins
+    # TODO: add color rating to everywhere it is missing
+
+    # --- DVDS
+
+    # result = scraper.dvds_yearly_by_release_date(2023)
+    # print(result.dvds[Months.JANUARY])
+
+    # result = scraper.dvds_monthly_by_release_date(2014, 2, Months.JANUARY)
+    # print(result)
+
+    # result = scraper.dvds_yearly_by_rating(1997)
+    # result = scraper.dvds_monthly_by_release_date(1997, Months.OCTOBER)
+    # result = scraper.dvds_monthly_by_rating(1997, Months.OCTOBER)
+    # print(result)
+
     # --- USERS
     # users = scraper.favorite_users()
     # print(users.by_country[Origins.GREAT_BRITAIN])

@@ -2,8 +2,6 @@
 
 ### What else to do?
 - [ ] Make project pip installable
-- [ ] Scraping DVDs by ["monthly overview"](https://www.csfd.cz/dvd/)
-- [ ] Scraping DVDs by ["yearly overview"](https://www.csfd.cz/dvd/rocne/)
 - [ ] Scraping Blu-rays by ["monthly overview"](https://www.csfd.cz/bluray/)
 - [ ] Scraping Blu-rays by ["yearly overview"](https://www.csfd.cz/bluray/rocne/)
 - [ ] Scraping User
@@ -29,6 +27,8 @@
 - [ ] Scraping user's diary
 
 ### Completed ✓
+- [x] Scraping DVDs by ["monthly overview"](https://www.csfd.cz/dvd/)
+- [x] Scraping DVDs by ["yearly overview"](https://www.csfd.cz/dvd/rocne/)
 - [x] Scraping Users by ["the most popular"](https://www.csfd.cz/uzivatele/)
 - [x] Scraping Users by ["the most active"](https://www.csfd.cz/uzivatele/nejaktivnejsi/)
 - [x] Scraping News

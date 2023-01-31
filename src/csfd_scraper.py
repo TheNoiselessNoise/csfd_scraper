@@ -1,8 +1,5 @@
-import json
 import requests
 from datetime import datetime
-from src.csfd_objects import *
-from src.csfd_utils import encode_params, url_prepare, soup, Globals
 from src.csfd_parsers import *
 
 class CsfdScraper:
@@ -13,6 +10,7 @@ class CsfdScraper:
     __USER_PARSER = UserParser()
     __NEWS_PARSER = NewsParser()
     __USERS_PARSER = UsersParser()
+    __DVD_PARSER = DvdParser()
 
     def __reset(self):
         self.__LAST_SOUP = None
@@ -21,6 +19,7 @@ class CsfdScraper:
 
     @staticmethod
     def __request(func, u, params=None):
+        print("Requesting: " + u)
         response = func(u, params=params, headers={"User-Agent": "Mozilla/5.0"})
         if response.status_code != 200:
             raise CsfdScraperInvalidRequest("Invalid request at url: " + u)
@@ -32,6 +31,7 @@ class CsfdScraper:
         self.__reset()
         return self.__request(requests.post, *args)
 
+    # <editor-fold desc="SOUPS">
     def __get_soup(self, s=None):
         if s is None and self.__LAST_SOUP is None:
             return None
@@ -74,9 +74,15 @@ class CsfdScraper:
         params = encode_params(params)
         u = url_prepare(Globals.SEARCH_CREATORS_URL, {"page": page, "sort": sort.value, "params": params})
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
+    def __get_dvds_monthly_soup(self, year, month, page, sort):
+        u = url_prepare(Globals.DVDS_MONTHLY_URL, {"year": year, "month": month.value[0], "sort": sort, "page": page})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
+    def __get_dvds_yearly_soup(self, year, sort):
+        u = url_prepare(Globals.DVDS_YEARLY_URL, {"year": year, "sort": sort})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
+    # </editor-fold>
 
-    # SEARCH GENERICS
-
+    # <editor-fold desc="SEARCH">
     def search_movies(self, options, page=1, sort=MovieSorts.BY_RATING_COUNT):
         params = {}
         for key, param in MovieParams.__members__.items():
@@ -150,9 +156,9 @@ class CsfdScraper:
         return self.__SEARCH_PARSER.parse_text_search_series(self.__get_text_search_soup(search, page))
     def text_search_users(self, search, page=1):
         return self.__SEARCH_PARSER.parse_text_search_users(self.__get_text_search_soup(search, page))
+    # </editor-fold>
 
-    # SEARCH BY AUTOCOMPLETE
-
+    # <editor-fold desc="AUTOCOMPLETE SEARCH">
     def search_tags(self, search):
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "tag", "search": search})
         return [Tag(x) for x in json.loads(self.__get(u).content)]
@@ -192,9 +198,9 @@ class CsfdScraper:
     def search_costume_designers(self, search):
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "costumes", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
+    # </editor-fold>
 
-    # NEWS
-
+    # <editor-fold desc="NEWS">
     def news(self, nid):
         return self.__NEWS_PARSER.parse_news(self.__get_news_soup(nid), nid)
     @staticmethod
@@ -242,9 +248,9 @@ class CsfdScraper:
         return self.__NEWS_PARSER.parse_news_list_has_prev_page(self.__get_news_list_soup(page))
     def news_list_has_next_page(self, page=1):
         return self.__NEWS_PARSER.parse_news_list_has_next_page(self.__get_news_list_soup(page))
+    # </editor-fold>
 
-    # MOVIE
-
+    # <editor-fold desc="MOVIE">
     def movie(self, mid) -> Movie:
         return self.__MOVIE_PARSER.parse_movie(self.__get_movie_soup(mid), mid)
     @staticmethod
@@ -292,9 +298,9 @@ class CsfdScraper:
         return self.__MOVIE_PARSER.parse_movie_plot(self.__get_movie_soup(mid))
     def movie_cover(self, mid):
         return self.__MOVIE_PARSER.parse_movie_cover(self.__get_movie_soup(mid))
+    # </editor-fold>
 
-    # CREATOR
-
+    # <editor-fold desc="CREATOR">
     def creator(self, cid, sort: CreatorFilmographySorts = CreatorFilmographySorts.BY_NEWEST) -> Creator:
         return self.__CREATOR_PARSER.parse_creator(self.__get_creator_sort_soup(cid, sort), cid)
     @staticmethod
@@ -326,9 +332,9 @@ class CsfdScraper:
         return self.__CREATOR_PARSER.parse_creator_filmography(self.__get_creator_sort_soup(cid, sort))
     def creator_image(self, cid):
         return self.__CREATOR_PARSER.parse_creator_image(self.__get_creator_soup(cid))
+    # </editor-fold>
 
-    # USER
-
+    # <editor-fold desc="USER">
     def user(self, uid) -> User:
         return self.__USER_PARSER.parse_user(self.__get_user_soup(uid), uid)
     @staticmethod
@@ -368,9 +374,10 @@ class CsfdScraper:
         return self.__USER_PARSER.parse_user_is_currently_online(self.__get_user_soup(uid))
     def user_image(self, uid):
         return self.__USER_PARSER.parse_user_image(self.__get_user_soup(uid))
+    # </editor-fold>
 
+    # <editor-fold desc="USERS">
     # MOST FAVORITE USERS
-
     def favorite_users(self):
         return self.__USERS_PARSER.parse_favorite_users(self.__get_most_favorite_users_soup())
     def favorite_users_most_favorite_users(self):
@@ -381,7 +388,6 @@ class CsfdScraper:
         return self.__USERS_PARSER.parse_favorite_users_by_country(self.__get_most_favorite_users_soup())
 
     # MOST ACTIVE USERS
-
     def active_users(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
         return self.__USERS_PARSER.parse_active_users(self.__get_most_active_users_soup(origin, sort))
     def active_users_by_reviews(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
@@ -394,3 +400,30 @@ class CsfdScraper:
         return self.__USERS_PARSER.parse_active_users_by_trivia(self.__get_most_active_users_soup(origin, sort))
     def active_users_by_biography(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
         return self.__USERS_PARSER.parse_active_users_by_biography(self.__get_most_active_users_soup(origin, sort))
+    # </editor-fold>
+
+    # <editor-fold desc="DVDS">
+
+    """Year is range from 1996 to the current, default is the current year"""
+    def dvds_monthly_by_release_date(self, year=None, page=1, month: Months = Months.JANUARY):
+        if year is None:
+            year = datetime.now().year
+        return self.__DVD_PARSER.parse_dvds_monthly_by_release_date(self.__get_dvds_monthly_soup(year, month, page, "release_date"))
+    """Year is range from 1996 to the current, default is the current year"""
+    def dvds_monthly_by_rating(self, year=None, page=1, month: Months = Months.JANUARY):
+        if year is None:
+            year = datetime.now().year
+        return self.__DVD_PARSER.parse_dvds_monthly_by_rating(self.__get_dvds_monthly_soup(year, month, page, "rating"))
+    """Year is range from 1996 to the current, default is the current year"""
+    def dvds_yearly_by_release_date(self, year=None):
+        if year is None:
+            year = datetime.now().year
+        return self.__DVD_PARSER.parse_dvds_yearly_by_release_date(self.__get_dvds_yearly_soup(year, "release_date"))
+    """Year is range from 1996 to the current, default is the current year"""
+    def dvds_yearly_by_rating(self, year=None):
+        if year is None:
+            year = datetime.now().year
+        return self.__DVD_PARSER.parse_dvds_yearly_by_rating(self.__get_dvds_yearly_soup(year, "rating"))
+
+    # </editor-fold>
+
