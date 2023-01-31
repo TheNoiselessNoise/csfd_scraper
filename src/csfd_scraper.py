@@ -19,7 +19,7 @@ class CsfdScraper:
 
     @staticmethod
     def __request(func, u, params=None):
-        print("Requesting: " + u)
+        # print("Requesting: " + u)
         response = func(u, params=params, headers={"User-Agent": "Mozilla/5.0"})
         if response.status_code != 200:
             raise CsfdScraperInvalidRequest("Invalid request at url: " + u)

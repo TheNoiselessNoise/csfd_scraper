@@ -10,6 +10,9 @@ Here is just sample usage of the scraper.\
 If you want to know what else you can do with it,\
 check out the [LIST OF METHODS](USAGE.md)
 
+Even though the scraper is OOP, every resulted object is printable.\
+Every printed object is converted to **JSON** string.
+
 ### Imports
 ```python
 from src.csfd_scraper import CsfdScraper
@@ -68,8 +71,8 @@ result = scraper.dvds_yearly_by_rating(2023)
 
 ### DVDs monthly
 ```python
-result = scraper.dvds_monthly_by_release_date(2023, Months.JANUARY, page=2)
-result = scraper.dvds_monthly_by_rating(2023, Months.JANUARY, page=2)
+result = scraper.dvds_monthly_by_release_date(2023, 2, Months.JANUARY)
+result = scraper.dvds_monthly_by_rating(2023, 2, Months.JANUARY)
 ```
 
 ### Search movies/creators/series/users by text

@@ -4,7 +4,6 @@ from src.csfd_objects import *
 def main():
     scraper = CsfdScraper()
 
-    # TODO: fix origins in text_search_movies("rambo")[0].origins
     # TODO: add color rating to everywhere it is missing
 
     # --- DVDS

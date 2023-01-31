@@ -17,7 +17,7 @@ class Globals:
     SEARCH_AUTOCOMPLETE_URL = "https://www.csfd.cz/api/autocomplete/?s=<type>&q=<search>"
     SEARCH_MOVIES_URL = "https://www.csfd.cz/podrobne-vyhledavani/?page=<page>&sort=<sort>&searchParams=<params>"
     SEARCH_CREATORS_URL = "https://www.csfd.cz/podrobne-vyhledavani/tvurci/?page=<page>&sort=<sort>&searchParams=<params>"
-    TEXT_SEARCH_URL = "https://www.csfd.cz/hledat/?pageFilms=<fpage>&pageSeries=<spage>&pageCreators=<cpage>&pageUsers=<upage>&q=<search>"
+    TEXT_SEARCH_URL = "https://www.csfd.cz/hledat/?pageFilms=<page>&pageSeries=<page>&pageCreators=<page>&pageUsers=<page>&q=<search>"
     TEXT_SEARCH_MOVIES_URL = "https://www.csfd.cz/hledat/?pageFilms=<page>&q=<search>"
     TEXT_SEARCH_SERIES_URL = "https://www.csfd.cz/hledat/?pageSeries=<page>&q=<search>"
     TEXT_SEARCH_CREATORS_URL = "https://www.csfd.cz/hledat/?pageCreators=<page>&q=<search>"
