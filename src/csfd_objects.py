@@ -663,6 +663,17 @@ class CreatorFilmographySorts(Enum):
     BY_RATING_COUNT = "rating_count"
     """podle počtu hodnocení"""
 
+# MOST ACTIVE USERS TYPES
+
+class ActiveUsersSorts(Enum):
+    """Možnosti řazení nejaktivnějších uživatelů"""
+
+    ALL_TIME   = 2
+    """celkově"""
+
+    LAST_MONTH = 1
+    """za poslední měsíc"""
+
 # TEXT SEARCH TYPES
 
 class TextSearchedMovie(PrintableObject):
@@ -898,6 +909,44 @@ class NewsList(PrintableObject):
         self.most_latest_news = args.get("most_latest_news", [])
         self.has_prev_page = args.get("has_prev_page", False)
         self.has_next_page = args.get("has_next_page", False)
+
+# USERS
+
+class FavoriteUser(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.position = args.get("position", None)
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.real_name = args.get("real_name", None)
+        self.about = args.get("about", None)
+        self.points = args.get("points", None)
+        self.ratings = args.get("ratings", None)
+        self.reviews = args.get("reviews", None)
+        self.image = args.get("image", None)
+
+class OtherFavoriteUser(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.real_name = args.get("real_name", None)
+        self.points = args.get("points", None)
+        self.image = args.get("image", None)
+
+class FavoriteUsers(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.most_favorite_users: List[FavoriteUser] = args.get("most_favorite_users", [])
+        self.by_regions: Dict[str, List[OtherFavoriteUser]] = args.get("by_regions", {})
+        self.by_country: Dict[Origins, List[OtherFavoriteUser]] = args.get("by_country", {})
+
+    def __str__(self):
+        args = self.args
+        args["most_favorite_users"] = [u.args for u in self.most_favorite_users]
+        args["by_regions"] = {k: [u.args for u in v] for k, v in self.by_regions.items()}
+        args["by_country"] = {k.value[1]: [u.args for u in v] for k, v in self.by_country.items()}
+        return tojson(args)
 
 # EXCEPTIONS
 

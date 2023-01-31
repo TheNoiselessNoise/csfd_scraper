@@ -1,7 +1,6 @@
 # CSFD.cz Scraper
 
 ### What else to do?
-- [ ] Scraping Users by ["the most popular"](https://www.csfd.cz/uzivatele/)
 - [ ] Scraping Users by ["the most active"](https://www.csfd.cz/uzivatele/nejaktivnejsi/)
 - [ ] Scraping DVDs by ["monthly overview"](https://www.csfd.cz/dvd/)
 - [ ] Scraping DVDs by ["yearly overview"](https://www.csfd.cz/dvd/rocne/)
@@ -30,6 +29,7 @@
 - [ ] Scraping user's diary
 
 ### Completed ✓
+- [x] Scraping Users by ["the most popular"](https://www.csfd.cz/uzivatele/)
 - [x] Scraping News
   - [x] News by ID
   - [x] News List

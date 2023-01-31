@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 from src.csfd_objects import *
 from src.csfd_utils import encode_params, url_prepare, soup, Globals
-from src.csfd_parsers import MovieParser, CreatorParser, SearchParser, UserParser, NewsParser
+from src.csfd_parsers import *
 
 class CsfdScraper:
     __LAST_SOUP = None
@@ -12,6 +12,7 @@ class CsfdScraper:
     __SEARCH_PARSER = SearchParser()
     __USER_PARSER = UserParser()
     __NEWS_PARSER = NewsParser()
+    __USERS_PARSER = UsersParser()
 
     def __reset(self):
         self.__LAST_SOUP = None
@@ -19,10 +20,10 @@ class CsfdScraper:
         self.__CREATOR_PARSER.reset()
 
     @staticmethod
-    def __request(func, url, params=None):
-        response = func(url, params=params, headers={"User-Agent": "Mozilla/5.0"})
+    def __request(func, u, params=None):
+        response = func(u, params=params, headers={"User-Agent": "Mozilla/5.0"})
         if response.status_code != 200:
-            raise CsfdScraperInvalidRequest("Invalid request at url: " + url)
+            raise CsfdScraperInvalidRequest("Invalid request at url: " + u)
         return response
     def __get(self, *args):
         self.__reset()
@@ -49,22 +50,27 @@ class CsfdScraper:
     def __get_news_soup(self, nid):
         return self.__get_soup() or self.__get_soup(self.__get(Globals.NEWS_URL + str(nid)).content)
     def __get_news_list_soup(self, page):
-        url = url_prepare(Globals.NEWS_LIST_URL, {"page": page})
-        return self.__get_soup() or self.__get_soup(self.__get(url).content)
+        u = url_prepare(Globals.NEWS_LIST_URL, {"page": page})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
+    def __get_most_favorite_users_soup(self):
+        return self.__get_soup() or self.__get_soup(self.__get(Globals.MOST_FAVORITE_USERS_URL).content)
+    def __get_most_active_users_soup(self, sort, origin):
+        u = url_prepare(Globals.MOST_ACTIVE_USERS_URL, {"sort": sort.value, "origin": origin.value})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
     def __get_text_search_soup(self, search, page):
-        url = url_prepare(Globals.TEXT_SEARCH_URL, {"search": search, "page": page})
-        return self.__get_soup() or self.__get_soup(self.__get(url).content)
+        u = url_prepare(Globals.TEXT_SEARCH_URL, {"search": search, "page": page})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
     def __get_creator_sort_soup(self, cid, sort):
-        url = url_prepare(Globals.CREATORS_SORT_URL, {"cid": cid, "sort": sort.value})
-        return self.__get_soup() or self.__get_soup(self.__get(url).content)
+        u = url_prepare(Globals.CREATORS_SORT_URL, {"cid": cid, "sort": sort.value})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
     def __get_search_movies_soup(self, params, sort, page):
         params = encode_params(params)
-        url = url_prepare(Globals.SEARCH_MOVIES_URL, {"page": page, "sort": sort.value, "params": params})
-        return self.__get_soup() or self.__get_soup(self.__get(url).content)
+        u = url_prepare(Globals.SEARCH_MOVIES_URL, {"page": page, "sort": sort.value, "params": params})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
     def __get_search_creators_soup(self, params, sort, page):
         params = encode_params(params)
-        url = url_prepare(Globals.SEARCH_CREATORS_URL, {"page": page, "sort": sort.value, "params": params})
-        return self.__get_soup() or self.__get_soup(self.__get(url).content)
+        u = url_prepare(Globals.SEARCH_CREATORS_URL, {"page": page, "sort": sort.value, "params": params})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
 
     # SEARCH GENERICS
 
@@ -145,44 +151,44 @@ class CsfdScraper:
     # SEARCH BY AUTOCOMPLETE
 
     def search_tags(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "tag", "search": search})
-        return [Tag(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "tag", "search": search})
+        return [Tag(x) for x in json.loads(self.__get(u).content)]
     def search_actors(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "actors", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "actors", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_directors(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "director", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "director", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_composers(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "composer", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "composer", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_screenwriters(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "screenwriter", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "screenwriter", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_authors(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "author", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "author", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_cinematographers(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "cinematographer", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "cinematographer", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_producers(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "production", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "production", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_editors(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "edit", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "edit", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_sound_engineers(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "sound", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "sound", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_scenographers(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "scenography", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "scenography", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_mask_designers(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "mask", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "mask", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     def search_costume_designers(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "costumes", "search": search})
-        return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
+        u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "costumes", "search": search})
+        return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
 
     # NEWS
 
@@ -359,3 +365,13 @@ class CsfdScraper:
         return self.__USER_PARSER.parse_user_is_currently_online(self.__get_user_soup(uid))
     def user_image(self, uid):
         return self.__USER_PARSER.parse_user_image(self.__get_user_soup(uid))
+
+    # MOST FAVORITE USERS
+
+    def favorite_users(self):
+        return self.__USERS_PARSER.parse_favorite_users(self.__get_most_favorite_users_soup())
+
+    # MOST ACTIVE USERS
+
+    # def active_users(self, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME, origin: Origins = None):
+    #     return self.__USERS_PARSER.parse_active_users(self.__get_most_active_users_soup(sort, origin))

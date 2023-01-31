@@ -43,7 +43,7 @@ class CreatorParser:
         article = sel(s, ".article-trivia")
         section = None if article is None else article.find_parent("section")
         count = None if section is None else sel(section, ".count")
-        return -1 if count is None else toint(text(count)[1:-1])
+        return -1 if count is None else toint(text(count))
 
     def parse_creator_trivia(self, s):
         trivia = {
@@ -77,7 +77,7 @@ class CreatorParser:
         gallery_item = sel(s, ".gallery-item")
         section = None if gallery_item is None else gallery_item.find_parent("section")
         count = None if section is None else sel(section, ".count")
-        return -1 if count is None else toint(text(count)[1:-1])
+        return -1 if count is None else toint(text(count))
 
     def parse_creator_gallery(self, s):
         img = sel(s, ".gallery-item picture img")
@@ -392,7 +392,7 @@ class MovieParser:
     @staticmethod
     def parse_movie_reviews_count(s):
         count = sel(s, ".box-reviews .count")
-        return -1 if count is None else toint(text(count)[1:-1])
+        return -1 if count is None else toint(text(count))
 
     def parse_movie_reviews(self, s):
         reviews = {
@@ -416,7 +416,7 @@ class MovieParser:
         gallery_item = sel(s, ".gallery-item")
         section = None if gallery_item is None else gallery_item.find_parent("section")
         count = None if section is None else sel(section, ".count")
-        return -1 if count is None else toint(text(count)[1:-1])
+        return -1 if count is None else toint(text(count))
 
     def parse_movie_gallery(self, s):
         img = sel(s, ".gallery-item picture img")
@@ -430,7 +430,7 @@ class MovieParser:
         article = sel(s, ".article-trivia")
         section = None if article is None else article.find_parent("section")
         count = None if section is None else sel(section, ".count")
-        return -1 if count is None else toint(text(count)[1:-1])
+        return -1 if count is None else toint(text(count))
 
     def parse_movie_trivia(self, s):
         trivia = {
@@ -567,7 +567,7 @@ class UserParser:
     @staticmethod
     def parse_user_reviews_count(s):
         section = sel(s, ".user-reviews")
-        return -1 if section is None else toint(clean(text(section, ".count"))[1:-1])
+        return -1 if section is None else toint(clean(text(section, ".count")))
 
     def parse_user_reviews(self, s):
         reviews = {
@@ -591,7 +591,7 @@ class UserParser:
     @staticmethod
     def parse_user_ratings_count(s):
         section = sel(s, ".last-ratings section")
-        return -1 if section is None else toint(clean(text(section, ".count"))[1:-1])
+        return -1 if section is None else toint(clean(text(section, ".count")))
 
     def parse_user_ratings(self, s):
         ratings = {
@@ -808,3 +808,84 @@ class NewsParser:
             "has_prev_page": self.parse_news_list_has_prev_page(s),
             "has_next_page": self.parse_news_list_has_next_page(s)
         })
+
+class UsersParser:
+
+    @staticmethod
+    def __parse_favorite_users_article(s):
+        img = sel(s, "img")
+        left_content = sel(s, ".article-user-content-left")
+        right_content = sel(s, ".article-user-content-right")
+        article_a = sel(left_content, "h3 a")
+        real_name = sel(left_content, ".info")
+        return OtherFavoriteUser({
+            "id": extract_id(article_a.get("href")),
+            "name": text(article_a),
+            "real_name": None if real_name is None else text(real_name),
+            "points": toint(text(right_content, "p")),
+            "image": None if img is None else url(img.get("src")),
+        })
+
+    @staticmethod
+    def parse_favorite_users_most_favorite_users(s):
+        section = sel(s, ".row .column:nth-child(1) section")
+        most_favorite_users = []
+        for article in asel(section, "article"):
+            img = sel(article, "img")
+            left_content = sel(article, ".article-user-content-left")
+            right_content = sel(article, ".article-user-content-right")
+            article_a = sel(left_content, "h3 a")
+            real_name = sel(left_content, ".info")
+            about = sel(left_content, "p:last-child")
+            most_favorite_users.append(FavoriteUser({
+                "position": int(text(left_content, ".user-title-position")[:-1]),
+                "id": extract_id(article_a.get("href")),
+                "name": text(article_a),
+                "real_name": None if real_name is None else text(real_name),
+                "about": None if about is None else text(about),
+                "points": toint(text(right_content, "p:nth-child(1)")),
+                "ratings": toint(text(right_content, "p:nth-child(2) a")),
+                "reviews": toint(text(right_content, "p:nth-child(3) a")),
+                "image": None if img is None else url(img.get("src")),
+            }))
+        return most_favorite_users
+
+    def parse_favorite_users_by_regions(self, s):
+        section = sel(s, ".row .column:nth-child(2) section")
+        by_regions = {}
+        current_region = None
+        for tag in asel(section, ".box-content > div, .box-content > article"):
+            if tag.name == "div":
+                current_region = clean(text(tag))
+                by_regions[current_region] = []
+                continue
+
+            user = self.__parse_favorite_users_article(tag)
+            by_regions[current_region].append(user)
+        return by_regions
+
+    def parse_favorite_users_by_country(self, s):
+        section = sel(s, ".row .column:nth-child(3) section")
+        by_country = {}
+        current_country = None
+        for tag in asel(section, ".box-content > div, .box-content > article"):
+            if tag.name == "div":
+                current_country = Origins.get_by_czech_name(clean(text(tag)))
+                by_country[current_country] = []
+                continue
+
+            user = self.__parse_favorite_users_article(tag)
+            by_country[current_country].append(user)
+        return by_country
+
+    def parse_favorite_users(self, s) -> FavoriteUsers:
+        return FavoriteUsers({
+            "most_favorite_users": self.parse_favorite_users_most_favorite_users(s),
+            "by_regions": self.parse_favorite_users_by_regions(s),
+            "by_country": self.parse_favorite_users_by_country(s)
+        })
+
+    # def parse_active_users(self, s):
+    #     return ActiveUsers({
+    #
+    #     })

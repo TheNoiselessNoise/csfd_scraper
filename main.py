@@ -4,6 +4,10 @@ from src.csfd_objects import *
 def main():
     scraper = CsfdScraper()
 
+    # --- USERS
+    # users = scraper.favorite_users()
+    # print(users.by_country[Origins.GREAT_BRITAIN])
+
     # --- SEARCH BY TEXT
 
     # result = scraper.text_search("spielberg")

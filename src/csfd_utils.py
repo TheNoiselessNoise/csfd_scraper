@@ -11,6 +11,8 @@ class Globals:
     USERS_URL = "https://www.csfd.cz/uzivatel/"
     NEWS_URL = "https://www.csfd.cz/novinky/"
     NEWS_LIST_URL = "https://www.csfd.cz/novinky/?page=<page>"
+    MOST_FAVORITE_USERS_URL = "https://www.csfd.cz/uzivatele/"
+    MOST_ACTIVE_USERS_URL = "https://www.csfd.cz/uzivatele/nejaktivnejsi/?period=<sort>&country=<origin>"
     SEARCH_AUTOCOMPLETE_URL = "https://www.csfd.cz/api/autocomplete/?s=<type>&q=<search>"
     SEARCH_MOVIES_URL = "https://www.csfd.cz/podrobne-vyhledavani/?page=<page>&sort=<sort>&searchParams=<params>"
     SEARCH_CREATORS_URL = "https://www.csfd.cz/podrobne-vyhledavani/tvurci/?page=<page>&sort=<sort>&searchParams=<params>"
@@ -31,7 +33,7 @@ def tojson(o):
 
 def toint(s):
     if type(s) is str:
-        return int(s.replace(" ", ""))
+        return int("".join([c for c in s if c.isdigit()]))
     return s
 
 def url_prepare(s, d):

@@ -41,6 +41,12 @@ news_list_2 = scraper.news_list(page=2)
 news = scraper.news(8360)
 ```
 
+### Most favorite users
+```python
+users = scraper.favorite_users()
+in_great_britain = users.by_country[Origins.GREAT_BRITAIN]
+```
+
 ### Search movies/creators/series/users by text
 ```python
 result = scraper.text_search("spielberg")
