@@ -62,31 +62,28 @@ class CsfdScraper:
 
     # SEARCH GENERICS
 
-    def search_tags(self, search):
-        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "tag", "search": search})
-        return [Tag(x) for x in json.loads(self.__get(url).content)]
-    def search_movies(self, options, sort=MovieSearchSort.BY_RATING_COUNT, page=1):
+    def search_movies(self, options, sort=MovieSorts.BY_RATING_COUNT, page=1):
         params = {}
-        for key, param in MovieSearchParameters.__members__.items():
+        for key, param in MovieParams.__members__.items():
             name = param.value[0]
             default = param.value[1]
 
-            opt = MovieSearchOptions.__members__[key]
+            opt = MovieOptions.__members__[key]
             opt_value = options.get(param, default)
 
-            if opt in [MovieSearchOptions.TYPES, MovieSearchOptions.ADDITIONAL_FILTERS]:
+            if opt in [MovieOptions.TYPES, MovieOptions.ADDITIONAL_FILTERS]:
                 params[name] = [x.value for x in opt_value]
-            elif opt == MovieSearchOptions.GENRES:
-                genre_filter = opt_value.get(MovieSearchGenreOptions.FILTER, MovieSearchGenreFilters.AT_LEAST_ALL_SELECTED).value
-                genres = opt_value.get(MovieSearchGenreOptions.GENRES, [])
-                exclude = opt_value.get(MovieSearchGenreOptions.EXCLUDE, [])
+            elif opt == MovieOptions.GENRES:
+                genre_filter = opt_value.get(MovieGenreOptions.FILTER, MovieGenreFilters.AT_LEAST_ALL_SELECTED).value
+                genres = opt_value.get(MovieGenreOptions.GENRES, [])
+                exclude = opt_value.get(MovieGenreOptions.EXCLUDE, [])
                 params[name] = {1: [], 2: [], 3: [], 4: [], "type": genre_filter}
                 params[name][genre_filter] = [x.value[0] for x in genres]
                 params[name][4] = [x.value[0] for x in exclude]
-            elif opt == MovieSearchOptions.ORIGINS:
-                origin_filter = opt_value.get(MovieSearchOriginOptions.FILTER, MovieSearchOriginFilters.AT_LEAST_ALL_SELECTED).value
-                origins = opt_value.get(MovieSearchOriginOptions.ORIGINS, [])
-                exclude = opt_value.get(MovieSearchOriginOptions.EXCLUDE, [])
+            elif opt == MovieOptions.ORIGINS:
+                origin_filter = opt_value.get(MovieOriginOptions.FILTER, MovieOriginFilters.AT_LEAST_ALL_SELECTED).value
+                origins = opt_value.get(MovieOriginOptions.ORIGINS, [])
+                exclude = opt_value.get(MovieOriginOptions.EXCLUDE, [])
                 params[name] = {1: [], 2: [], 3: [], 4: [], "type": origin_filter}
                 params[name][origin_filter] = [x.value[0] for x in origins]
                 params[name][4] = [x.value[0] for x in exclude]
@@ -95,32 +92,32 @@ class CsfdScraper:
 
         s = self.__get_search_movies_soup(params, sort, page)
         return self.__SEARCH_PARSER.parse_movies_search(s, page)
-    def search_creators(self, options, sort=CreatorSearchSort.BY_FAN_COUNT, page=1):
+    def search_creators(self, options, sort=CreatorSorts.BY_FAN_COUNT, page=1):
         params = {}
-        for key, param in CreatorSearchParameters.__members__.items():
+        for key, param in CreatorParams.__members__.items():
             name = param.value[0]
             default = param.value[1]
 
-            opt = CreatorSearchOptions.__members__[key]
+            opt = CreatorOptions.__members__[key]
             opt_value = options.get(param, default)
 
-            if opt == CreatorSearchOptions.TYPES:
+            if opt == CreatorOptions.TYPES:
                 params[name] = [x.value[0] for x in opt_value]
-            elif opt in [CreatorSearchOptions.BIRTH_FROM, CreatorSearchOptions.BIRTH_TO]:
+            elif opt in [CreatorOptions.BIRTH_FROM, CreatorOptions.BIRTH_TO]:
                 params[name] = {
                     "date": None if opt_value is None else opt_value,
                     "year": None if opt_value is None else datetime.strptime(opt_value, "%d.%m.%Y").strftime("%Y")
                 }
-            elif opt in [CreatorSearchOptions.DEATH_FROM, CreatorSearchOptions.DEATH_TO]:
+            elif opt in [CreatorOptions.DEATH_FROM, CreatorOptions.DEATH_TO]:
                 params[name] = {
                     "date": None if opt_value is None else opt_value,
                     "year": None if opt_value is None else datetime.strptime(opt_value, "%d.%m.%Y").strftime("%Y")
                 }
-            elif opt in [CreatorSearchOptions.BIRTH_COUNTRY, CreatorSearchOptions.DEATH_COUNTRY]:
+            elif opt in [CreatorOptions.BIRTH_COUNTRY, CreatorOptions.DEATH_COUNTRY]:
                 params[name] = None if opt_value is None else opt_value.value[0]
-            elif opt == CreatorSearchOptions.ADDITIONAL_FILTERS:
+            elif opt == CreatorOptions.ADDITIONAL_FILTERS:
                 params[name] = [x.value for x in opt_value]
-            elif opt == CreatorSearchOptions.GENDER:
+            elif opt == CreatorOptions.GENDER:
                 params[name] = opt_value.value
             else:
                 params[name] = opt_value
@@ -139,8 +136,11 @@ class CsfdScraper:
     def text_search_users(self, search, page=1):
         return self.__SEARCH_PARSER.parse_text_search_users(self.__get_text_search_soup(search, page))
 
-    # SEARCH FILM CREATORS
+    # SEARCH BY AUTOCOMPLETE
 
+    def search_tags(self, search):
+        url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "tag", "search": search})
+        return [Tag(x) for x in json.loads(self.__get(url).content)]
     def search_actors(self, search):
         url = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "actors", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(url).content)]
@@ -230,7 +230,7 @@ class CsfdScraper:
 
     # CREATOR
 
-    def creator(self, cid, sort: CreatorFilmographySort = CreatorFilmographySort.BY_NEWEST) -> Creator:
+    def creator(self, cid, sort: CreatorFilmographySorts = CreatorFilmographySorts.BY_NEWEST) -> Creator:
         return self.__CREATOR_PARSER.parse_creator(self.__get_creator_sort_soup(cid, sort), cid)
     @staticmethod
     def creator_url(cid):
@@ -257,7 +257,7 @@ class CsfdScraper:
         return self.__CREATOR_PARSER.parse_creator_gallery_count(self.__get_creator_soup(cid))
     def creator_gallery(self, cid):
         return self.__CREATOR_PARSER.parse_creator_gallery(self.__get_creator_soup(cid))
-    def creator_filmography(self, cid, sort: CreatorFilmographySort = CreatorFilmographySort.BY_NEWEST):
+    def creator_filmography(self, cid, sort: CreatorFilmographySorts = CreatorFilmographySorts.BY_NEWEST):
         return self.__CREATOR_PARSER.parse_creator_filmography(self.__get_creator_sort_soup(cid, sort))
     def creator_image(self, cid):
         return self.__CREATOR_PARSER.parse_creator_image(self.__get_creator_soup(cid))

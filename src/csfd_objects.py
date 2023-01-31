@@ -28,7 +28,7 @@ class CzechEnum(Enum):
 
 # MOVIE SEARCH TYPES
 
-class MovieSearchSort(Enum):
+class MovieSorts(Enum):
     """Možnosti řazení filmů pro vyhledávání"""
 
     BY_RATING_COUNT = "rating_count"
@@ -49,7 +49,7 @@ class MovieSearchSort(Enum):
     BY_OLDEST       = "year_asc"
     """od nejstaršího"""
 
-class MovieSearchTypes(Enum):
+class MovieTypes(Enum):
     """Typy filmů pro vyhledávání"""
 
     MOVIE             = 0
@@ -82,7 +82,7 @@ class MovieSearchTypes(Enum):
     VIDEO_COMPILATION = 14
     """Video kompilace"""
 
-class SearchOrigins(CzechEnum):
+class Origins(CzechEnum):
     """Původy filmů/místa narození tvůrců pro vyhledávání"""
 
     AFGHANISTAN                         = 3,   "Afghánistán"
@@ -317,7 +317,7 @@ class SearchOrigins(CzechEnum):
     WEST_GERMANY                        = 207, "Západní Německo"
     ZIMBABWE                            = 184, "Zimbabwe"
 
-class MovieSearchGenres(CzechEnum):
+class MovieGenres(CzechEnum):
     """Žánry filmů pro vyhledávání"""
 
     ACTION        = 1,  "Akční"
@@ -366,7 +366,7 @@ class MovieSearchGenres(CzechEnum):
     FUN           = 42, "Zábavný"
     BIOGRAPHICAL  = 37, "Životopisný"
 
-class MovieSearchAdditionalFilters(Enum):
+class MovieFilters(Enum):
     """Doplňující filtry pro vyhledávání filmů"""
 
     IN_CINEMAS      = "in_cinemas"
@@ -405,7 +405,7 @@ class MovieSearchAdditionalFilters(Enum):
     WITH_TRIVIA     = "with_trivia"
     """se zajímavostmi"""
 
-class MovieSearchOriginFilters(Enum):
+class MovieOriginFilters(Enum):
     """Filtry pro vyhledávání filmů podle původu"""
 
     AT_LEAST_ALL_SELECTED        = 2
@@ -417,7 +417,7 @@ class MovieSearchOriginFilters(Enum):
     AT_LEAST_ONE_OF_THE_SELECTED = 3
     """alespoň jeden z zvolených"""
 
-class MovieSearchOriginOptions(Enum):
+class MovieOriginOptions(Enum):
     """Specifikace původu pro vyhledávání"""
 
     ORIGINS = 0
@@ -433,7 +433,7 @@ class MovieSearchOriginOptions(Enum):
     FILTER  = 2
     """Nastavení filtru pro vyhledávání původu"""
 
-class MovieSearchGenreFilters(Enum):
+class MovieGenreFilters(Enum):
     """Filtry pro vyhledávání filmů podle žánrů"""
 
     AT_LEAST_ALL_SELECTED        = 2
@@ -445,7 +445,7 @@ class MovieSearchGenreFilters(Enum):
     AT_LEAST_ONE_OF_THE_SELECTED = 3
     """alespoň jeden z zvolených"""
 
-class MovieSearchGenreOptions(Enum):
+class MovieGenreOptions(Enum):
     """Specifikace žánrů pro vyhledávání"""
 
     GENRES  = 0
@@ -461,7 +461,7 @@ class MovieSearchGenreOptions(Enum):
     FILTER  = 2
     """Nastavení filtru pro vyhledávání žánrů"""
 
-class MovieSearchOptions(Enum):
+class MovieOptions(Enum):
     """Možnosti pro vyhledávání filmů"""
 
     TYPES              = 0
@@ -527,7 +527,7 @@ class MovieSearchOptions(Enum):
     ADDITIONAL_FILTERS = 20
     """Doplňující filtry pro vyhledávání filmů"""
 
-class MovieSearchParameters(Enum):
+class MovieParams(Enum):
     TYPES              = "type",            []
     GENRES             = "genre",           {}
     ORIGINS            = "origin",          {}
@@ -552,14 +552,14 @@ class MovieSearchParameters(Enum):
 
 # CREATOR SEARCH TYPES
 
-class CreatorSearchGenders(Enum):
+class CreatorGenders(Enum):
     MALE = 1
     """Muž"""
 
     FEMALE = 2
     """Žena"""
 
-class CreatorSearchSort(Enum):
+class CreatorSorts(Enum):
     """Možnosti řazení tvůrců pro vyhledávání"""
 
     BY_FAN_COUNT = "fanclub_count"
@@ -571,7 +571,7 @@ class CreatorSearchSort(Enum):
     BY_OLDEST    = "birth_date_asc"
     """od nejstaršího"""
 
-class CreatorSearchTypes(CzechEnum):
+class CreatorTypes(CzechEnum):
     """Typy tvůrců pro vyhledávání"""
 
     COMPOSER         = 3,  "skladatel",  "skladatelka"
@@ -589,7 +589,7 @@ class CreatorSearchTypes(CzechEnum):
     MASK_DESIGNER    = 11, "maskér",     "maskérka"
     PERFORMER        = 14, "účinkující", "účinkující"
 
-class CreatorSearchAdditionalFilters(Enum):
+class CreatorFilters(Enum):
     """Doplňující filtry pro vyhledávání tvůrců"""
 
     WITH_BIOGRAPHY   = "with_biography"
@@ -610,7 +610,7 @@ class CreatorSearchAdditionalFilters(Enum):
     WITH_TRIVIA      = "with_trivia"
     """se zajímavostmi"""
 
-class CreatorSearchOptions(Enum):
+class CreatorOptions(Enum):
     """Možnosti pro vyhledávání tvůrců"""
 
     TYPES              = 0
@@ -640,7 +640,7 @@ class CreatorSearchOptions(Enum):
     GENDER             = 8
     """Pohlaví tvůrce podle kterého se má vyhledávat"""
 
-class CreatorSearchParameters(Enum):
+class CreatorParams(Enum):
     TYPES              = "type",             []
     BIRTH_FROM         = "birth_from",       None
     BIRTH_TO           = "birth_to",         None
@@ -651,7 +651,7 @@ class CreatorSearchParameters(Enum):
     ADDITIONAL_FILTERS = "conditions",       []
     GENDER             = "gender",           None
 
-class CreatorFilmographySort(Enum):
+class CreatorFilmographySorts(Enum):
     """Možnosti řazení filmografie"""
 
     BY_NEWEST       = "year"
@@ -765,10 +765,10 @@ class SearchedMovie(PrintableObject):
         self.genres = args.get("genres", None)
 
     def get_genres(self):
-        return [MovieSearchGenres.get_by_czech_name(g) for g in self.genres]
+        return [MovieGenres.get_by_czech_name(g) for g in self.genres]
 
     def get_origins(self):
-        return [SearchOrigins.get_by_czech_name(o) for o in self.origins]
+        return [Origins.get_by_czech_name(o) for o in self.origins]
 
 class SearchMoviesResult(PrintableObject):
     def __init__(self, args):
@@ -792,7 +792,7 @@ class SearchedCreator(PrintableObject):
         self.types = args.get("types", [])
 
     def get_types(self):
-        return [CreatorSearchTypes.get_by_czech_name(g) for g in self.types]
+        return [CreatorTypes.get_by_czech_name(g) for g in self.types]
 
 class SearchCreatorsResult(PrintableObject):
     def __init__(self, args):

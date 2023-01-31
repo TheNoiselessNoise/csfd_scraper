@@ -58,21 +58,21 @@ result = scraper.text_search_users("spielberg")
 ### Search movies by Advanced Search
 ```python
 result = scraper.search_movies({
-    MovieSearchParameters.TYPES: [MovieSearchTypes.MOVIE],
-    MovieSearchParameters.ORIGINS: {
-        MovieSearchOriginOptions.FILTER: MovieSearchOriginFilters.AT_LEAST_ALL_SELECTED,
-        MovieSearchOriginOptions.ORIGINS: [SearchOrigins.USA],
+    MovieParams.TYPES: [MovieTypes.MOVIE],
+    MovieParams.ORIGINS: {
+        MovieOriginOptions.FILTER: MovieOriginFilters.AT_LEAST_ALL_SELECTED,
+        MovieOriginOptions.ORIGINS: [Origins.USA],
     },
-    MovieSearchParameters.GENRES: {
-        MovieSearchGenreOptions.FILTER: MovieSearchGenreFilters.AT_LEAST_ALL_SELECTED,
-        MovieSearchGenreOptions.GENRES: [
-            MovieSearchGenres.ACTION,
-            MovieSearchGenres.ADVENTURE,
-            MovieSearchGenres.FANTASY,
-            MovieSearchGenres.HORROR,
-            MovieSearchGenres.COMEDY,
+    MovieParams.GENRES: {
+        MovieGenreOptions.FILTER: MovieGenreFilters.AT_LEAST_ALL_SELECTED,
+        MovieGenreOptions.GENRES: [
+            MovieGenres.ACTION,
+            MovieGenres.ADVENTURE,
+            MovieGenres.FANTASY,
+            MovieGenres.HORROR,
+            MovieGenres.COMEDY,
         ],
-        MovieSearchGenreOptions.EXCLUDE: [MovieSearchGenres.DRAMA, MovieSearchGenres.EROTIC]
+        MovieGenreOptions.EXCLUDE: [MovieGenres.DRAMA, MovieGenres.EROTIC]
     }
 })
 ```
@@ -81,18 +81,18 @@ result = scraper.search_movies({
 ### Search creators by Advanced Search
 ```python
 result = scraper.search_creators({
-    CreatorSearchParameters.TYPES: [
-        CreatorSearchTypes.COMPOSER,
-        CreatorSearchTypes.DIRECTOR,
-        CreatorSearchTypes.CINEMATOGRAPHER
+    CreatorParams.TYPES: [
+        CreatorTypes.COMPOSER,
+        CreatorTypes.DIRECTOR,
+        CreatorTypes.CINEMATOGRAPHER
     ],
-    CreatorSearchParameters.BIRTH_COUNTRY: SearchOrigins.USA,
-    CreatorSearchParameters.ADDITIONAL_FILTERS: [
-        CreatorSearchAdditionalFilters.WITH_BIOGRAPHY,
-        CreatorSearchAdditionalFilters.WITH_AWARDS,
-        CreatorSearchAdditionalFilters.WITH_TRIVIA
+    CreatorParams.BIRTH_COUNTRY: Origins.USA,
+    CreatorParams.ADDITIONAL_FILTERS: [
+        CreatorFilters.WITH_BIOGRAPHY,
+        CreatorFilters.WITH_AWARDS,
+        CreatorFilters.WITH_TRIVIA
     ],
-    CreatorSearchParameters.GENDER: CreatorSearchGenders.FEMALE
+    CreatorParams.GENDER: CreatorGenders.FEMALE
 })
 ```
 - #### Should return [Lana Del Rey](https://www.csfd.cz/tvurce/84039-lana-del-rey/prehled/)
