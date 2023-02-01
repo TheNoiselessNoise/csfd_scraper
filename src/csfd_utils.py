@@ -24,6 +24,8 @@ class Globals:
     TEXT_SEARCH_USERS_URL = "https://www.csfd.cz/hledat/?pageUsers=<page>&q=<search>"
     DVDS_MONTHLY_URL = "https://www.csfd.cz/dvd/?page=<page>&sort=<sort>&year=<year>&month=<month>"
     DVDS_YEARLY_URL = "https://www.csfd.cz/dvd/rocne/?sort=<sort>&year=<year>"
+    BLURAYS_MONTHLY_URL = "https://www.csfd.cz/bluray/?page=<page>&sort=<sort>&year=<year>&month=<month>"
+    BLURAYS_YEARLY_URL = "https://www.csfd.cz/bluray/rocne/?sort=<sort>&year=<year>"
 
 def encode_params(params):
     params_raw = json.dumps(params).replace(" ", "").encode('ascii')

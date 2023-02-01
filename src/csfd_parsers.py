@@ -952,7 +952,7 @@ class UsersParser:
             "by_biography": self.parse_active_users_by_biography(s),
         })
 
-class DvdParser:
+class DvdsParser:
 
     # DVDS MONTHLY
 
@@ -972,11 +972,7 @@ class DvdParser:
         img = sel(s, "img")
         img_src = None if img is None else img.get("src")
         header = sel(s, ".article-header")
-        try:
-            header_a = sel(header, "a")
-        except:
-            print(s)
-            raise Exception("Cannot parse header")
+        header_a = sel(header, "a")
         origins_genres = text(s, ".film-origins-genres .info").split(", ")
 
         return DVDMonthly({
@@ -1028,8 +1024,7 @@ class DvdParser:
         content = sel(s, ".box-content.box-content-striped-articles")
         dvds = []
         for article in asel(content, "article"):
-            dvd = self.__parse_dvds_monthly_article(article)
-            dvds.append(dvd)
+            dvds.append(self.__parse_dvds_monthly_article(article))
         return DVDSMonthlyByRating({
             "dvds": dvds,
             "has_prev_page": self.parse_dvds_monthly_has_prev_page(s),
@@ -1079,3 +1074,131 @@ class DvdParser:
             dvds.append(self.__parse_dvds_yearly_tr(tr, current_date))
 
         return DVDSYearlyByRating({"dvds": dvds})
+
+class BluraysParser:
+
+    # BLURAYS MONTHLY
+
+    @staticmethod
+    def __parse_blurays_monthly_parse_creators(s, name):
+        creators = []
+        for p in asel(s, ".film-creators"):
+            if text(p).split(":")[0] == name:
+                for a in asel(p, "a"):
+                    creators.append({
+                        "id": extract_id(a.get("href")),
+                        "name": text(a),
+                    })
+        return creators
+
+    def __parse_blurays_monthly_article(self, s) -> BlurayMonthly:
+        img = sel(s, "img")
+        img_src = None if img is None else img.get("src")
+        header = sel(s, ".article-header")
+        header_a = sel(header, "a")
+        origins_genres = text(s, ".film-origins-genres .info").split(", ")
+        distributor = clean(text(s, ".article-content > p:last-of-type")).split(": ")
+
+        return BlurayMonthly({
+            "id": extract_id(header_a.get("href")),
+            "name": text(header_a),
+            "year": int(text(header, ".info")[1:-1]),
+            "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
+            "origins": origins_genres[0].split(" / ") if len(origins_genres) > 1 else [],
+            "directors": self.__parse_blurays_monthly_parse_creators(s, "Režie"),
+            "actors": self.__parse_blurays_monthly_parse_creators(s, "Hrají"),
+            "distributor": {
+                "name": distributor[1],
+                "types": distributor[2].split(" / "),
+            },
+            "image": None if img_src.startswith("data:image") else url(img_src),
+        })
+
+    @staticmethod
+    def parse_blurays_monthly_has_prev_page(s) -> bool:
+        return sel(s, ".page-prev") is not None
+
+    @staticmethod
+    def parse_blurays_monthly_has_next_page(s) -> bool:
+        return sel(s, ".page-next") is not None
+
+    def parse_blurays_monthly_by_release_date(self, s) -> BluraysMonthlyByReleaseDate:
+        content = sel(s, ".box-content.box-content-striped-articles")
+        blurays = {}
+        current_date = None
+
+        for tag in content.children:
+            if tag.name not in ["div", "article"]:
+                continue
+
+            if tag.name == "div":
+                if tag.get("class") != ["box-sub-header"]:
+                    continue
+                current_date = text(tag).split(" ")[-1]
+                blurays[current_date] = []
+                continue
+
+            bluray = self.__parse_blurays_monthly_article(tag)
+            blurays[current_date].append(bluray)
+
+        return BluraysMonthlyByReleaseDate({
+            "blurays": blurays,
+            "has_prev_page": self.parse_blurays_monthly_has_prev_page(s),
+            "has_next_page": self.parse_blurays_monthly_has_next_page(s),
+        })
+
+    def parse_blurays_monthly_by_rating(self, s) -> BluraysMonthlyByRating:
+        content = sel(s, ".box-content.box-content-striped-articles")
+        blurays = []
+        for article in asel(content, "article"):
+            blurays.append(self.__parse_blurays_monthly_article(article))
+        return BluraysMonthlyByRating({
+            "blurays": blurays,
+            "has_prev_page": self.parse_blurays_monthly_has_prev_page(s),
+            "has_next_page": self.parse_blurays_monthly_has_next_page(s),
+        })
+
+    # BLURAYS YEARLY
+
+    @staticmethod
+    def __parse_blurays_yearly_tr(s, date) -> BlurayYearly:
+        tr_a = sel(s, ".movies a")
+        return BlurayYearly({
+            "id": extract_id(tr_a.get("href")),
+            "name": text(tr_a),
+            "year": toint(text(s, ".movies .film-title-info .info")),
+            "types": clean(text(s, ".movies > .info"))[2:].split(" / "),
+            "date": date,
+        })
+
+    def parse_blurays_yearly_by_release_date(self, s) -> BluraysYearlyByReleaseDate:
+        blurays = {}
+        for content in asel(s, ".box-content:not(.box-content-striped-articles)"):
+            month_name = text(content, ".box-sub-header").split(" ")[0]
+            month = Months.get_by_czech_name(month_name)
+            blurays[month] = []
+            current_date = None
+
+            for tr in asel(content, "table tbody tr"):
+                date_td = sel(tr, "td.date-only")
+
+                if date_td is not None:
+                    current_date = text(date_td)
+
+                bluray = self.__parse_blurays_yearly_tr(tr, current_date)
+                blurays[month].append(bluray)
+
+        return BluraysYearlyByReleaseDate({"blurays": blurays})
+
+    def parse_dvds_yearly_by_rating(self, s) -> BluraysYearlyByRating:
+        blurays = []
+        current_date = None
+        for tr in asel(s, "table tbody tr"):
+            date_td = sel(tr, "td.date-only")
+
+            if date_td is not None:
+                current_date = text(date_td)
+
+            blurays.append(self.__parse_blurays_yearly_tr(tr, current_date))
+
+        return BluraysYearlyByRating({"blurays": blurays})

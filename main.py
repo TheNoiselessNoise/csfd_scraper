@@ -6,6 +6,12 @@ def main():
 
     # TODO: add color rating to everywhere it is missing
 
+    # --- BLURAYS
+
+    # result = scraper.blurays_monthly_by_release_date(2022, 1, Months.OCTOBER)
+    result = scraper.blurays_yearly_by_release_date(2023)
+    print(result)
+
     # --- DVDS
 
     # result = scraper.dvds_yearly_by_release_date(2023)
@@ -15,8 +21,8 @@ def main():
     # print(result)
 
     # result = scraper.dvds_yearly_by_rating(1997)
-    # result = scraper.dvds_monthly_by_release_date(1997, Months.OCTOBER)
-    # result = scraper.dvds_monthly_by_rating(1997, Months.OCTOBER)
+    # result = scraper.dvds_monthly_by_release_date(1997, 1, Months.OCTOBER)
+    # result = scraper.dvds_monthly_by_rating(1997, 1, Months.OCTOBER)
     # print(result)
 
     # --- USERS

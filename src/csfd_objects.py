@@ -1098,7 +1098,7 @@ class DVDSYearlyByReleaseDate(PrintableObject):
 
     def __str__(self):
         args = self.args
-        args["dvds"] = {k.value[1]: {m: [d.args for d in v] for m, v in v.items()} for k, v in self.dvds.items()}
+        args["dvds"] = {k.value[1]: [d.args for d in v] for k, v in self.dvds.items()}
         return tojson(args)
 
 class DVDSYearlyByRating(PrintableObject):
@@ -1109,6 +1109,76 @@ class DVDSYearlyByRating(PrintableObject):
     def __str__(self):
         args = self.args
         args["dvds"] = [d.args for d in self.dvds]
+        return tojson(args)
+
+# </editor-fold>
+
+# <editor-fold desc="DVDS TYPES">
+
+class BlurayMonthly(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.year = args.get("year", None)
+        self.genres = args.get("genres", [])
+        self.origins = args.get("origins", [])
+        self.directors = args.get("directors", [])
+        self.actors = args.get("actors", [])
+        self.distributor = args.get("distributor", {})
+        self.image = args.get("image", None)
+
+class BluraysMonthlyByReleaseDate(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.blurays: Dict[str, List[BlurayMonthly]] = args.get("blurays", {})
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
+
+    def __str__(self):
+        args = self.args
+        args["blurays"] = {k: [d.args for d in v] for k, v in self.blurays.items()}
+        return tojson(args)
+
+class BluraysMonthlyByRating(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.blurays: List[BlurayMonthly] = args.get("blurays", {})
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
+
+    def __str__(self):
+        args = self.args
+        args["blurays"] = [d.args for d in self.blurays]
+        return tojson(args)
+
+class BlurayYearly(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.year = args.get("year", None)
+        self.types = args.get("types", [])
+        self.date = args.get("date", None)
+
+class BluraysYearlyByReleaseDate(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.blurays: Dict[Months, List[BlurayYearly]] = args.get("blurays", {})
+
+    def __str__(self):
+        args = self.args
+        args["blurays"] = {k.value[1]: [d.args for d in v] for k, v in self.blurays.items()}
+        return tojson(args)
+
+class BluraysYearlyByRating(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.blurays: List[BlurayYearly] = args.get("blurays", {})
+
+    def __str__(self):
+        args = self.args
+        args["blurays"] = [d.args for d in self.blurays]
         return tojson(args)
 
 # </editor-fold>

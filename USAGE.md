@@ -133,3 +133,9 @@
 - `dvds_monthly_by_rating(year=None, page=1, month=Months.JANUARY)`
 - `dvds_yearly_by_release_date(year=None)`
 - `dvds_yearly_by_rating(year=None)`
+
+#### Methods for getting Blu-rays information
+- `blurays_monthly_by_release_date(year=None, page=1, month=Months.JANUARY)`
+- `blurays_monthly_by_rating(year=None, page=1, month=Months.JANUARY)`
+- `blurays_yearly_by_release_date(year=None)`
+- `blurays_yearly_by_rating(year=None)`

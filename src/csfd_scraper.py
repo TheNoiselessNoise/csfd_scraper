@@ -10,7 +10,8 @@ class CsfdScraper:
     __USER_PARSER = UserParser()
     __NEWS_PARSER = NewsParser()
     __USERS_PARSER = UsersParser()
-    __DVD_PARSER = DvdParser()
+    __DVDS_PARSER = DvdsParser()
+    __BLURAYS_PARSER = BluraysParser()
 
     def __reset(self):
         self.__LAST_SOUP = None
@@ -19,7 +20,7 @@ class CsfdScraper:
 
     @staticmethod
     def __request(func, u, params=None):
-        # print("Requesting: " + u)
+        print("Requesting: " + u)
         response = func(u, params=params, headers={"User-Agent": "Mozilla/5.0"})
         if response.status_code != 200:
             raise CsfdScraperInvalidRequest("Invalid request at url: " + u)
@@ -79,6 +80,12 @@ class CsfdScraper:
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
     def __get_dvds_yearly_soup(self, year, sort):
         u = url_prepare(Globals.DVDS_YEARLY_URL, {"year": year, "sort": sort})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
+    def __get_blurays_monthly_soup(self, year, month, page, sort):
+        u = url_prepare(Globals.BLURAYS_MONTHLY_URL, {"year": year, "month": month.value[0], "sort": sort, "page": page})
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
+    def __get_blurays_yearly_soup(self, year, sort):
+        u = url_prepare(Globals.BLURAYS_YEARLY_URL, {"year": year, "sort": sort})
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
     # </editor-fold>
 
@@ -408,22 +415,49 @@ class CsfdScraper:
     def dvds_monthly_by_release_date(self, year=None, page=1, month: Months = Months.JANUARY):
         if year is None:
             year = datetime.now().year
-        return self.__DVD_PARSER.parse_dvds_monthly_by_release_date(self.__get_dvds_monthly_soup(year, month, page, "release_date"))
+        return self.__DVDS_PARSER.parse_dvds_monthly_by_release_date(self.__get_dvds_monthly_soup(year, month, page, "release_date"))
     """Year is range from 1996 to the current, default is the current year"""
     def dvds_monthly_by_rating(self, year=None, page=1, month: Months = Months.JANUARY):
         if year is None:
             year = datetime.now().year
-        return self.__DVD_PARSER.parse_dvds_monthly_by_rating(self.__get_dvds_monthly_soup(year, month, page, "rating"))
+        return self.__DVDS_PARSER.parse_dvds_monthly_by_rating(self.__get_dvds_monthly_soup(year, month, page, "rating"))
     """Year is range from 1996 to the current, default is the current year"""
     def dvds_yearly_by_release_date(self, year=None):
         if year is None:
             year = datetime.now().year
-        return self.__DVD_PARSER.parse_dvds_yearly_by_release_date(self.__get_dvds_yearly_soup(year, "release_date"))
+        return self.__DVDS_PARSER.parse_dvds_yearly_by_release_date(self.__get_dvds_yearly_soup(year, "release_date"))
     """Year is range from 1996 to the current, default is the current year"""
     def dvds_yearly_by_rating(self, year=None):
         if year is None:
             year = datetime.now().year
-        return self.__DVD_PARSER.parse_dvds_yearly_by_rating(self.__get_dvds_yearly_soup(year, "rating"))
+        return self.__DVDS_PARSER.parse_dvds_yearly_by_rating(self.__get_dvds_yearly_soup(year, "rating"))
 
     # </editor-fold>
 
+    # <editor-fold desc="DVDS">
+
+    """Year is range from 2007 to the current, default is the current year"""
+    def blurays_monthly_by_release_date(self, year=None, page=1, month: Months = Months.JANUARY):
+        if year is None:
+            year = datetime.now().year
+        return self.__BLURAYS_PARSER.parse_blurays_monthly_by_release_date(
+            self.__get_blurays_monthly_soup(year, month, page, "release_date"))
+    """Year is range from 2007 to the current, default is the current year"""
+    def blurays_monthly_by_rating(self, year=None, page=1, month: Months = Months.JANUARY):
+        if year is None:
+            year = datetime.now().year
+        return self.__BLURAYS_PARSER.parse_blurays_monthly_by_rating(
+            self.__get_blurays_monthly_soup(year, month, page, "rating"))
+    """Year is range from 2007 to the current, default is the current year"""
+    def blurays_yearly_by_release_date(self, year=None):
+        if year is None:
+            year = datetime.now().year
+        return self.__BLURAYS_PARSER.parse_blurays_yearly_by_release_date(
+            self.__get_blurays_yearly_soup(year, "release_date"))
+    """Year is range from 2007 to the current, default is the current year"""
+    def blurays_yearly_by_rating(self, year=None):
+        if year is None:
+            year = datetime.now().year
+        return self.__BLURAYS_PARSER.parse_dvds_yearly_by_rating(self.__get_blurays_yearly_soup(year, "rating"))
+
+    # </editor-fold>

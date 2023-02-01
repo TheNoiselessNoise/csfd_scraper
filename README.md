@@ -75,6 +75,20 @@ result = scraper.dvds_monthly_by_release_date(2023, 2, Months.JANUARY)
 result = scraper.dvds_monthly_by_rating(2023, 2, Months.JANUARY)
 ```
 
+### Blu-rays yearly
+```python
+result = scraper.blurays_yearly_by_release_date(2023)
+in_january = result.blurays[Months.JANUARY]
+
+result = scraper.blurays_yearly_by_rating(2023)
+```
+
+### Blu-rays monthly
+```python
+result = scraper.blurays_monthly_by_release_date(2023, 2, Months.JANUARY)
+result = scraper.blurays_monthly_by_rating(2023, 2, Months.JANUARY)
+```
+
 ### Search movies/creators/series/users by text
 ```python
 result = scraper.text_search("spielberg")
