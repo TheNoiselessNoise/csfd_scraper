@@ -318,8 +318,11 @@ class MovieTypes(Enum):
     MOVIE             = 0
     """Film"""
 
-    SERIES            = 3
+    SERIAL            = 3
     """Seriál"""
+
+    SERIES            = 10
+    """Série - doesn't apply to Advanced Search"""
 
     TV_MOVIE          = 2
     """TV film"""
@@ -1180,6 +1183,47 @@ class BluraysYearlyByRating(PrintableObject):
     def __str__(self):
         args = self.args
         args["blurays"] = [d.args for d in self.blurays]
+        return tojson(args)
+
+# </editor-fold>
+
+# <editor-fold desc="USER RATINGS TYPES">
+
+class UserRatingsSorts(Enum):
+    """Možnosti řazení uživatelských hodnocení"""
+
+    BY_NEWLY_ADDED = "inserted_datetime"
+    """seřadit od nově přidaných"""
+
+    BY_NAME = "film_name"
+    """seřadit abecedně"""
+
+    BY_YEAR = "film_year"
+    """seřadit podle roku vzniku filmu"""
+
+    BY_RATING = "rating"
+    """seřadit dle hodnocení"""
+
+class UserRating(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.year = args.get("year", None)
+        self.rating = args.get("rating", None)
+        self.date = args.get("date", None)
+
+class UserRatings(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.total = args.get("total", None)
+        self.ratings: List[UserRating] = args.get("ratings", [])
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
+
+    def __str__(self):
+        args = self.args
+        args["ratings"] = [d.args for d in self.ratings]
         return tojson(args)
 
 # </editor-fold>

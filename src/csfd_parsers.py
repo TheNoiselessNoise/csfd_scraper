@@ -500,6 +500,8 @@ class MovieParser:
 
 class UserParser:
 
+    # USER OVERVIEW
+
     @staticmethod
     def parse_user_name(s):
         return text(s, ".user-profile h1")
@@ -646,6 +648,44 @@ class UserParser:
             "ratings": self.parse_user_ratings(s),
             "is_currently_online": self.parse_user_is_currently_online(s),
             "image": self.parse_user_image(s),
+        })
+
+    # USER RATINGS
+
+    @staticmethod
+    def parse_user_ratings_ratings_count(s):
+        return toint(text(s, ".count"))
+
+    @staticmethod
+    def parse_user_ratings_ratings_list(s) -> List[UserRating]:
+        ratings = []
+        for tr in asel(s, ".user-tab-rating table tr"):
+            td_a = sel(tr, ".name a")
+            stars = sel(tr, ".star-rating-only .stars").get("class")
+
+            ratings.append(UserRating({
+                "id": extract_id(td_a.get("href")),
+                "name": text(td_a),
+                "year": toint(text(tr, ".film-title-info .info:first-child")),
+                "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
+                "date": text(tr, ".date-only")
+            }))
+        return ratings
+
+    @staticmethod
+    def parse_user_ratings_ratings_has_prev_page(s):
+        return sel(s, ".user-tab-rating .page-prev") is not None
+
+    @staticmethod
+    def parse_user_ratings_ratings_has_next_page(s):
+        return sel(s, ".user-tab-rating .page-next") is not None
+
+    def parse_user_ratings_ratings(self, s) -> UserRatings:
+        return UserRatings({
+            "total": self.parse_user_ratings_ratings_count(s),
+            "ratings": self.parse_user_ratings_ratings_list(s),
+            "has_prev_page": self.parse_user_ratings_ratings_has_prev_page(s),
+            "has_next_page": self.parse_user_ratings_ratings_has_next_page(s),
         })
 
 class NewsParser:

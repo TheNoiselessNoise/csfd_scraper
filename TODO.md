@@ -3,7 +3,6 @@
 ### What else to do?
 - [ ] Make project pip installable
 - [ ] Scraping User
-  - [ ] Scraping "Ratings"
   - [ ] Scraping "Reviews"
   - [ ] Scraping "Favorites"
   - [ ] Scraping "Film Library"
@@ -25,6 +24,8 @@
 - [ ] Scraping user's diary
 
 ### Completed ✓
+- [x] Scraping User
+  - [x] Scraping "Ratings"
 - [x] Scraping Blu-rays by ["monthly overview"](https://www.csfd.cz/bluray/)
 - [x] Scraping Blu-rays by ["yearly overview"](https://www.csfd.cz/bluray/rocne/)
 - [x] Scraping DVDs by ["monthly overview"](https://www.csfd.cz/dvd/)

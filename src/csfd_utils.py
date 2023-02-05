@@ -26,6 +26,7 @@ class Globals:
     DVDS_YEARLY_URL = "https://www.csfd.cz/dvd/rocne/?sort=<sort>&year=<year>"
     BLURAYS_MONTHLY_URL = "https://www.csfd.cz/bluray/?page=<page>&sort=<sort>&year=<year>&month=<month>"
     BLURAYS_YEARLY_URL = "https://www.csfd.cz/bluray/rocne/?sort=<sort>&year=<year>"
+    USER_RATINGS_URL = "https://www.csfd.cz/uzivatel/<uid>-redak/hodnoceni/"
 
 def encode_params(params):
     params_raw = json.dumps(params).replace(" ", "").encode('ascii')
@@ -44,6 +45,15 @@ def toint(s):
 def url_prepare(s, d):
     for k, v in d.items():
         s = s.replace("<" + str(k) + ">", str(v))
+    return s
+
+def url_params(s, params):
+    first = True
+    for k, v in params.items():
+        if v is None:
+            continue
+        s += ("&" if not first else "?") + str(k) + "=" + str(v)
+        first = False
     return s
 
 def url(s):

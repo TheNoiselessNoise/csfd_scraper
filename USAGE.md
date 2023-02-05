@@ -108,11 +108,14 @@
 - `user_most_watched_types(uid)`
 - `user_most_watched_origins(uid)`
 - `user_reviews_count(uid)`
-- `user_reviews(uid)`
+- `user_last_reviews(uid)`
 - `user_ratings_count(uid)`
-- `user_ratings(uid)`
+- `user_last_ratings(uid)`
 - `user_is_currently_online(uid)`
 - `user_image(uid)`
+
+#### Methods for getting other User information
+- `user_ratings(uid, mtype=None, origin=None, genre=None, sort=UserRatingsSorts.BY_NEWLY_ADDED, page=1)`
 
 #### Methods for getting Most Favorite Users information
 - `favorite_users()`

@@ -87,6 +87,17 @@ class CsfdScraper:
     def __get_blurays_yearly_soup(self, year, sort):
         u = url_prepare(Globals.BLURAYS_YEARLY_URL, {"year": year, "sort": sort})
         return self.__get_soup() or self.__get_soup(self.__get(u).content)
+    def __get_user_ratings_soup(self, uid, mtype, origin, genre, sort, page):
+        u = url_prepare(Globals.USER_RATINGS_URL, {"uid": uid})
+        u = url_params(u, {
+            "type": None if mtype is None else mtype.value,
+            "origin": None if origin is None else origin.value[0],
+            "genre": None if genre is None else genre.value[0],
+            "sort": sort.value,
+            "page": page
+        })
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
+
     # </editor-fold>
 
     # <editor-fold desc="SEARCH">
@@ -371,16 +382,31 @@ class CsfdScraper:
         return self.__USER_PARSER.parse_user_most_watched_origins(self.__get_user_soup(uid))
     def user_reviews_count(self, uid):
         return self.__USER_PARSER.parse_user_reviews_count(self.__get_user_soup(uid))
-    def user_reviews(self, uid):
+    def user_last_reviews(self, uid):
         return self.__USER_PARSER.parse_user_reviews(self.__get_user_soup(uid))
     def user_ratings_count(self, uid):
         return self.__USER_PARSER.parse_user_ratings_count(self.__get_user_soup(uid))
-    def user_ratings(self, uid):
+    def user_last_ratings(self, uid):
         return self.__USER_PARSER.parse_user_ratings(self.__get_user_soup(uid))
     def user_is_currently_online(self, uid):
         return self.__USER_PARSER.parse_user_is_currently_online(self.__get_user_soup(uid))
     def user_image(self, uid):
         return self.__USER_PARSER.parse_user_image(self.__get_user_soup(uid))
+    # </editor-fold>
+
+    # <editor-fold desc="USER OTHERS">
+
+    def user_ratings(self,
+                     uid,
+                     mtype: MovieTypes = None,
+                     origin: Origins = None,
+                     genre: MovieGenres = None,
+                     sort: UserRatingsSorts = UserRatingsSorts.BY_NEWLY_ADDED,
+                     page=1):
+        return self.__USER_PARSER.parse_user_ratings_ratings(
+            self.__get_user_ratings_soup(uid, mtype, origin, genre, sort, page)
+        )
+
     # </editor-fold>
 
     # <editor-fold desc="USERS">
@@ -434,7 +460,7 @@ class CsfdScraper:
 
     # </editor-fold>
 
-    # <editor-fold desc="DVDS">
+    # <editor-fold desc="BLU-RAYS">
 
     """Year is range from 2007 to the current, default is the current year"""
     def blurays_monthly_by_release_date(self, year=None, page=1, month: Months = Months.JANUARY):

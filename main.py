@@ -6,6 +6,11 @@ def main():
 
     # TODO: add color rating to everywhere it is missing
 
+    # --- USER RATINGS
+
+    result = scraper.user_ratings(447317, mtype=MovieTypes.MOVIE, origin=Origins.USA)
+    print(result)
+
     # --- BLURAYS
 
     # result = scraper.blurays_monthly_by_release_date(2022, 1, Months.OCTOBER)
