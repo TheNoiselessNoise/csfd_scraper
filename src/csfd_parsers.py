@@ -535,6 +535,11 @@ class UserParser:
         return None if points_a is None else int("".join(clean(text(points_a)).split(" ")[:-1]))
 
     @staticmethod
+    def parse_user_fans(s):
+        content_span = sel(s, ".fan-club-content > span")
+        return None if content_span is None else toint(text(content_span))
+
+    @staticmethod
     def parse_user_awards(s):
         awards = {}
         for a in asel(s, ".ranking:not(.ranking-points) a"):
@@ -632,6 +637,7 @@ class UserParser:
             "registered": self.parse_user_registered(s),
             "last_login": self.parse_user_last_login(s),
             "points": self.parse_user_points(s),
+            "fans": self.parse_user_fans(s),
             "awards": self.parse_user_awards(s),
             "most_watched_genres": self.parse_user_most_watched_genres(s),
             "most_watched_types": self.parse_user_most_watched_types(s),

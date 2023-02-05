@@ -9,8 +9,8 @@ def main():
     # --- BLURAYS
 
     # result = scraper.blurays_monthly_by_release_date(2022, 1, Months.OCTOBER)
-    result = scraper.blurays_yearly_by_release_date(2023)
-    print(result)
+    # result = scraper.blurays_yearly_by_release_date(2023)
+    # print(result)
 
     # --- DVDS
 

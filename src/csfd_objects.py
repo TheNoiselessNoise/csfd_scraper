@@ -912,6 +912,7 @@ class User(PrintableObject):
         self.registered = args.get("registered", None)
         self.last_login = args.get("last_login", None)
         self.points = args.get("points", None)
+        self.fans = args.get("fans", None)
         self.awards = args.get("awards", None)
         self.most_watched_genres = args.get("most_watched_genres", {})
         self.most_watched_types = args.get("most_watched_types", {})
