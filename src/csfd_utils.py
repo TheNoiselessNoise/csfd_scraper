@@ -26,7 +26,8 @@ class Globals:
     DVDS_YEARLY_URL = "https://www.csfd.cz/dvd/rocne/?sort=<sort>&year=<year>"
     BLURAYS_MONTHLY_URL = "https://www.csfd.cz/bluray/?page=<page>&sort=<sort>&year=<year>&month=<month>"
     BLURAYS_YEARLY_URL = "https://www.csfd.cz/bluray/rocne/?sort=<sort>&year=<year>"
-    USER_RATINGS_URL = "https://www.csfd.cz/uzivatel/<uid>-redak/hodnoceni/"
+    USER_RATINGS_URL = "https://www.csfd.cz/uzivatel/<uid>/hodnoceni/"
+    USER_REVIEWS_URL = "https://www.csfd.cz/uzivatel/<uid>/recenze/"
 
 def encode_params(params):
     params_raw = json.dumps(params).replace(" ", "").encode('ascii')

@@ -36,6 +36,16 @@ creator = scraper.creator(84039)
 user = scraper.user(447317)
 ```
 
+### Get user's ratings
+```python
+ratings = scraper.user_ratings(447317)
+```
+
+### Get user's reviews
+```python
+reviews = scraper.user_reviews(447317)
+```
+
 ### News list
 ```python
 news_list = scraper.news_list()

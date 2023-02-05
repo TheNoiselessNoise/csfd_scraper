@@ -6,10 +6,15 @@ def main():
 
     # TODO: add color rating to everywhere it is missing
 
+    # --- USER REVIEWS
+
+    # result = scraper.user_reviews(447317, mtype=MovieTypes.MOVIE, genre=MovieGenres.EROTIC)
+    # print(result)
+
     # --- USER RATINGS
 
-    result = scraper.user_ratings(447317, mtype=MovieTypes.MOVIE, origin=Origins.USA)
-    print(result)
+    # result = scraper.user_ratings(447317, mtype=MovieTypes.MOVIE, origin=Origins.USA)
+    # print(result)
 
     # --- BLURAYS
 

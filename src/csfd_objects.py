@@ -1228,6 +1228,49 @@ class UserRatings(PrintableObject):
 
 # </editor-fold>
 
+# <editor-fold desc="USER REVIEWS TYPES">
+
+class UserReviewsSorts(Enum):
+    """Možnosti řazení uživatelských recenzí"""
+
+    BY_NEWLY_ADDED = "inserted_datetime"
+    """seřadit od nově přidaných"""
+
+    BY_NAME = "film_name"
+    """seřadit abecedně"""
+
+    BY_YEAR = "film_year"
+    """seřadit podle roku vzniku filmu"""
+
+    BY_RATING = "rating"
+    """seřadit dle hodnocení"""
+
+class UserReview(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.id = args.get("id", None)
+        self.name = args.get("name", None)
+        self.year = args.get("year", None)
+        self.rating = args.get("rating", None)
+        self.date = args.get("date", None)
+        self.text = args.get("text", None)
+        self.image = args.get("image", None)
+
+class UserReviews(PrintableObject):
+    def __init__(self, args):
+        self.args = args
+        self.total = args.get("total", None)
+        self.reviews: List[UserReview] = args.get("reviews", [])
+        self.has_prev_page = args.get("has_prev_page", False)
+        self.has_next_page = args.get("has_next_page", False)
+
+    def __str__(self):
+        args = self.args
+        args["reviews"] = [d.args for d in self.reviews]
+        return tojson(args)
+
+# </editor-fold>
+
 # <editor-fold desc="EXCEPTIONS">
 
 class CsfdScraperInvalidRequest(Exception):

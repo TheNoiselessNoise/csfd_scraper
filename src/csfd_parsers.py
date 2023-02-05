@@ -591,6 +591,7 @@ class UserParser:
             reviews["last"].append({
                 "id": extract_id(article_a.get("href")),
                 "name": text(article_a),
+                "year": toint(text(article, ".film-title-info .info:first-child")),
                 "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
                 "date": text(article, "time"),
                 "text": text(article, ".user-reviews-text p", rec_tags=["a", "em"]),
@@ -686,6 +687,46 @@ class UserParser:
             "ratings": self.parse_user_ratings_ratings_list(s),
             "has_prev_page": self.parse_user_ratings_ratings_has_prev_page(s),
             "has_next_page": self.parse_user_ratings_ratings_has_next_page(s),
+        })
+
+    # USER REVIEWS
+
+    @staticmethod
+    def parse_user_reviews_reviews_count(s):
+        return toint(text(s, ".count"))
+
+    @staticmethod
+    def parse_user_reviews_reviews_list(s) -> List[UserReview]:
+        reviews = []
+        for article in asel(s, ".user-reviews article.article"):
+            article_a = sel(article, "header a")
+            img_href = sel(article, "img").get("src")
+            stars = sel(article, ".stars").get("class")
+            reviews.append(UserReview({
+                "id": extract_id(article_a.get("href")),
+                "name": text(article_a),
+                "year": toint(text(article, ".film-title-info .info:first-child")),
+                "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
+                "date": text(article, "time"),
+                "text": text(article, ".user-reviews-text p", rec_tags=["a", "em"]),
+                "image": None if img_href.startswith("data:image") else url(img_href)
+            }))
+        return reviews
+
+    @staticmethod
+    def parse_user_reviews_reviews_has_prev_page(s):
+        return sel(s, ".user-reviews .page-prev") is not None
+
+    @staticmethod
+    def parse_user_reviews_reviews_has_next_page(s):
+        return sel(s, ".user-reviews .page-next") is not None
+
+    def parse_user_reviews_reviews(self, s) -> UserReviews:
+        return UserReviews({
+            "total": self.parse_user_reviews_reviews_count(s),
+            "reviews": self.parse_user_reviews_reviews_list(s),
+            "has_prev_page": self.parse_user_reviews_reviews_has_prev_page(s),
+            "has_next_page": self.parse_user_reviews_reviews_has_next_page(s),
         })
 
 class NewsParser:

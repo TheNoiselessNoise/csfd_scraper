@@ -116,6 +116,7 @@
 
 #### Methods for getting other User information
 - `user_ratings(uid, mtype=None, origin=None, genre=None, sort=UserRatingsSorts.BY_NEWLY_ADDED, page=1)`
+- `user_reviews(uid, mtype=None, origin=None, genre=None, sort=UserReviewsSorts.BY_NEWLY_ADDED, page=1)`
 
 #### Methods for getting Most Favorite Users information
 - `favorite_users()`

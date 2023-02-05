@@ -20,7 +20,7 @@ class CsfdScraper:
 
     @staticmethod
     def __request(func, u, params=None):
-        print("Requesting: " + u)
+        # print("Requesting: " + u)
         response = func(u, params=params, headers={"User-Agent": "Mozilla/5.0"})
         if response.status_code != 200:
             raise CsfdScraperInvalidRequest("Invalid request at url: " + u)
@@ -92,6 +92,16 @@ class CsfdScraper:
         u = url_params(u, {
             "type": None if mtype is None else mtype.value,
             "origin": None if origin is None else origin.value[0],
+            "genre": None if genre is None else genre.value[0],
+            "sort": sort.value,
+            "page": page
+        })
+        return self.__get_soup() or self.__get_soup(self.__get(u).content)
+    def __get_user_reviews_soup(self, uid, mtype, origin, genre, sort, page):
+        u = url_prepare(Globals.USER_REVIEWS_URL, {"uid": uid})
+        u = url_params(u, {
+            "type": None if mtype is None else mtype.value,
+            "country": None if origin is None else origin.value[0],
             "genre": None if genre is None else genre.value[0],
             "sort": sort.value,
             "page": page
@@ -405,6 +415,16 @@ class CsfdScraper:
                      page=1):
         return self.__USER_PARSER.parse_user_ratings_ratings(
             self.__get_user_ratings_soup(uid, mtype, origin, genre, sort, page)
+        )
+    def user_reviews(self,
+                     uid,
+                     mtype: MovieTypes = None,
+                     origin: Origins = None,
+                     genre: MovieGenres = None,
+                     sort: UserReviewsSorts = UserReviewsSorts.BY_NEWLY_ADDED,
+                     page=1):
+        return self.__USER_PARSER.parse_user_reviews_reviews(
+            self.__get_user_reviews_soup(uid, mtype, origin, genre, sort, page)
         )
 
     # </editor-fold>
