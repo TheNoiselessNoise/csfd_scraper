@@ -1,93 +1,91 @@
 import requests
 from datetime import datetime
 from src.csfd_parsers import *
+from bs4 import BeautifulSoup
+from typing import List, Optional
 
 class CsfdScraper:
-    __LAST_SOUP = None
-    __MOVIE_PARSER = MovieParser()
-    __CREATOR_PARSER = CreatorParser()
-    __SEARCH_PARSER = SearchParser()
-    __USER_PARSER = UserParser()
-    __NEWS_PARSER = NewsParser()
-    __USERS_PARSER = UsersParser()
-    __DVDS_PARSER = DvdsParser()
-    __BLURAYS_PARSER = BluraysParser()
+    __LAST_URL: Optional[str]            = None
+    __LAST_SOUP: Optional[BeautifulSoup] = None
 
-    def __reset(self):
-        self.__LAST_SOUP = None
+    __MOVIE_PARSER: MovieParser     = MovieParser()
+    __CREATOR_PARSER: CreatorParser = CreatorParser()
+    __SEARCH_PARSER: SearchParser   = SearchParser()
+    __USER_PARSER: UserParser       = UserParser()
+    __NEWS_PARSER: NewsParser       = NewsParser()
+    __USERS_PARSER: UsersParser     = UsersParser()
+    __DVDS_PARSER: DvdsParser       = DvdsParser()
+    __BLURAYS_PARSER: BluraysParser = BluraysParser()
+
+    def __reset(self) -> None:
         self.__MOVIE_PARSER.reset()
         self.__CREATOR_PARSER.reset()
-
     @staticmethod
-    def __request(func, u, params=None):
-        # print("Requesting: " + u)
+    def __request(func: callable, u: str, params: Optional[dict] = None) -> requests.Response:
+        print("Requesting: " + u)
         response = func(u, params=params, headers={"User-Agent": "Mozilla/5.0"})
         if response.status_code != 200:
             raise CsfdScraperInvalidRequest("Invalid request at url: " + u)
         return response
-    def __get(self, *args):
-        self.__reset()
+    def __get(self, *args) -> requests.Response:
         return self.__request(requests.get, *args)
-    def __post(self, *args):
-        self.__reset()
+    def __post(self, *args) -> requests.Response:
         return self.__request(requests.post, *args)
 
     # <editor-fold desc="SOUPS">
-    def __get_soup(self, s=None):
-        if s is None and self.__LAST_SOUP is None:
-            return None
-        if s is None and self.__LAST_SOUP:
+    def __get_soup(self, u: str) -> BeautifulSoup:
+        if u == self.__LAST_URL and self.__LAST_SOUP:
             return self.__LAST_SOUP
-
-        if not self.__LAST_SOUP:
-            self.__LAST_SOUP = soup(s)
+        self.__LAST_URL = u
+        self.__LAST_SOUP = soup(self.__get(u).content)
         return self.__LAST_SOUP
-    def __get_movie_soup(self, mid):
-        return self.__get_soup() or self.__get_soup(self.__get(Globals.MOVIES_URL + str(mid)).content)
-    def __get_creator_soup(self, cid):
-        return self.__get_soup() or self.__get_soup(self.__get(Globals.CREATORS_URL + str(cid)).content)
-    def __get_user_soup(self, uid):
-        return self.__get_soup() or self.__get_soup(self.__get(Globals.USERS_URL + str(uid)).content)
-    def __get_news_soup(self, nid):
-        return self.__get_soup() or self.__get_soup(self.__get(Globals.NEWS_URL + str(nid)).content)
-    def __get_news_list_soup(self, page):
-        u = url_prepare(Globals.NEWS_LIST_URL, {"page": page})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_most_favorite_users_soup(self):
-        return self.__get_soup() or self.__get_soup(self.__get(Globals.MOST_FAVORITE_USERS_URL).content)
-    def __get_most_active_users_soup(self, origin, sort):
+    def __get_movie_soup(self, mid: int) -> BeautifulSoup:
+        return self.__get_soup(Globals.MOVIES_URL + str(mid))
+    def __get_creator_soup(self, cid: int) -> BeautifulSoup:
+        return self.__get_soup(Globals.CREATORS_URL + str(cid))
+    def __get_user_soup(self, uid: int) -> BeautifulSoup:
+        return self.__get_soup(Globals.USERS_URL + str(uid))
+    def __get_news_soup(self, nid: int) -> BeautifulSoup:
+        return self.__get_soup(Globals.NEWS_URL + str(nid))
+    def __get_news_list_soup(self, page: int) -> BeautifulSoup:
+        return self.__get_soup(url_prepare(Globals.NEWS_LIST_URL, {"page": page}))
+    def __get_most_favorite_users_soup(self) -> BeautifulSoup:
+        return self.__get_soup(Globals.MOST_FAVORITE_USERS_URL)
+    def __get_most_active_users_soup(self, origin: Optional[Origins], sort: ActiveUsersSorts) -> BeautifulSoup:
         if origin is None:
             u = url_prepare(Globals.ALL_MOST_ACTIVE_USERS_URL, {"sort": sort.value})
         else:
             u = url_prepare(Globals.MOST_ACTIVE_USERS_URL, {"sort": sort.value, "origin": origin.value[0]})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_text_search_soup(self, search, page):
-        u = url_prepare(Globals.TEXT_SEARCH_URL, {"search": search, "page": page})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_creator_sort_soup(self, cid, sort):
-        u = url_prepare(Globals.CREATORS_SORT_URL, {"cid": cid, "sort": sort.value})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_search_movies_soup(self, params, page, sort):
-        params = encode_params(params)
-        u = url_prepare(Globals.SEARCH_MOVIES_URL, {"page": page, "sort": sort.value, "params": params})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_search_creators_soup(self, params, page, sort):
-        params = encode_params(params)
-        u = url_prepare(Globals.SEARCH_CREATORS_URL, {"page": page, "sort": sort.value, "params": params})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_dvds_monthly_soup(self, year, month, page, sort):
+        return self.__get_soup(u)
+    def __get_text_search_soup(self, search: str, page: int) -> BeautifulSoup:
+        return self.__get_soup(url_prepare(Globals.TEXT_SEARCH_URL, {"search": search, "page": page}))
+    def __get_creator_sort_soup(self, cid: int, sort: CreatorFilmographySorts) -> BeautifulSoup:
+        return self.__get_soup(url_prepare(Globals.CREATORS_SORT_URL, {"cid": cid, "sort": sort.value}))
+    def __get_search_movies_soup(self, params: dict, page: int, sort: MovieSorts) -> BeautifulSoup:
+        u = url_prepare(Globals.SEARCH_MOVIES_URL, {"page": page, "sort": sort.value, "params": encode_params(params)})
+        return self.__get_soup(u)
+    def __get_search_creators_soup(self, params: dict, page: int, sort: CreatorSorts) -> BeautifulSoup:
+        u = url_prepare(Globals.SEARCH_CREATORS_URL, {"page": page, "sort": sort.value, "params": encode_params(params)})
+        return self.__get_soup(u)
+    def __get_dvds_monthly_soup(self, year: Optional[int], month: Months, page: int, sort: str) -> BeautifulSoup:
         u = url_prepare(Globals.DVDS_MONTHLY_URL, {"year": year, "month": month.value[0], "sort": sort, "page": page})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_dvds_yearly_soup(self, year, sort):
-        u = url_prepare(Globals.DVDS_YEARLY_URL, {"year": year, "sort": sort})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_blurays_monthly_soup(self, year, month, page, sort):
+        return self.__get_soup(u)
+    def __get_dvds_yearly_soup(self, year: Optional[int], sort: str) -> BeautifulSoup:
+        return self.__get_soup(url_prepare(Globals.DVDS_YEARLY_URL, {"year": year, "sort": sort}))
+    def __get_blurays_monthly_soup(self, year: Optional[int], month: Months, page: int, sort: str) -> BeautifulSoup:
         u = url_prepare(Globals.BLURAYS_MONTHLY_URL, {"year": year, "month": month.value[0], "sort": sort, "page": page})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_blurays_yearly_soup(self, year, sort):
-        u = url_prepare(Globals.BLURAYS_YEARLY_URL, {"year": year, "sort": sort})
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_user_ratings_soup(self, uid, mtype, origin, genre, sort, page):
+        return self.__get_soup(u)
+    def __get_blurays_yearly_soup(self, year: Optional[int], sort: str) -> BeautifulSoup:
+        return self.__get_soup(url_prepare(Globals.BLURAYS_YEARLY_URL, {"year": year, "sort": sort}))
+    def __get_user_ratings_soup(
+            self,
+            uid: int,
+            mtype: Optional[MovieTypes],
+            origin: Optional[Origins],
+            genre: Optional[MovieGenres],
+            sort: UserRatingsSorts,
+            page: int
+    ) -> BeautifulSoup:
         u = url_prepare(Globals.USER_RATINGS_URL, {"uid": uid})
         u = url_params(u, {
             "type": None if mtype is None else mtype.value,
@@ -96,8 +94,16 @@ class CsfdScraper:
             "sort": sort.value,
             "page": page
         })
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
-    def __get_user_reviews_soup(self, uid, mtype, origin, genre, sort, page):
+        return self.__get_soup(u)
+    def __get_user_reviews_soup(
+            self,
+            uid: int,
+            mtype: Optional[MovieTypes],
+            origin: Optional[Origins],
+            genre: Optional[MovieGenres],
+            sort: UserReviewsSorts,
+            page: int
+    ) -> BeautifulSoup:
         u = url_prepare(Globals.USER_REVIEWS_URL, {"uid": uid})
         u = url_params(u, {
             "type": None if mtype is None else mtype.value,
@@ -106,12 +112,12 @@ class CsfdScraper:
             "sort": sort.value,
             "page": page
         })
-        return self.__get_soup() or self.__get_soup(self.__get(u).content)
+        return self.__get_soup(u)
 
     # </editor-fold>
 
     # <editor-fold desc="SEARCH">
-    def search_movies(self, options, page=1, sort=MovieSorts.BY_RATING_COUNT):
+    def search_movies(self, options: dict, page: int = 1, sort: MovieSorts = MovieSorts.BY_RATING_COUNT) -> SearchMoviesResult:
         params = {}
         for key, param in MovieParams.__members__.items():
             name = param.value[0]
@@ -141,7 +147,7 @@ class CsfdScraper:
 
         s = self.__get_search_movies_soup(params, page, sort)
         return self.__SEARCH_PARSER.parse_movies_search(s, page)
-    def search_creators(self, options, page=1, sort=CreatorSorts.BY_FAN_COUNT):
+    def search_creators(self, options: dict, page: int = 1, sort: CreatorSorts = CreatorSorts.BY_FAN_COUNT) -> SearchCreatorsResult:
         params = {}
         for key, param in CreatorParams.__members__.items():
             name = param.value[0]
@@ -173,256 +179,262 @@ class CsfdScraper:
 
         s = self.__get_search_creators_soup(params, page, sort)
         return self.__SEARCH_PARSER.parse_creators_search(s, page)
+    # </editor-fold>
 
-    def text_search(self, search, page=1):
+    # <editor-fold desc="TEXT SEARCH">
+    def text_search(self, search: str, page: int = 1) -> TextSearchResult:
         return self.__SEARCH_PARSER.parse_text_search(self.__get_text_search_soup(search, page))
-    def text_search_movies(self, search, page=1):
+    def text_search_movies(self, search: str, page: int = 1) -> List[TextSearchedMovie]:
         return self.__SEARCH_PARSER.parse_text_search_movies(self.__get_text_search_soup(search, page))
-    def text_search_creators(self, search, page=1):
+    def text_search_creators(self, search: str, page: int = 1) -> List[TextSearchedCreator]:
         return self.__SEARCH_PARSER.parse_text_search_creators(self.__get_text_search_soup(search, page))
-    def text_search_series(self, search, page=1):
+    def text_search_series(self, search: str, page: int = 1) -> List[TextSearchedSeries]:
         return self.__SEARCH_PARSER.parse_text_search_series(self.__get_text_search_soup(search, page))
-    def text_search_users(self, search, page=1):
+    def text_search_users(self, search: str, page: int = 1) -> List[TextSearchedUser]:
         return self.__SEARCH_PARSER.parse_text_search_users(self.__get_text_search_soup(search, page))
     # </editor-fold>
 
-    # <editor-fold desc="AUTOCOMPLETE SEARCH">
-    def search_tags(self, search):
+    # <editor-fold desc="TEXT SEARCH (by AUTOCOMPLETE)">
+    def text_search_tags(self, search: str) -> List[Tag]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "tag", "search": search})
         return [Tag(x) for x in json.loads(self.__get(u).content)]
-    def search_actors(self, search):
+    def text_search_actors(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "actors", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_directors(self, search):
+    def text_search_directors(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "director", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_composers(self, search):
+    def text_search_composers(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "composer", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_screenwriters(self, search):
+    def text_search_screenwriters(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "screenwriter", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_authors(self, search):
+    def text_search_authors(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "author", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_cinematographers(self, search):
+    def text_search_cinematographers(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "cinematographer", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_producers(self, search):
+    def text_search_producers(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "production", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_editors(self, search):
+    def text_search_editors(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "edit", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_sound_engineers(self, search):
+    def text_search_sound_engineers(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "sound", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_scenographers(self, search):
+    def text_search_scenographers(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "scenography", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_mask_designers(self, search):
+    def text_search_mask_designers(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "mask", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
-    def search_costume_designers(self, search):
+    def text_search_costume_designers(self, search: str) -> List[FilmCreator]:
         u = url_prepare(Globals.SEARCH_AUTOCOMPLETE_URL, {"type": "costumes", "search": search})
         return [FilmCreator(x) for x in json.loads(self.__get(u).content)]
     # </editor-fold>
 
     # <editor-fold desc="NEWS">
-    def news(self, nid):
+    def news(self, nid: int) -> News:
         return self.__NEWS_PARSER.parse_news(self.__get_news_soup(nid), nid)
     @staticmethod
-    def news_url(nid):
+    def news_url(nid: int) -> str:
         return Globals.NEWS_URL + str(nid)
-    def news_title(self, nid):
+    def news_title(self, nid: int) -> Optional[str]:
         return self.__NEWS_PARSER.parse_news_title(self.__get_news_soup(nid))
-    def news_text(self, nid):
+    def news_text(self, nid: int) -> Optional[str]:
         return self.__NEWS_PARSER.parse_news_text(self.__get_news_soup(nid))
-    def news_date(self, nid):
+    def news_date(self, nid: int) -> Optional[str]:
         return self.__NEWS_PARSER.parse_news_date(self.__get_news_soup(nid))
-    def news_author_id(self, nid):
+    def news_author_id(self, nid: int) -> int:
         return self.__NEWS_PARSER.parse_news_author_id(self.__get_news_soup(nid))
-    def news_author_name(self, nid):
+    def news_author_name(self, nid: int) -> Optional[str]:
         return self.__NEWS_PARSER.parse_news_author_name(self.__get_news_soup(nid))
-    def news_most_read_news(self, nid):
+    def news_most_read_news(self, nid: int) -> List[dict]:
         return self.__NEWS_PARSER.parse_news_most_read_news(self.__get_news_soup(nid))
-    def news_most_latest_news(self, nid):
+    def news_most_latest_news(self, nid: int) -> List[dict]:
         return self.__NEWS_PARSER.parse_news_most_latest_news(self.__get_news_soup(nid))
-    def news_related_news(self, nid):
+    def news_related_news(self, nid: int) -> List[dict]:
         return self.__NEWS_PARSER.parse_news_related_news(self.__get_news_soup(nid))
-    def news_image(self, nid):
+    def news_image(self, nid: int) -> Optional[str]:
         return self.__NEWS_PARSER.parse_news_image(self.__get_news_soup(nid))
-    def news_prev_news_id(self, nid):
+    def news_prev_news_id(self, nid: int) -> int:
         return self.__NEWS_PARSER.parse_news_prev_news_id(self.__get_news_soup(nid))
-    def news_next_news_id(self, nid):
+    def news_next_news_id(self, nid: int) -> int:
         return self.__NEWS_PARSER.parse_news_next_news_id(self.__get_news_soup(nid))
 
     # NEWS LIST
 
-    def news_list(self, page=1):
+    def news_list(self, page: int = 1) -> NewsList:
         return self.__NEWS_PARSER.parse_news_list(self.__get_news_list_soup(page), page)
     @staticmethod
-    def news_list_url(page=1):
+    def news_list_url(page: int = 1) -> str:
         return url_prepare(Globals.NEWS_LIST_URL, {"page": page})
-    def news_list_main_news(self):
+    def news_list_main_news(self) -> dict:
         return self.__NEWS_PARSER.parse_news_list_main_news(self.__get_news_list_soup(1))
-    def news_list_news(self, page=1):
+    def news_list_news(self, page: int = 1) -> List[dict]:
         return self.__NEWS_PARSER.parse_news_list_news_list(self.__get_news_list_soup(page))
-    def news_list_most_read_news(self):
+    def news_list_most_read_news(self) -> List[dict]:
         return self.__NEWS_PARSER.parse_news_list_most_read_news(self.__get_news_list_soup(1))
-    def news_list_most_latest_news(self):
+    def news_list_most_latest_news(self) -> List[dict]:
         return self.__NEWS_PARSER.parse_news_list_most_latest_news(self.__get_news_list_soup(1))
-    def news_list_has_prev_page(self, page=1):
+    def news_list_has_prev_page(self, page: int = 1) -> bool:
         return self.__NEWS_PARSER.parse_news_list_has_prev_page(self.__get_news_list_soup(page))
-    def news_list_has_next_page(self, page=1):
+    def news_list_has_next_page(self, page: int = 1) -> bool:
         return self.__NEWS_PARSER.parse_news_list_has_next_page(self.__get_news_list_soup(page))
     # </editor-fold>
 
     # <editor-fold desc="MOVIE">
-    def movie(self, mid) -> Movie:
+    def movie(self, mid: int) -> Movie:
         return self.__MOVIE_PARSER.parse_movie(self.__get_movie_soup(mid), mid)
     @staticmethod
-    def movie_url(mid):
+    def movie_url(mid: int) -> str:
         return Globals.MOVIES_URL + str(mid)
-    def movie_type(self, mid):
+    def movie_type(self, mid: int) -> Optional[str]:
         return self.__MOVIE_PARSER.parse_movie_type(self.__get_movie_soup(mid))
-    def movie_title(self, mid):
+    def movie_title(self, mid: int) -> Optional[str]:
         return self.__MOVIE_PARSER.parse_movie_title(self.__get_movie_soup(mid))
-    def movie_year(self, mid):
+    def movie_year(self, mid: int) -> int:
         return self.__MOVIE_PARSER.parse_movie_year(self.__get_movie_soup(mid))
-    def movie_duration(self, mid):
+    def movie_duration(self, mid: int) -> Optional[str]:
         return self.__MOVIE_PARSER.parse_movie_duration(self.__get_movie_soup(mid))
-    def movie_genres(self, mid):
+    def movie_genres(self, mid: int) -> List[str]:
         return self.__MOVIE_PARSER.parse_movie_genres(self.__get_movie_soup(mid))
-    def movie_origins(self, mid):
+    def movie_origins(self, mid: int) -> List[str]:
         return self.__MOVIE_PARSER.parse_movie_origins(self.__get_movie_soup(mid))
-    def movie_rating(self, mid):
+    def movie_rating(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_rating(self.__get_movie_soup(mid))
-    def movie_ranks(self, mid):
+    def movie_ranks(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_ranks(self.__get_movie_soup(mid))
-    def movie_other_names(self, mid):
+    def movie_other_names(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_other_names(self.__get_movie_soup(mid))
-    def movie_creators(self, mid):
+    def movie_creators(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_creators(self.__get_movie_soup(mid))
-    def movie_vods(self, mid):
+    def movie_vods(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_vods(self.__get_movie_soup(mid))
-    def movie_tags(self, mid):
+    def movie_tags(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_tags(self.__get_movie_soup(mid))
-    def movie_reviews_count(self, mid):
+    def movie_reviews_count(self, mid: int) -> int:
         return self.__MOVIE_PARSER.parse_movie_reviews_count(self.__get_movie_soup(mid))
-    def movie_reviews(self, mid):
+    def movie_reviews(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_reviews(self.__get_movie_soup(mid))
-    def movie_gallery_count(self, mid):
+    def movie_gallery_count(self, mid: int) -> int:
         return self.__MOVIE_PARSER.parse_movie_gallery_count(self.__get_movie_soup(mid))
-    def movie_gallery(self, mid):
+    def movie_gallery(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_gallery(self.__get_movie_soup(mid))
-    def movie_trivia_count(self, mid):
+    def movie_trivia_count(self, mid: int) -> int:
         return self.__MOVIE_PARSER.parse_movie_trivia_count(self.__get_movie_soup(mid))
-    def movie_trivia(self, mid):
+    def movie_trivia(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_trivia(self.__get_movie_soup(mid))
-    def movie_premieres(self, mid):
+    def movie_premieres(self, mid: int) -> List[dict]:
         return self.__MOVIE_PARSER.parse_movie_premieres(self.__get_movie_soup(mid))
-    def movie_plot(self, mid):
+    def movie_plot(self, mid: int) -> Optional[str]:
         return self.__MOVIE_PARSER.parse_movie_plot(self.__get_movie_soup(mid))
-    def movie_cover(self, mid):
+    def movie_cover(self, mid: int) -> Optional[str]:
         return self.__MOVIE_PARSER.parse_movie_cover(self.__get_movie_soup(mid))
     # </editor-fold>
 
     # <editor-fold desc="CREATOR">
-    def creator(self, cid, sort: CreatorFilmographySorts = CreatorFilmographySorts.BY_NEWEST) -> Creator:
+    def creator(self, cid: int, sort: CreatorFilmographySorts = CreatorFilmographySorts.BY_NEWEST) -> Creator:
         return self.__CREATOR_PARSER.parse_creator(self.__get_creator_sort_soup(cid, sort), cid)
     @staticmethod
-    def creator_url(cid):
+    def creator_url(cid: int) -> str:
         return Globals.CREATORS_URL + str(cid)
-    def creator_type(self, cid):
+    def creator_type(self, cid: int) -> Optional[str]:
         return self.__CREATOR_PARSER.parse_creator_type(self.__get_creator_soup(cid))
-    def creator_name(self, cid):
+    def creator_name(self, cid: int) -> Optional[str]:
         return self.__CREATOR_PARSER.parse_creator_name(self.__get_creator_soup(cid))
-    def creator_age(self, cid):
+    def creator_age(self, cid: int) -> int:
         return self.__CREATOR_PARSER.parse_creator_age(self.__get_creator_soup(cid))
-    def creator_birth_date(self, cid):
+    def creator_birth_date(self, cid: int) -> Optional[str]:
         return self.__CREATOR_PARSER.parse_creator_birth_date(self.__get_creator_soup(cid))
-    def creator_birth_place(self, cid):
+    def creator_birth_place(self, cid: int) -> Optional[str]:
         return self.__CREATOR_PARSER.parse_creator_birth_place(self.__get_creator_soup(cid))
-    def creator_bio(self, cid):
+    def creator_bio(self, cid: int) -> Optional[str]:
         return self.__CREATOR_PARSER.parse_creator_bio(self.__get_creator_soup(cid))
-    def creator_trivia_count(self, cid):
+    def creator_trivia_count(self, cid: int) -> int:
         return self.__CREATOR_PARSER.parse_creator_trivia_count(self.__get_creator_soup(cid))
-    def creator_trivia(self, cid):
+    def creator_trivia(self, cid: int) -> dict:
         return self.__CREATOR_PARSER.parse_creator_trivia(self.__get_creator_soup(cid))
-    def creator_ranks(self, cid):
+    def creator_ranks(self, cid: int) -> dict:
         return self.__CREATOR_PARSER.parse_creator_ranks(self.__get_creator_soup(cid))
-    def creator_gallery_count(self, cid):
+    def creator_gallery_count(self, cid: int) -> int:
         return self.__CREATOR_PARSER.parse_creator_gallery_count(self.__get_creator_soup(cid))
-    def creator_gallery(self, cid):
+    def creator_gallery(self, cid: int) -> dict:
         return self.__CREATOR_PARSER.parse_creator_gallery(self.__get_creator_soup(cid))
-    def creator_filmography(self, cid, sort: CreatorFilmographySorts = CreatorFilmographySorts.BY_NEWEST):
+    def creator_filmography(self, cid: int, sort: CreatorFilmographySorts = CreatorFilmographySorts.BY_NEWEST) -> dict:
         return self.__CREATOR_PARSER.parse_creator_filmography(self.__get_creator_sort_soup(cid, sort))
-    def creator_image(self, cid):
+    def creator_image(self, cid: int) -> Optional[str]:
         return self.__CREATOR_PARSER.parse_creator_image(self.__get_creator_soup(cid))
     # </editor-fold>
 
     # <editor-fold desc="USER">
-    def user(self, uid) -> User:
+    def user(self, uid: int) -> User:
         return self.__USER_PARSER.parse_user(self.__get_user_soup(uid), uid)
     @staticmethod
-    def user_url(uid):
+    def user_url(uid: int) -> str:
         return Globals.USERS_URL + str(uid)
-    def user_name(self, uid):
+    def user_name(self, uid: int) -> Optional[str]:
         return self.__USER_PARSER.parse_user_name(self.__get_user_soup(uid))
-    def user_real_name(self, uid):
+    def user_real_name(self, uid: int) -> Optional[str]:
         return self.__USER_PARSER.parse_user_real_name(self.__get_user_soup(uid))
-    def user_origin(self, uid):
+    def user_origin(self, uid: int) -> Optional[str]:
         return self.__USER_PARSER.parse_user_origin(self.__get_user_soup(uid))
-    def user_about(self, uid):
+    def user_about(self, uid: int) -> Optional[str]:
         return self.__USER_PARSER.parse_user_about(self.__get_user_soup(uid))
-    def user_registered(self, uid):
+    def user_registered(self, uid: int) -> Optional[str]:
         return self.__USER_PARSER.parse_user_registered(self.__get_user_soup(uid))
-    def user_last_login(self, uid):
+    def user_last_login(self, uid: int) -> Optional[str]:
         return self.__USER_PARSER.parse_user_last_login(self.__get_user_soup(uid))
-    def user_points(self, uid):
+    def user_points(self, uid: int) -> int:
         return self.__USER_PARSER.parse_user_points(self.__get_user_soup(uid))
-    def user_awards(self, uid):
+    def user_awards(self, uid: int) -> dict:
         return self.__USER_PARSER.parse_user_awards(self.__get_user_soup(uid))
-    def user_most_watched_genres(self, uid):
+    def user_most_watched_genres(self, uid: int) -> dict:
         return self.__USER_PARSER.parse_user_most_watched_genres(self.__get_user_soup(uid))
-    def user_most_watched_types(self, uid):
+    def user_most_watched_types(self, uid: int) -> dict:
         return self.__USER_PARSER.parse_user_most_watched_types(self.__get_user_soup(uid))
-    def user_most_watched_origins(self, uid):
+    def user_most_watched_origins(self, uid: int) -> dict:
         return self.__USER_PARSER.parse_user_most_watched_origins(self.__get_user_soup(uid))
-    def user_reviews_count(self, uid):
+    def user_reviews_count(self, uid: int) -> int:
         return self.__USER_PARSER.parse_user_reviews_count(self.__get_user_soup(uid))
-    def user_last_reviews(self, uid):
+    def user_last_reviews(self, uid: int) -> dict:
         return self.__USER_PARSER.parse_user_reviews(self.__get_user_soup(uid))
-    def user_ratings_count(self, uid):
+    def user_ratings_count(self, uid: int) -> int:
         return self.__USER_PARSER.parse_user_ratings_count(self.__get_user_soup(uid))
-    def user_last_ratings(self, uid):
+    def user_last_ratings(self, uid: int) -> dict:
         return self.__USER_PARSER.parse_user_ratings(self.__get_user_soup(uid))
-    def user_is_currently_online(self, uid):
+    def user_is_currently_online(self, uid: int) -> bool:
         return self.__USER_PARSER.parse_user_is_currently_online(self.__get_user_soup(uid))
-    def user_image(self, uid):
+    def user_image(self, uid: int) -> Optional[str]:
         return self.__USER_PARSER.parse_user_image(self.__get_user_soup(uid))
     # </editor-fold>
 
     # <editor-fold desc="USER OTHERS">
 
-    def user_ratings(self,
-                     uid,
-                     mtype: MovieTypes = None,
-                     origin: Origins = None,
-                     genre: MovieGenres = None,
-                     sort: UserRatingsSorts = UserRatingsSorts.BY_NEWLY_ADDED,
-                     page=1):
+    def user_ratings(
+        self,
+        uid: int,
+        mtype: Optional[MovieTypes] = None,
+        origin: Optional[Origins] = None,
+        genre: Optional[MovieGenres] = None,
+        sort: UserRatingsSorts = UserRatingsSorts.BY_NEWLY_ADDED,
+        page: int = 1
+    ) -> UserRatings:
         return self.__USER_PARSER.parse_user_ratings_ratings(
             self.__get_user_ratings_soup(uid, mtype, origin, genre, sort, page)
         )
-    def user_reviews(self,
-                     uid,
-                     mtype: MovieTypes = None,
-                     origin: Origins = None,
-                     genre: MovieGenres = None,
-                     sort: UserReviewsSorts = UserReviewsSorts.BY_NEWLY_ADDED,
-                     page=1):
+    def user_reviews(
+        self,
+        uid: int,
+        mtype: Optional[MovieTypes] = None,
+        origin: Optional[Origins] = None,
+        genre: Optional[MovieGenres] = None,
+        sort: UserReviewsSorts = UserReviewsSorts.BY_NEWLY_ADDED,
+        page: int = 1
+    ) -> UserReviews:
         return self.__USER_PARSER.parse_user_reviews_reviews(
             self.__get_user_reviews_soup(uid, mtype, origin, genre, sort, page)
         )
@@ -431,49 +443,49 @@ class CsfdScraper:
 
     # <editor-fold desc="USERS">
     # MOST FAVORITE USERS
-    def favorite_users(self):
+    def favorite_users(self) -> FavoriteUsers:
         return self.__USERS_PARSER.parse_favorite_users(self.__get_most_favorite_users_soup())
-    def favorite_users_most_favorite_users(self):
+    def favorite_users_most_favorite_users(self) -> List[FavoriteUser]:
         return self.__USERS_PARSER.parse_favorite_users_most_favorite_users(self.__get_most_favorite_users_soup())
-    def favorite_users_by_regions(self):
+    def favorite_users_by_regions(self) -> Dict[Origins, List[OtherFavoriteUser]]:
         return self.__USERS_PARSER.parse_favorite_users_by_regions(self.__get_most_favorite_users_soup())
-    def favorite_users_by_country(self):
+    def favorite_users_by_country(self) -> Dict[Origins, List[OtherFavoriteUser]]:
         return self.__USERS_PARSER.parse_favorite_users_by_country(self.__get_most_favorite_users_soup())
 
     # MOST ACTIVE USERS
-    def active_users(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+    def active_users(self, origin: Optional[Origins] = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME) -> ActiveUsers:
         return self.__USERS_PARSER.parse_active_users(self.__get_most_active_users_soup(origin, sort))
-    def active_users_by_reviews(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+    def active_users_by_reviews(self, origin: Optional[Origins] = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME) -> List[ActiveUserByReviews]:
         return self.__USERS_PARSER.parse_active_users_by_reviews(self.__get_most_active_users_soup(origin, sort))
-    def active_users_by_diaries(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+    def active_users_by_diaries(self, origin: Optional[Origins] = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME) -> List[ActiveUserByDiaries]:
         return self.__USERS_PARSER.parse_active_users_by_diaries(self.__get_most_active_users_soup(origin, sort))
-    def active_users_by_content(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+    def active_users_by_content(self, origin: Optional[Origins] = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME) -> List[ActiveUserByContent]:
         return self.__USERS_PARSER.parse_active_users_by_content(self.__get_most_active_users_soup(origin, sort))
-    def active_users_by_trivia(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+    def active_users_by_trivia(self, origin: Optional[Origins] = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME) -> List[ActiveUserByTrivia]:
         return self.__USERS_PARSER.parse_active_users_by_trivia(self.__get_most_active_users_soup(origin, sort))
-    def active_users_by_biography(self, origin: Origins = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME):
+    def active_users_by_biography(self, origin: Optional[Origins] = None, sort: ActiveUsersSorts = ActiveUsersSorts.ALL_TIME) -> List[ActiveUserByBiography]:
         return self.__USERS_PARSER.parse_active_users_by_biography(self.__get_most_active_users_soup(origin, sort))
     # </editor-fold>
 
     # <editor-fold desc="DVDS">
 
     """Year is range from 1996 to the current, default is the current year"""
-    def dvds_monthly_by_release_date(self, year=None, page=1, month: Months = Months.JANUARY):
+    def dvds_monthly_by_release_date(self, year: Optional[int] = None, page: int = 1, month: Months = Months.JANUARY) -> DVDSMonthlyByReleaseDate:
         if year is None:
             year = datetime.now().year
         return self.__DVDS_PARSER.parse_dvds_monthly_by_release_date(self.__get_dvds_monthly_soup(year, month, page, "release_date"))
     """Year is range from 1996 to the current, default is the current year"""
-    def dvds_monthly_by_rating(self, year=None, page=1, month: Months = Months.JANUARY):
+    def dvds_monthly_by_rating(self, year: Optional[int] = None, page: int = 1, month: Months = Months.JANUARY) -> DVDSMonthlyByRating:
         if year is None:
             year = datetime.now().year
         return self.__DVDS_PARSER.parse_dvds_monthly_by_rating(self.__get_dvds_monthly_soup(year, month, page, "rating"))
     """Year is range from 1996 to the current, default is the current year"""
-    def dvds_yearly_by_release_date(self, year=None):
+    def dvds_yearly_by_release_date(self, year: Optional[int] = None) -> DVDSYearlyByReleaseDate:
         if year is None:
             year = datetime.now().year
         return self.__DVDS_PARSER.parse_dvds_yearly_by_release_date(self.__get_dvds_yearly_soup(year, "release_date"))
     """Year is range from 1996 to the current, default is the current year"""
-    def dvds_yearly_by_rating(self, year=None):
+    def dvds_yearly_by_rating(self, year: Optional[int] = None) -> DVDSYearlyByRating:
         if year is None:
             year = datetime.now().year
         return self.__DVDS_PARSER.parse_dvds_yearly_by_rating(self.__get_dvds_yearly_soup(year, "rating"))
@@ -483,25 +495,25 @@ class CsfdScraper:
     # <editor-fold desc="BLU-RAYS">
 
     """Year is range from 2007 to the current, default is the current year"""
-    def blurays_monthly_by_release_date(self, year=None, page=1, month: Months = Months.JANUARY):
+    def blurays_monthly_by_release_date(self, year: Optional[int] = None, page: int = 1, month: Months = Months.JANUARY):
         if year is None:
             year = datetime.now().year
         return self.__BLURAYS_PARSER.parse_blurays_monthly_by_release_date(
             self.__get_blurays_monthly_soup(year, month, page, "release_date"))
     """Year is range from 2007 to the current, default is the current year"""
-    def blurays_monthly_by_rating(self, year=None, page=1, month: Months = Months.JANUARY):
+    def blurays_monthly_by_rating(self, year: Optional[int] = None, page: int = 1, month: Months = Months.JANUARY):
         if year is None:
             year = datetime.now().year
         return self.__BLURAYS_PARSER.parse_blurays_monthly_by_rating(
             self.__get_blurays_monthly_soup(year, month, page, "rating"))
     """Year is range from 2007 to the current, default is the current year"""
-    def blurays_yearly_by_release_date(self, year=None):
+    def blurays_yearly_by_release_date(self, year: Optional[int] = None):
         if year is None:
             year = datetime.now().year
         return self.__BLURAYS_PARSER.parse_blurays_yearly_by_release_date(
             self.__get_blurays_yearly_soup(year, "release_date"))
     """Year is range from 2007 to the current, default is the current year"""
-    def blurays_yearly_by_rating(self, year=None):
+    def blurays_yearly_by_rating(self, year: Optional[int] = None):
         if year is None:
             year = datetime.now().year
         return self.__BLURAYS_PARSER.parse_dvds_yearly_by_rating(self.__get_blurays_yearly_soup(year, "rating"))

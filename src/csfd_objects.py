@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import List, Dict
+from typing import List, Dict, Optional
 from src.csfd_utils import tojson
 
 class PrintableObject:
-    args = None
+    args: dict = None
 
     def __str__(self):
         return tojson(self.args)
@@ -18,7 +18,7 @@ class CzechEnum(Enum):
         return None
 
     @classmethod
-    def get_by_value(cls, value):
+    def get_by_value(cls, value: int):
         """Vrátí enum podle hodnoty"""
         for k, v in cls.__members__.items():
             if value == v.value[0]:
@@ -714,49 +714,49 @@ class ActiveUsersSorts(Enum):
 # <editor-fold desc="TEXT SEARCH TYPES">
 
 class TextSearchedMovie(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.genres = args.get("genres", [])
-        self.origins = args.get("origins", [])
-        self.directors = args.get("directors", [])
-        self.actors = args.get("actors", [])
-        self.performes = args.get("performes", [])
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", None)
+        self.name: Optional[str] = args.get("name", None)
+        self.genres: List[str] = args.get("genres", [])
+        self.origins: List[str] = args.get("origins", [])
+        self.directors: List[dict] = args.get("directors", [])
+        self.actors: List[dict] = args.get("actors", [])
+        self.performes: List[dict] = args.get("performes", [])
+        self.image: Optional[str] = args.get("image", None)
 
 class TextSearchedCreator(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", -1)
-        self.name = args.get("name", None)
-        self.types = args.get("types", [])
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.types: List[str] = args.get("types", [])
+        self.image: Optional[str] = args.get("image", None)
 
 class TextSearchedSeries(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", -1)
-        self.name = args.get("name", None)
-        self.genres = args.get("genres", [])
-        self.origins = args.get("origins", [])
-        self.directors = args.get("directors", [])
-        self.actors = args.get("actors", [])
-        self.performes = args.get("performes", [])
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.genres: List[str] = args.get("genres", [])
+        self.origins: List[str] = args.get("origins", [])
+        self.directors: List[dict] = args.get("directors", [])
+        self.actors: List[dict] = args.get("actors", [])
+        self.performes: List[dict] = args.get("performes", [])
+        self.image: Optional[str] = args.get("image", None)
 
 class TextSearchedUser(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", -1)
-        self.name = args.get("name", None)
-        self.real_name = args.get("real_name", None)
-        self.points = args.get("points", -1)
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.real_name: Optional[str] = args.get("real_name", None)
+        self.points: int = args.get("points", -1)
+        self.image: Optional[str] = args.get("image", None)
 
 class TextSearchResult(PrintableObject):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, args: dict):
+        self.args: dict = args
         self.movies: List[TextSearchedMovie] = args.get("movies", [])
         self.creators: List[TextSearchedCreator] = args.get("creators", [])
         self.series: List[TextSearchedSeries] = args.get("series", [])
@@ -777,12 +777,10 @@ class TextSearchResult(PrintableObject):
 class AutoCompleteSearchJsonWrapper:
     __JSON_OBJECT = None
 
-    def __init__(self, json_object):
+    def __init__(self, json_object: dict):
         self.__JSON_OBJECT = json_object
-
-        if type(json_object) is dict:
-            for k, v in json_object.items():
-                setattr(self, k, v)
+        for k, v in json_object.items():
+            setattr(self, k, v)
 
     def __str__(self):
         return tojson(self.__JSON_OBJECT)
@@ -790,31 +788,31 @@ class AutoCompleteSearchJsonWrapper:
 class FilmCreator(AutoCompleteSearchJsonWrapper):
     def __init__(self, *args):
         super().__init__(*args)
-        self.id = getattr(self, "id", None)
-        self.text = getattr(self, "text", None)
-        self.image = getattr(self, "image", None)
-        self.info = getattr(self, "info", None)
+        self.id: int = getattr(self, "id", -1)
+        self.text: Optional[str] = getattr(self, "text", None)
+        self.image: Optional[str] = getattr(self, "image", None)
+        self.info: Optional[str] = getattr(self, "info", None)
 
 class Tag(AutoCompleteSearchJsonWrapper):
     def __init__(self, *args):
         super().__init__(*args)
-        self.id = getattr(self, "id", None)
-        self.text = getattr(self, "text", None)
-        self.info = getattr(self, "info", None)
-        self.hide_image = getattr(self, "hide_image", None)
+        self.id: int = getattr(self, "id", -1)
+        self.text: Optional[str] = getattr(self, "text", None)
+        self.info: Optional[str] = getattr(self, "info", None)
+        self.hide_image: bool = getattr(self, "hide_image", False)
 
 # </editor-fold>
 
 # <editor-fold desc="ADVANCED SEARCH TYPES">
 
 class SearchedMovie(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.year = args.get("year", None)
-        self.origins = args.get("origins", None)
-        self.genres = args.get("genres", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.year: int = args.get("year", -1)
+        self.origins: List[str] = args.get("origins", [])
+        self.genres: List[str] = args.get("genres", [])
 
     def get_genres(self):
         return [MovieGenres.get_by_czech_name(g) for g in self.genres]
@@ -823,12 +821,12 @@ class SearchedMovie(PrintableObject):
         return [Origins.get_by_czech_name(o) for o in self.origins]
 
 class SearchMoviesResult(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.page = args.get("page", -1)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.page: int = args.get("page", -1)
         self.movies: List[SearchedMovie] = args.get("movies", [])
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args
@@ -836,23 +834,23 @@ class SearchMoviesResult(PrintableObject):
         return tojson(args)
 
 class SearchedCreator(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.birth_year = args.get("birth_year", None)
-        self.types = args.get("types", [])
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.birth_year: int = args.get("birth_year", -1)
+        self.types: List[str] = args.get("types", [])
 
     def get_types(self):
         return [CreatorTypes.get_by_czech_name(g) for g in self.types]
 
 class SearchCreatorsResult(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.page = args.get("page", -1)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.page: int = args.get("page", -1)
         self.creators: List[SearchedCreator] = args.get("creators", [])
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args
@@ -864,173 +862,174 @@ class SearchCreatorsResult(PrintableObject):
 # <editor-fold desc="OTHER TYPES">
 
 class Movie(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.url = args.get("url", None)
-        self.type = args.get("type", None)
-        self.title = args.get("title", None)
-        self.year = args.get("year", None)
-        self.duration = args.get("duration", None)
-        self.genres = args.get("genres", None)
-        self.origins = args.get("origins", None)
-        self.rating = args.get("rating", None)
-        self.ranks = args.get("ranks", None)
-        self.other_names = args.get("other_names", None)
-        self.creators = args.get("creators", None)
-        self.vods = args.get("vods", None)
-        self.tags = args.get("tags", None)
-        self.reviews = args.get("reviews", None)
-        self.gallery = args.get("gallery", None)
-        self.trivia = args.get("trivia", None)
-        self.premieres = args.get("premieres", None)
-        self.plot = args.get("plot", None)
-        self.cover = args.get("cover", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.url: Optional[str] = args.get("url", None)
+        self.type: Optional[str] = args.get("type", None)
+        self.title: Optional[str] = args.get("title", None)
+        self.year: int = args.get("year", -1)
+        self.duration: Optional[str] = args.get("duration", None)
+        self.genres: List[str] = args.get("genres", None)
+        self.origins: List[str] = args.get("origins", None)
+        self.rating: dict = args.get("rating", {})
+        self.ranks: dict = args.get("ranks", {})
+        self.other_names: dict = args.get("other_names", {})
+        self.creators: dict = args.get("creators", {})
+        self.vods: dict = args.get("vods", {})
+        self.tags: dict = args.get("tags", {})
+        self.reviews: dict = args.get("reviews", {})
+        self.gallery: dict = args.get("gallery", {})
+        self.trivia: dict = args.get("trivia", {})
+        self.premieres: List[dict] = args.get("premieres", [])
+        self.plot: Optional[str] = args.get("plot", None)
+        self.cover: Optional[str] = args.get("cover", None)
 
 class Creator(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.url = args.get("url", None)
-        self.type = args.get("type", None)
-        self.name = args.get("name", None)
-        self.age = args.get("age", None)
-        self.birth = args.get("birth", None)
-        self.bio = args.get("bio", None)
-        self.ranks = args.get("ranks", None)
-        self.trivia = args.get("trivia", None)
-        self.gallery = args.get("gallery", None)
-        self.filmography = args.get("filmography", None)
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.url: Optional[str] = args.get("url", None)
+        self.type: Optional[str] = args.get("type", None)
+        self.name: Optional[str] = args.get("name", None)
+        self.age: int = args.get("age", -1)
+        self.birth_date: Optional[str] = args.get("birth_date", None)
+        self.birth_place: Optional[str] = args.get("birth_place", None)
+        self.bio: Optional[str] = args.get("bio", None)
+        self.ranks: dict = args.get("ranks", {})
+        self.trivia: dict = args.get("trivia", {})
+        self.gallery: dict = args.get("gallery", {})
+        self.filmography: dict = args.get("filmography", {})
+        self.image: Optional[str] = args.get("image", None)
 
 class User(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.url = args.get("url", None)
-        self.name = args.get("name", None)
-        self.real_name = args.get("real_name", None)
-        self.origin = args.get("origin", None)
-        self.about = args.get("about", None)
-        self.registered = args.get("registered", None)
-        self.last_login = args.get("last_login", None)
-        self.points = args.get("points", None)
-        self.fans = args.get("fans", None)
-        self.awards = args.get("awards", None)
-        self.most_watched_genres = args.get("most_watched_genres", {})
-        self.most_watched_types = args.get("most_watched_types", {})
-        self.most_watched_origins = args.get("most_watched_origins", {})
-        self.reviews = args.get("reviews", {})
-        self.ratings = args.get("ratings", {})
-        self.is_currently_online = args.get("is_currently_online", None)
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.url: Optional[str] = args.get("url", None)
+        self.name: Optional[str] = args.get("name", None)
+        self.real_name: Optional[str] = args.get("real_name", None)
+        self.origin: Optional[str] = args.get("origin", None)
+        self.about: Optional[str] = args.get("about", None)
+        self.registered: Optional[str] = args.get("registered", None)
+        self.last_login: Optional[str] = args.get("last_login", None)
+        self.points: int = args.get("points", -1)
+        self.fans: int = args.get("fans", -1)
+        self.awards: dict = args.get("awards", {})
+        self.most_watched_genres: dict = args.get("most_watched_genres", {})
+        self.most_watched_types: dict = args.get("most_watched_types", {})
+        self.most_watched_origins: dict = args.get("most_watched_origins", {})
+        self.reviews: dict = args.get("reviews", {})
+        self.ratings: dict = args.get("ratings", {})
+        self.is_currently_online: bool = args.get("is_currently_online", False)
+        self.image: Optional[str] = args.get("image", None)
 
 # </editor-fold>
 
 # <editor-fold desc="NEWS TYPES">
 
 class News(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.title = args.get("title", None)
-        self.text = args.get("text", None)
-        self.date = args.get("date", None)
-        self.author_id = args.get("author_id", None)
-        self.author_name = args.get("author_name", None)
-        self.most_read_news = args.get("most_read_news", [])
-        self.most_latest_news = args.get("most_latest_news", [])
-        self.related_news = args.get("related_news", [])
-        self.image = args.get("image", None)
-        self.prev_news_id = args.get("prev_news_id", None)
-        self.next_news_id = args.get("next_news_id", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.title: Optional[str] = args.get("title", None)
+        self.text: Optional[str] = args.get("text", None)
+        self.date: Optional[str] = args.get("date", None)
+        self.author_id: int = args.get("author_id", -1)
+        self.author_name: Optional[str] = args.get("author_name", None)
+        self.most_read_news: List[dict] = args.get("most_read_news", [])
+        self.most_latest_news: List[dict] = args.get("most_latest_news", [])
+        self.related_news: List[dict] = args.get("related_news", [])
+        self.image: Optional[str] = args.get("image", None)
+        self.prev_news_id: int = args.get("prev_news_id", -1)
+        self.next_news_id: int = args.get("next_news_id", -1)
 
 class NewsList(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.page = args.get("page", -1)
-        self.main_news = args.get("main_news", {})
-        self.news = args.get("news", [])
-        self.most_read_news = args.get("most_read_news", [])
-        self.most_latest_news = args.get("most_latest_news", [])
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.page: int = args.get("page", -1)
+        self.main_news: dict = args.get("main_news", {})
+        self.news: List[dict] = args.get("news", [])
+        self.most_read_news: List[dict] = args.get("most_read_news", [])
+        self.most_latest_news: List[dict] = args.get("most_latest_news", [])
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
 # </editor-fold>
 
 # <editor-fold desc="USERS TYPES">
 
 class FavoriteUser(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.position = args.get("position", None)
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.real_name = args.get("real_name", None)
-        self.about = args.get("about", None)
-        self.points = args.get("points", None)
-        self.ratings = args.get("ratings", None)
-        self.reviews = args.get("reviews", None)
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.position: int = args.get("position", -1)
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.real_name: Optional[str] = args.get("real_name", None)
+        self.about: Optional[str] = args.get("about", None)
+        self.points: int = args.get("points", -1)
+        self.ratings: int = args.get("ratings", -1)
+        self.reviews: int = args.get("reviews", -1)
+        self.image: Optional[str] = args.get("image", None)
 
 class OtherFavoriteUser(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.real_name = args.get("real_name", None)
-        self.points = args.get("points", None)
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.real_name: Optional[str] = args.get("real_name", None)
+        self.points: int = args.get("points", -1)
+        self.image: Optional[str] = args.get("image", None)
 
 class FavoriteUsers(PrintableObject):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, args: dict):
+        self.args: dict = args
         self.most_favorite_users: List[FavoriteUser] = args.get("most_favorite_users", [])
         self.by_regions: Dict[str, List[OtherFavoriteUser]] = args.get("by_regions", {})
         self.by_country: Dict[Origins, List[OtherFavoriteUser]] = args.get("by_country", {})
 
     def __str__(self):
         args = self.args
-        args["most_favorite_users"] = [u.args for u in self.most_favorite_users]
+        args["most_favo;rite_users"] = [u.args for u in self.most_favorite_users]
         args["by_regions"] = {k: [u.args for u in v] for k, v in self.by_regions.items()}
         args["by_country"] = {k.value[1]: [u.args for u in v] for k, v in self.by_country.items()}
         return tojson(args)
 
 class ActiveUser(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.image: Optional[str] = args.get("image", None)
 
 class ActiveUserByReviews(ActiveUser):
-    def __init__(self, args):
+    def __init__(self, args: dict):
         super().__init__(args)
-        self.reviews = args.get("reviews", None)
+        self.reviews: int = args.get("reviews", -1)
 
 class ActiveUserByDiaries(ActiveUser):
-    def __init__(self, args):
+    def __init__(self, args: dict):
         super().__init__(args)
-        self.diaries = args.get("diaries", None)
+        self.diaries: int = args.get("diaries", -1)
 
 class ActiveUserByContent(ActiveUser):
-    def __init__(self, args):
+    def __init__(self, args: dict):
         super().__init__(args)
-        self.content = args.get("content", None)
+        self.content: int = args.get("content", -1)
 
 class ActiveUserByTrivia(ActiveUser):
-    def __init__(self, args):
+    def __init__(self, args: dict):
         super().__init__(args)
-        self.trivia = args.get("trivia", None)
+        self.trivia: int = args.get("trivia", -1)
 
 class ActiveUserByBiography(ActiveUser):
-    def __init__(self, args):
+    def __init__(self, args: dict):
         super().__init__(args)
-        self.biography = args.get("biography", None)
+        self.biography: int = args.get("biography", -1)
 
 class ActiveUsers(PrintableObject):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, args: dict):
+        self.args: dict = args
         self.by_reviews: List[ActiveUserByReviews] = args.get("by_reviews", [])
         self.by_diaries: List[ActiveUserByDiaries] = args.get("by_diaries", [])
         self.by_content: List[ActiveUserByContent] = args.get("by_content", [])
@@ -1051,24 +1050,24 @@ class ActiveUsers(PrintableObject):
 # <editor-fold desc="DVDS TYPES">
 
 class DVDMonthly(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.year = args.get("year", None)
-        self.genres = args.get("genres", [])
-        self.origins = args.get("origins", [])
-        self.directors = args.get("directors", [])
-        self.actors = args.get("actors", [])
-        self.distributor = args.get("distributor", None)
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.year: int = args.get("year", -1)
+        self.genres: List[str] = args.get("genres", [])
+        self.origins: List[str] = args.get("origins", [])
+        self.directors: List[dict] = args.get("directors", [])
+        self.actors: List[dict] = args.get("actors", [])
+        self.distributor: Optional[str] = args.get("distributor", None)
+        self.image: Optional[str] = args.get("image", None)
 
 class DVDSMonthlyByReleaseDate(PrintableObject):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, args: dict):
+        self.args: dict = args
         self.dvds: Dict[str, List[DVDMonthly]] = args.get("dvds", {})
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args
@@ -1076,11 +1075,11 @@ class DVDSMonthlyByReleaseDate(PrintableObject):
         return tojson(args)
 
 class DVDSMonthlyByRating(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.dvds: List[DVDMonthly] = args.get("dvds", {})
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.dvds: List[DVDMonthly] = args.get("dvds", [])
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args
@@ -1088,16 +1087,16 @@ class DVDSMonthlyByRating(PrintableObject):
         return tojson(args)
 
 class DVDYearly(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.year = args.get("year", None)
-        self.date = args.get("date", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.year: int = args.get("year", -1)
+        self.date: Optional[str] = args.get("date", None)
 
 class DVDSYearlyByReleaseDate(PrintableObject):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, args: dict):
+        self.args: dict = args
         self.dvds: Dict[Months, List[DVDYearly]] = args.get("dvds", {})
 
     def __str__(self):
@@ -1106,9 +1105,9 @@ class DVDSYearlyByReleaseDate(PrintableObject):
         return tojson(args)
 
 class DVDSYearlyByRating(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.dvds: List[DVDYearly] = args.get("dvds", {})
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.dvds: List[DVDYearly] = args.get("dvds", [])
 
     def __str__(self):
         args = self.args
@@ -1120,24 +1119,24 @@ class DVDSYearlyByRating(PrintableObject):
 # <editor-fold desc="DVDS TYPES">
 
 class BlurayMonthly(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.year = args.get("year", None)
-        self.genres = args.get("genres", [])
-        self.origins = args.get("origins", [])
-        self.directors = args.get("directors", [])
-        self.actors = args.get("actors", [])
-        self.distributor = args.get("distributor", {})
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.year: int = args.get("year", -1)
+        self.genres: List[str] = args.get("genres", [])
+        self.origins: List[str] = args.get("origins", [])
+        self.directors: List[dict] = args.get("directors", [])
+        self.actors: List[dict] = args.get("actors", [])
+        self.distributor: dict = args.get("distributor", {})
+        self.image: Optional[str] = args.get("image", None)
 
 class BluraysMonthlyByReleaseDate(PrintableObject):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, args: dict):
+        self.args: dict = args
         self.blurays: Dict[str, List[BlurayMonthly]] = args.get("blurays", {})
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args
@@ -1145,11 +1144,11 @@ class BluraysMonthlyByReleaseDate(PrintableObject):
         return tojson(args)
 
 class BluraysMonthlyByRating(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.blurays: List[BlurayMonthly] = args.get("blurays", {})
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.blurays: List[BlurayMonthly] = args.get("blurays", [])
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args
@@ -1157,17 +1156,17 @@ class BluraysMonthlyByRating(PrintableObject):
         return tojson(args)
 
 class BlurayYearly(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.year = args.get("year", None)
-        self.types = args.get("types", [])
-        self.date = args.get("date", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.year: int = args.get("year", -1)
+        self.types: List[str] = args.get("types", [])
+        self.date: Optional[str] = args.get("date", None)
 
 class BluraysYearlyByReleaseDate(PrintableObject):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, args: dict):
+        self.args: dict = args
         self.blurays: Dict[Months, List[BlurayYearly]] = args.get("blurays", {})
 
     def __str__(self):
@@ -1176,9 +1175,9 @@ class BluraysYearlyByReleaseDate(PrintableObject):
         return tojson(args)
 
 class BluraysYearlyByRating(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.blurays: List[BlurayYearly] = args.get("blurays", {})
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.blurays: List[BlurayYearly] = args.get("blurays", [])
 
     def __str__(self):
         args = self.args
@@ -1205,21 +1204,21 @@ class UserRatingsSorts(Enum):
     """seřadit dle hodnocení"""
 
 class UserRating(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.year = args.get("year", None)
-        self.rating = args.get("rating", None)
-        self.date = args.get("date", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.year: int = args.get("year", None)
+        self.rating: int = args.get("rating", -1)
+        self.date: Optional[str] = args.get("date", None)
 
 class UserRatings(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.total = args.get("total", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.total: int = args.get("total", -1)
         self.ratings: List[UserRating] = args.get("ratings", [])
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args
@@ -1246,23 +1245,23 @@ class UserReviewsSorts(Enum):
     """seřadit dle hodnocení"""
 
 class UserReview(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.id = args.get("id", None)
-        self.name = args.get("name", None)
-        self.year = args.get("year", None)
-        self.rating = args.get("rating", None)
-        self.date = args.get("date", None)
-        self.text = args.get("text", None)
-        self.image = args.get("image", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.year: int = args.get("year", None)
+        self.rating: float = args.get("rating", None)
+        self.date: Optional[str] = args.get("date", None)
+        self.text: Optional[str] = args.get("text", None)
+        self.image: Optional[str] = args.get("image", None)
 
 class UserReviews(PrintableObject):
-    def __init__(self, args):
-        self.args = args
-        self.total = args.get("total", None)
+    def __init__(self, args: dict):
+        self.args: dict = args
+        self.total: int = args.get("total", -1)
         self.reviews: List[UserReview] = args.get("reviews", [])
-        self.has_prev_page = args.get("has_prev_page", False)
-        self.has_next_page = args.get("has_next_page", False)
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
 
     def __str__(self):
         args = self.args

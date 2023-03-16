@@ -26,15 +26,19 @@
 - [x] Scraping User
   - [x] Scraping "Ratings"
   - [x] Scraping "Reviews"
-- [x] Scraping Blu-rays by ["monthly overview"](https://www.csfd.cz/bluray/)
-- [x] Scraping Blu-rays by ["yearly overview"](https://www.csfd.cz/bluray/rocne/)
-- [x] Scraping DVDs by ["monthly overview"](https://www.csfd.cz/dvd/)
-- [x] Scraping DVDs by ["yearly overview"](https://www.csfd.cz/dvd/rocne/)
-- [x] Scraping Users by ["the most popular"](https://www.csfd.cz/uzivatele/)
-- [x] Scraping Users by ["the most active"](https://www.csfd.cz/uzivatele/nejaktivnejsi/)
+- [x] Scraping Blu-rays
+  - [x] by ["monthly overview"](https://www.csfd.cz/bluray/)
+  - [x] by ["yearly overview"](https://www.csfd.cz/bluray/rocne/)
+- [x] Scraping DVDs
+  - [x] by ["monthly overview"](https://www.csfd.cz/dvd/)
+  - [x] by ["yearly overview"](https://www.csfd.cz/dvd/rocne/)
+- [x] Scraping Users
+  - [x] by ["the most popular"](https://www.csfd.cz/uzivatele/)
+  - [x] by ["the most active"](https://www.csfd.cz/uzivatele/nejaktivnejsi/)
 - [x] Scraping News
   - [x] News by ID
   - [x] News List
+- [x] Typing
 - [x] Better Enums naming ... i guess
 - [x] Scraping Users by ID
 - [x] Scraping text search results

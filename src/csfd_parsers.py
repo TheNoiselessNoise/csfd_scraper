@@ -1,54 +1,56 @@
+from typing import Type
 from urllib.parse import urlsplit
 
-import bs4.element
+from bs4 import BeautifulSoup
 
-from src.csfd_utils import *
 from src.csfd_objects import *
+from src.csfd_utils import *
+
 
 class CreatorParser:
-    __CREATOR_LD_JSON = None
+    __CREATOR_LD_JSON: Optional[dict] = None
 
-    def reset(self):
+    def reset(self) -> None:
         self.__CREATOR_LD_JSON = None
 
-    def parse_movie_ld_json(self, s):
+    def parse_movie_ld_json(self, s: BeautifulSoup) -> Optional[dict]:
         if not self.__CREATOR_LD_JSON:
             ld_json = sel(s, ".creator-main > script")
             self.__CREATOR_LD_JSON = {} if ld_json is None else json.loads(text(ld_json))
         return self.__CREATOR_LD_JSON
 
-    def parse_creator_type(self, s):
+    def parse_creator_type(self, s: BeautifulSoup) -> Optional[str]:
         return self.parse_movie_ld_json(s).get("@type", None)
 
-    def parse_creator_name(self, s):
+    def parse_creator_name(self, s: BeautifulSoup) -> Optional[str]:
         return self.parse_movie_ld_json(s).get("name", None)
 
     @staticmethod
-    def parse_creator_age(s):
+    def parse_creator_age(s: BeautifulSoup) -> int:
         content = sel(s, ".creator-profile-content-desc > p")
         age = None if content is None else clean(text(content))
-        return None if not age else int(age.split(" ")[2][1:])
+        return -1 if not age else int(age.split(" ")[2][1:])
 
-    def parse_creator_birth_date(self, s):
+    def parse_creator_birth_date(self, s: BeautifulSoup) -> Optional[str]:
         return self.parse_movie_ld_json(s).get("birthDate", None)
 
-    def parse_creator_birth_place(self, s):
+    def parse_creator_birth_place(self, s: BeautifulSoup) -> Optional[str]:
         place = self.parse_movie_ld_json(s).get("birthPlace", None)
         return None if place is None else place.get("name", None)
 
     @staticmethod
-    def parse_creator_bio(s):
+    def parse_creator_bio(s: BeautifulSoup) -> Optional[str]:
         bio = sel(s, ".article-content p")
         return None if bio is None else clean(text(bio))
 
     @staticmethod
-    def parse_creator_trivia_count(s):
+    def parse_creator_trivia_count(s: BeautifulSoup) -> int:
         article = sel(s, ".article-trivia")
         section = None if article is None else article.find_parent("section")
         count = None if section is None else sel(section, ".count")
         return -1 if count is None else toint(text(count))
 
-    def parse_creator_trivia(self, s):
+    def parse_creator_trivia(self, s: BeautifulSoup) -> dict:
         trivia = {
             "total": self.parse_creator_trivia_count(s),
             "items": []
@@ -68,7 +70,7 @@ class CreatorParser:
         return trivia
 
     @staticmethod
-    def parse_creator_ranks(s):
+    def parse_creator_ranks(s: BeautifulSoup) -> dict:
         ranks = {}
         for div in asel(s, ".ranking"):
             div_a = sel(div, "a")
@@ -76,13 +78,13 @@ class CreatorParser:
         return ranks
 
     @staticmethod
-    def parse_creator_gallery_count(s):
+    def parse_creator_gallery_count(s: BeautifulSoup) -> int:
         gallery_item = sel(s, ".gallery-item")
         section = None if gallery_item is None else gallery_item.find_parent("section")
         count = None if section is None else sel(section, ".count")
         return -1 if count is None else toint(text(count))
 
-    def parse_creator_gallery(self, s):
+    def parse_creator_gallery(self, s: BeautifulSoup) -> dict:
         img = sel(s, ".gallery-item picture img")
         return {
             "total": self.parse_creator_gallery_count(s),
@@ -90,54 +92,49 @@ class CreatorParser:
         }
 
     @staticmethod
-    def parse_creator_filmography(s):
+    def parse_creator_filmography(s: BeautifulSoup) -> dict:
         div = sel(s, ".creator-filmography")
 
-        if div is None:
-            return None
-
         filmography = {}
+        if div is not None:
+            for section in asel(div, "section"):
+                section_name = text(section, "header h2")
+                year = None
 
-        for section in asel(div, "section"):
-            section_name = text(section, "header h2")
-            year = None
+                filmography[section_name] = {}
+                for table in asel(section, "table"):
+                    table_name = text(table, "th")
 
-            filmography[section_name] = {}
-            for table in asel(section, "table"):
-                table_name = text(table, "th")
+                    filmography[section_name][table_name] = {}
+                    for tr in asel(table, "tr:not(:first-child)"):
+                        tr_year = clean(text(tr, "td.year"))
+                        if tr_year.isnumeric():
+                            year = int(tr_year)
 
-                filmography[section_name][table_name] = {}
-                for tr in asel(table, "tr:not(:first-child)"):
-                    tr_year = clean(text(tr, "td.year"))
-                    if tr_year.isnumeric():
-                        year = int(tr_year)
+                        if year not in filmography[section_name][table_name]:
+                            filmography[section_name][table_name][year] = []
 
-                    if year not in filmography[section_name][table_name]:
-                        filmography[section_name][table_name][year] = []
-
-                    td_name = sel(tr, "td.name")
-                    td_a = sel(td_name, "a")
-                    filmography[section_name][table_name][year].append({
-                        "id": extract_id(td_a.get("href")),
-                        "name": text(td_a)
-                    })
+                        td_name = sel(tr, "td.name")
+                        td_a = sel(td_name, "a")
+                        filmography[section_name][table_name][year].append({
+                            "id": extract_id(td_a.get("href")),
+                            "name": text(td_a)
+                        })
 
         return filmography
 
-    def parse_creator_image(self, s):
+    def parse_creator_image(self, s: BeautifulSoup) -> Optional[str]:
         return url(self.parse_movie_ld_json(s).get("image", None))
 
-    def parse_creator(self, s, cid):
+    def parse_creator(self, s: BeautifulSoup, cid: int) -> Creator:
         return Creator({
             "id": cid,
             "url": Globals.CREATORS_URL + str(cid),
             "type": self.parse_creator_type(s),
             "name": self.parse_creator_name(s),
             "age": self.parse_creator_age(s),
-            "birth": {
-                "date": self.parse_creator_birth_date(s),
-                "place": self.parse_creator_birth_place(s)
-            },
+            "birth_date": self.parse_creator_birth_date(s),
+            "birth_place": self.parse_creator_birth_place(s),
             "bio": self.parse_creator_bio(s),
             "trivia": self.parse_creator_trivia(s),
             "ranks": self.parse_creator_ranks(s),
@@ -151,7 +148,7 @@ class SearchParser:
     # MOVIES
 
     @staticmethod
-    def parse_movies_search_movies(s):
+    def parse_movies_search_movies(s: BeautifulSoup) -> List[SearchedMovie]:
         movies = []
         for tr in asel(s, "table tbody tr"):
             movie_a = sel(tr, "a")
@@ -165,14 +162,14 @@ class SearchParser:
         return movies
 
     @staticmethod
-    def parse_movies_search_has_prev_page(s):
+    def parse_movies_search_has_prev_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-prev") is not None
 
     @staticmethod
-    def parse_movies_search_has_next_page(s):
+    def parse_movies_search_has_next_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-next") is not None
 
-    def parse_movies_search(self, s, page) -> SearchMoviesResult:
+    def parse_movies_search(self, s: BeautifulSoup, page: int) -> SearchMoviesResult:
         return SearchMoviesResult({
             "page": page,
             "movies": self.parse_movies_search_movies(s),
@@ -183,28 +180,28 @@ class SearchParser:
     # CREATORS
 
     @staticmethod
-    def parse_creators_search_creators(s):
-        movies = []
+    def parse_creators_search_creators(s: BeautifulSoup) -> List[SearchedCreator]:
+        creators = []
         for tr in asel(s, "table tbody tr"):
-            movie_a = sel(tr, "a")
+            creator_a = sel(tr, "a")
             birth_year = text(tr, ".author-birthday").split(" ")
-            movies.append(SearchedCreator({
-                "id": extract_id(movie_a.get("href")),
-                "name": text(movie_a),
-                "birth_year": None if len(birth_year) == 1 else int(birth_year[1]),
+            creators.append(SearchedCreator({
+                "id": extract_id(creator_a.get("href")),
+                "name": text(creator_a),
+                "birth_year": -1 if len(birth_year) == 1 else int(birth_year[1]),
                 "types": text(tr, ".author-dos").split(" / "),
             }))
-        return movies
+        return creators
 
     @staticmethod
-    def parse_creators_search_has_prev_page(s):
+    def parse_creators_search_has_prev_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-prev") is not None
 
     @staticmethod
-    def parse_creators_search_has_next_page(s):
+    def parse_creators_search_has_next_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-next") is not None
 
-    def parse_creators_search(self, s, page):
+    def parse_creators_search(self, s: BeautifulSoup, page: int) -> SearchCreatorsResult:
         return SearchCreatorsResult({
             "page": page,
             "creators": self.parse_creators_search_creators(s),
@@ -215,7 +212,7 @@ class SearchParser:
     # TEXT SEARCH
 
     @staticmethod
-    def __parse_text_search_parse_creators(s, name):
+    def __parse_text_search_parse_creators(s: BeautifulSoup, name: str) -> List[dict]:
         creators = []
         for p in asel(s, ".film-creators"):
             if text(p).split(":")[0] == name:
@@ -226,7 +223,7 @@ class SearchParser:
                     })
         return creators
 
-    def parse_text_search_movies(self, s) -> List[TextSearchedMovie]:
+    def parse_text_search_movies(self, s: BeautifulSoup) -> List[TextSearchedMovie]:
         movies = []
         for article in asel(s, ".main-movies article.article"):
             img_url = sel(article, "img").get("src")
@@ -245,7 +242,7 @@ class SearchParser:
         return movies
 
     @staticmethod
-    def parse_text_search_creators(s) -> List[TextSearchedCreator]:
+    def parse_text_search_creators(s: BeautifulSoup) -> List[TextSearchedCreator]:
         creators = []
         for article in asel(s, ".main-authors article.article"):
             img_url = sel(article, "img").get("src")
@@ -258,7 +255,7 @@ class SearchParser:
             }))
         return creators
 
-    def parse_text_search_series(self, s) -> List[TextSearchedSeries]:
+    def parse_text_search_series(self, s: BeautifulSoup) -> List[TextSearchedSeries]:
         series = []
         for article in asel(s, ".main-series article.article"):
             img_url = sel(article, "img").get("src")
@@ -277,7 +274,7 @@ class SearchParser:
         return series
 
     @staticmethod
-    def parse_text_search_users(s) -> List[TextSearchedUser]:
+    def parse_text_search_users(s: BeautifulSoup) -> List[TextSearchedUser]:
         users = []
         for article in asel(s, ".main-users article.article"):
             img_url = sel(article, "img").get("src")
@@ -291,7 +288,7 @@ class SearchParser:
             }))
         return users
 
-    def parse_text_search(self, s) -> TextSearchResult:
+    def parse_text_search(self, s: BeautifulSoup) -> TextSearchResult:
         return TextSearchResult({
             "movies": self.parse_text_search_movies(s),
             "creators": self.parse_text_search_creators(s),
@@ -300,44 +297,44 @@ class SearchParser:
         })
 
 class MovieParser:
-    __MOVIE_LD_JSON = None
-    __VOD_BLOCKED_HOSTS = [
+    __MOVIE_LD_JSON: Optional[dict] = None
+    __VOD_BLOCKED_HOSTS: List[str] = [
         "www.facebook.com",
         "twitter.com"
     ]
 
-    def reset(self):
+    def reset(self) -> None:
         self.__MOVIE_LD_JSON = None
 
-    def parse_movie_ld_json(self, s):
+    def parse_movie_ld_json(self, s: BeautifulSoup) -> dict:
         if not self.__MOVIE_LD_JSON:
             ld_json = sel(s, ".main-movie > script")
             self.__MOVIE_LD_JSON = {} if ld_json is None else json.loads(text(ld_json))
         return self.__MOVIE_LD_JSON
 
-    def parse_movie_type(self, s):
+    def parse_movie_type(self, s: BeautifulSoup) -> Optional[str]:
         return self.parse_movie_ld_json(s).get("@type", None)
 
-    def parse_movie_title(self, s):
+    def parse_movie_title(self, s: BeautifulSoup) -> Optional[str]:
         return self.parse_movie_ld_json(s).get("name", None)
 
-    def parse_movie_year(self, s):
-        return self.parse_movie_ld_json(s).get("dateCreated", None)
+    def parse_movie_year(self, s: BeautifulSoup) -> int:
+        return toint(self.parse_movie_ld_json(s).get("dateCreated", -1))
 
-    def parse_movie_duration(self, s):
+    def parse_movie_duration(self, s: BeautifulSoup) -> Optional[str]:
         return self.parse_movie_ld_json(s).get("duration", None)
 
     @staticmethod
-    def parse_movie_genres(s):
+    def parse_movie_genres(s: BeautifulSoup) -> List[str]:
         genres = sel(s, ".genres")
-        return None if genres is None else text(genres).split(" / ")
+        return [] if genres is None else text(genres).split(" / ")
 
     @staticmethod
-    def parse_movie_origins(s):
+    def parse_movie_origins(s: BeautifulSoup) -> List[str]:
         origin = sel(s, ".origin")
-        return None if origin is None else text(origin).split(", ")[0].split(" / ")
+        return [] if origin is None else text(origin).split(", ")[0].split(" / ")
 
-    def parse_movie_rating(self, s):
+    def parse_movie_rating(self, s: BeautifulSoup) -> dict:
         ld_json = self.parse_movie_ld_json(s)
         rating = ld_json.get("aggregateRating", None)
         return {
@@ -346,7 +343,7 @@ class MovieParser:
         }
 
     @staticmethod
-    def parse_movie_ranks(s):
+    def parse_movie_ranks(s: BeautifulSoup) -> dict:
         ranks = {}
         for div in asel(s, ".film-ranking"):
             div_a = sel(div, "a")
@@ -354,14 +351,14 @@ class MovieParser:
         return ranks
 
     @staticmethod
-    def parse_movie_other_names(s):
+    def parse_movie_other_names(s: BeautifulSoup) -> dict:
         other_names = {}
         for li in asel(s, ".film-names li"):
             other_names[sel(li, "img").get("title")] = text(li)
         return other_names
 
     @staticmethod
-    def parse_movie_creators(s):
+    def parse_movie_creators(s: BeautifulSoup) -> dict:
         creators = {}
         for div in asel(s, ".creators > div"):
             name = text(div, "h4").split(":")[0]
@@ -377,7 +374,7 @@ class MovieParser:
             creators[name] = creators_by_type
         return creators
 
-    def parse_movie_vods(self, s):
+    def parse_movie_vods(self, s: BeautifulSoup) -> dict:
         vods = {}
         for a in asel(s, ".box-buttons > a"):
             parsed_url = urlsplit(a.get("href"))
@@ -386,18 +383,18 @@ class MovieParser:
         return vods
 
     @staticmethod
-    def parse_movie_tags(s):
+    def parse_movie_tags(s: BeautifulSoup) -> dict:
         tags = {}
         for a in asel(s, "aside > section:last-child > .box-content > a"):
-            tags[text(a)] = a.get("href").split("=")[1]
+            tags[text(a)] = toint(a.get("href").split("=")[1])
         return tags
 
     @staticmethod
-    def parse_movie_reviews_count(s):
+    def parse_movie_reviews_count(s: BeautifulSoup) -> int:
         count = sel(s, ".box-reviews .count")
         return -1 if count is None else toint(text(count))
 
-    def parse_movie_reviews(self, s):
+    def parse_movie_reviews(self, s: BeautifulSoup) -> dict:
         reviews = {
             "total": self.parse_movie_reviews_count(s),
             "items": []
@@ -415,13 +412,13 @@ class MovieParser:
         return reviews
 
     @staticmethod
-    def parse_movie_gallery_count(s):
+    def parse_movie_gallery_count(s: BeautifulSoup) -> int:
         gallery_item = sel(s, ".gallery-item")
         section = None if gallery_item is None else gallery_item.find_parent("section")
         count = None if section is None else sel(section, ".count")
         return -1 if count is None else toint(text(count))
 
-    def parse_movie_gallery(self, s):
+    def parse_movie_gallery(self, s: BeautifulSoup) -> dict:
         img = sel(s, ".gallery-item picture img")
         return {
             "total": self.parse_movie_gallery_count(s),
@@ -429,13 +426,13 @@ class MovieParser:
         }
 
     @staticmethod
-    def parse_movie_trivia_count(s):
+    def parse_movie_trivia_count(s: BeautifulSoup) -> int:
         article = sel(s, ".article-trivia")
         section = None if article is None else article.find_parent("section")
         count = None if section is None else sel(section, ".count")
         return -1 if count is None else toint(text(count))
 
-    def parse_movie_trivia(self, s):
+    def parse_movie_trivia(self, s: BeautifulSoup) -> dict:
         trivia = {
             "total": self.parse_movie_trivia_count(s),
             "items": []
@@ -452,29 +449,38 @@ class MovieParser:
         return trivia
 
     @staticmethod
-    def parse_movie_premieres(s):
+    def parse_movie_premieres(s: BeautifulSoup) -> List[dict]:
         premieres = []
         for li in asel(s, ".box-premieres li"):
             where = text(li, "p")
             when_tag = asel(li, "span")[1]
             when = clean(text(when_tag))
+
+            xwhen = when
+            if " " in when:
+                xwhen = when[:when.index(" ")]
+
+            xby = None
+            if " " in when:
+                xby = when[when.index(" ") + 1:]
+
             premieres.append({
                 "country": sel(li, ".item-img img").get("title"),
                 "where": where[:where.rindex(" ")],
-                "when": when[:when.index(" ")],
-                "by": when[when.index(" ") + 1:],
+                "when": xwhen,
+                "by": xby,
             })
         return premieres
 
     @staticmethod
-    def parse_movie_plot(s):
+    def parse_movie_plot(s: BeautifulSoup) -> Optional[str]:
         plot = sel(s, ".plot-full > p")
         return None if plot is None else text(plot, rec_tags=["a"])
 
-    def parse_movie_cover(self, s):
+    def parse_movie_cover(self, s: BeautifulSoup) -> Optional[str]:
         return self.parse_movie_ld_json(s).get("image", None)
 
-    def parse_movie(self, s, mid):
+    def parse_movie(self, s: BeautifulSoup, mid: int) -> Movie:
         return Movie({
             "id": mid,
             "url": Globals.MOVIES_URL + str(mid),
@@ -503,53 +509,53 @@ class UserParser:
     # USER OVERVIEW
 
     @staticmethod
-    def parse_user_name(s):
+    def parse_user_name(s: BeautifulSoup) -> Optional[str]:
         return text(s, ".user-profile h1")
 
     @staticmethod
-    def parse_user_real_name(s):
+    def parse_user_real_name(s: BeautifulSoup) -> Optional[str]:
         return text(s, ".user-profile-content > p > strong")
 
     @staticmethod
-    def parse_user_origin(s):
+    def parse_user_origin(s: BeautifulSoup) -> Optional[str]:
         p = sel(s, ".user-profile-content > p")
         return clean(p.contents[3]).split(", ")
 
     @staticmethod
-    def parse_user_about(s):
+    def parse_user_about(s: BeautifulSoup) -> Optional[str]:
         p = sel(s, ".user-profile-content > p")
         return clean(p.contents[5])
 
     @staticmethod
-    def parse_user_registered(s):
+    def parse_user_registered(s: BeautifulSoup) -> Optional[str]:
         user_footer = sel(s, ".user-profile-footer-left")
         return clean(text(user_footer)).split(" ")[3]
 
     @staticmethod
-    def parse_user_last_login(s):
+    def parse_user_last_login(s: BeautifulSoup) -> Optional[str]:
         user_footer = sel(s, ".user-profile-footer-left")
         parts = clean(text(user_footer)).split(" ")
-        return f"{parts[6]} {parts[7]}"
+        return f"{parts[6]} {parts[7]}" if len(parts) >= 8 else None
 
     @staticmethod
-    def parse_user_points(s):
-        points_a = sel(s, ".ranking-points a")
-        return None if points_a is None else int("".join(clean(text(points_a)).split(" ")[:-1]))
+    def parse_user_points(s: BeautifulSoup) -> int:
+        points = sel(s, ".ranking-points")
+        return -1 if points is None else toint(clean(text(points, rec_tags=["a"])))
 
     @staticmethod
-    def parse_user_fans(s):
+    def parse_user_fans(s: BeautifulSoup) -> int:
         content_span = sel(s, ".fan-club-content > span")
-        return None if content_span is None else toint(text(content_span))
+        return -1 if content_span is None else toint(text(content_span))
 
     @staticmethod
-    def parse_user_awards(s):
+    def parse_user_awards(s: BeautifulSoup) -> dict:
         awards = {}
         for a in asel(s, ".ranking:not(.ranking-points) a"):
             awards[text(a)] = a.get("href")
         return awards
 
     @staticmethod
-    def parse_user_most_watched_genres(s):
+    def parse_user_most_watched_genres(s: BeautifulSoup) -> dict:
         most_watched_genres = {}
         for li in asel(s, ".genres-switch li"):
             meter = int(sel(li, ".meter").get("style").split(" ")[1][:-1])
@@ -557,7 +563,7 @@ class UserParser:
         return most_watched_genres
 
     @staticmethod
-    def parse_user_most_watched_types(s):
+    def parse_user_most_watched_types(s: BeautifulSoup) -> dict:
         most_watched_types = {}
         for li in asel(s, ".types-switch li"):
             span_text = sel(li, "span").get("title")
@@ -566,7 +572,7 @@ class UserParser:
         return most_watched_types
 
     @staticmethod
-    def parse_user_most_watched_origins(s):
+    def parse_user_most_watched_origins(s: BeautifulSoup) -> dict:
         most_watched_origins = {}
         for li in asel(s, ".origins-switch li"):
             span_text = sel(li, "span").get("title")
@@ -575,11 +581,11 @@ class UserParser:
         return most_watched_origins
 
     @staticmethod
-    def parse_user_reviews_count(s):
+    def parse_user_reviews_count(s: BeautifulSoup) -> int:
         section = sel(s, ".user-reviews")
         return -1 if section is None else toint(clean(text(section, ".count")))
 
-    def parse_user_reviews(self, s):
+    def parse_user_reviews(self, s: BeautifulSoup) -> dict:
         reviews = {
             "total": self.parse_user_reviews_count(s),
             "last": []
@@ -600,11 +606,11 @@ class UserParser:
         return reviews
 
     @staticmethod
-    def parse_user_ratings_count(s):
+    def parse_user_ratings_count(s: BeautifulSoup) -> int:
         section = sel(s, ".last-ratings section")
         return -1 if section is None else toint(clean(text(section, ".count")))
 
-    def parse_user_ratings(self, s):
+    def parse_user_ratings(self, s: BeautifulSoup) -> dict:
         ratings = {
             "total": self.parse_user_ratings_count(s),
             "last": []
@@ -621,15 +627,15 @@ class UserParser:
         return ratings
 
     @staticmethod
-    def parse_user_is_currently_online(s):
+    def parse_user_is_currently_online(s: BeautifulSoup) -> bool:
         return sel(s, ".user-profile-status") is not None
 
     @staticmethod
-    def parse_user_image(s):
+    def parse_user_image(s: BeautifulSoup) -> Optional[str]:
         img_href = sel(s, ".user-profile-content img").get("src")
         return None if img_href.startswith("data:image") else url(img_href)
 
-    def parse_user(self, s, uid):
+    def parse_user(self, s: BeautifulSoup, uid: int):
         return User({
             "id": uid,
             "url": Globals.USERS_URL + str(uid),
@@ -654,11 +660,11 @@ class UserParser:
     # USER RATINGS
 
     @staticmethod
-    def parse_user_ratings_ratings_count(s):
+    def parse_user_ratings_ratings_count(s: BeautifulSoup) -> int:
         return toint(text(s, ".count"))
 
     @staticmethod
-    def parse_user_ratings_ratings_list(s) -> List[UserRating]:
+    def parse_user_ratings_ratings_list(s: BeautifulSoup) -> List[UserRating]:
         ratings = []
         for tr in asel(s, ".user-tab-rating table tr"):
             td_a = sel(tr, ".name a")
@@ -674,14 +680,14 @@ class UserParser:
         return ratings
 
     @staticmethod
-    def parse_user_ratings_ratings_has_prev_page(s):
+    def parse_user_ratings_ratings_has_prev_page(s: BeautifulSoup) -> bool:
         return sel(s, ".user-tab-rating .page-prev") is not None
 
     @staticmethod
-    def parse_user_ratings_ratings_has_next_page(s):
+    def parse_user_ratings_ratings_has_next_page(s: BeautifulSoup) -> bool:
         return sel(s, ".user-tab-rating .page-next") is not None
 
-    def parse_user_ratings_ratings(self, s) -> UserRatings:
+    def parse_user_ratings_ratings(self, s: BeautifulSoup) -> UserRatings:
         return UserRatings({
             "total": self.parse_user_ratings_ratings_count(s),
             "ratings": self.parse_user_ratings_ratings_list(s),
@@ -692,11 +698,11 @@ class UserParser:
     # USER REVIEWS
 
     @staticmethod
-    def parse_user_reviews_reviews_count(s):
+    def parse_user_reviews_reviews_count(s: BeautifulSoup) -> int:
         return toint(text(s, ".count"))
 
     @staticmethod
-    def parse_user_reviews_reviews_list(s) -> List[UserReview]:
+    def parse_user_reviews_reviews_list(s: BeautifulSoup) -> List[UserReview]:
         reviews = []
         for article in asel(s, ".user-reviews article.article"):
             article_a = sel(article, "header a")
@@ -714,14 +720,14 @@ class UserParser:
         return reviews
 
     @staticmethod
-    def parse_user_reviews_reviews_has_prev_page(s):
+    def parse_user_reviews_reviews_has_prev_page(s: BeautifulSoup) -> bool:
         return sel(s, ".user-reviews .page-prev") is not None
 
     @staticmethod
-    def parse_user_reviews_reviews_has_next_page(s):
+    def parse_user_reviews_reviews_has_next_page(s: BeautifulSoup) -> bool:
         return sel(s, ".user-reviews .page-next") is not None
 
-    def parse_user_reviews_reviews(self, s) -> UserReviews:
+    def parse_user_reviews_reviews(self, s: BeautifulSoup) -> UserReviews:
         return UserReviews({
             "total": self.parse_user_reviews_reviews_count(s),
             "reviews": self.parse_user_reviews_reviews_list(s),
@@ -734,7 +740,7 @@ class NewsParser:
     # NEWS
 
     @staticmethod
-    def __parse_news_article(s):
+    def __parse_news_article(s: BeautifulSoup) -> dict:
         section_a = sel(s, "header a")
         return {
             "id": extract_id(section_a.get("href")),
@@ -745,12 +751,12 @@ class NewsParser:
         }
 
     @staticmethod
-    def parse_news_title(s):
+    def parse_news_title(s: BeautifulSoup) -> Optional[str]:
         header = sel(s, ".box-news-detail header")
         return None if header is None else text(header, "h1")
 
     @staticmethod
-    def parse_news_text(s):
+    def parse_news_text(s: BeautifulSoup) -> Optional[str]:
         contents = asel(s, ".article-news-content-detail > p")
         content = []
         for p in contents:
@@ -760,23 +766,23 @@ class NewsParser:
         return " ".join(content)
 
     @staticmethod
-    def parse_news_date(s):
+    def parse_news_date(s: BeautifulSoup) -> Optional[str]:
         header = sel(s, ".box-news-detail header")
         return None if header is None else text(header, ".info .date")
 
     @staticmethod
-    def parse_news_author_id(s):
+    def parse_news_author_id(s: BeautifulSoup) -> int:
         header = sel(s, ".box-news-detail header")
         author_a = None if header is None else sel(header, ".info a")
-        return None if author_a is None else extract_id(author_a.get("href"))
+        return -1 if author_a is None else extract_id(author_a.get("href"))
 
     @staticmethod
-    def parse_news_author_name(s):
+    def parse_news_author_name(s: BeautifulSoup) -> Optional[str]:
         header = sel(s, ".box-news-detail header")
         author_a = None if header is None else sel(header, ".info a")
         return None if author_a is None else text(author_a)
 
-    def parse_news_most_read_news(self, s):
+    def parse_news_most_read_news(self, s: BeautifulSoup) -> List[dict]:
         most_read_news = []
         contents = asel(s, ".box-content-news-right")
         if len(contents) > 0:
@@ -784,7 +790,7 @@ class NewsParser:
                 most_read_news.append(self.__parse_news_list_article(article))
         return most_read_news
 
-    def parse_news_most_latest_news(self, s):
+    def parse_news_most_latest_news(self, s: BeautifulSoup) -> List[dict]:
         most_latest_news = []
         contents = asel(s, ".box-content-news-right")
         if len(contents) > 1:
@@ -792,28 +798,28 @@ class NewsParser:
                 most_latest_news.append(self.__parse_news_list_article(article))
         return most_latest_news
 
-    def parse_news_related_news(self, s):
+    def parse_news_related_news(self, s: BeautifulSoup) -> List[dict]:
         related_news = []
         for article in asel(s, ".newslist article"):
             related_news.append(self.__parse_news_list_article(article))
         return related_news
 
     @staticmethod
-    def parse_news_image(s):
+    def parse_news_image(s: BeautifulSoup) -> Optional[str]:
         image = sel(s, ".box-news-detail img")
         return None if image is None else url(image.get("src"))
 
     @staticmethod
-    def parse_news_prev_news_id(s):
+    def parse_news_prev_news_id(s: BeautifulSoup) -> int:
         prev_news = sel(s, "a.prev-news")
-        return None if prev_news is None else extract_id(prev_news.get("href"))
+        return -1 if prev_news is None else extract_id(prev_news.get("href"))
 
     @staticmethod
-    def parse_news_next_news_id(s):
+    def parse_news_next_news_id(s: BeautifulSoup) -> int:
         next_news = sel(s, "a.next-news")
-        return None if next_news is None else extract_id(next_news.get("href"))
+        return -1 if next_news is None else extract_id(next_news.get("href"))
 
-    def parse_news(self, s, nid):
+    def parse_news(self, s: BeautifulSoup, nid: int):
         return News({
             "id": nid,
             "title": self.parse_news_title(s),
@@ -832,7 +838,7 @@ class NewsParser:
     # NEWS LIST
 
     @staticmethod
-    def __parse_news_list_article(s):
+    def __parse_news_list_article(s: BeautifulSoup) -> dict:
         section_a = sel(s, "header a")
         return {
             "id": extract_id(section_a.get("href")),
@@ -843,7 +849,7 @@ class NewsParser:
         }
 
     @staticmethod
-    def parse_news_list_main_news(s):
+    def parse_news_list_main_news(s: BeautifulSoup) -> dict:
         first = sel(s, ".box-firstnews")
         first_a = sel(first, "header a")
         first_info = sel(first, ".info")
@@ -858,13 +864,13 @@ class NewsParser:
             "author_name": text(first_info_a),
         }
 
-    def parse_news_list_news_list(self, s):
+    def parse_news_list_news_list(self, s: BeautifulSoup) -> List[dict]:
         news_list = []
         for article in asel(s, ".newslist article"):
             news_list.append(self.__parse_news_list_article(article))
         return news_list
 
-    def parse_news_list_most_read_news(self, s):
+    def parse_news_list_most_read_news(self, s: BeautifulSoup) -> List[dict]:
         most_read_news = []
         contents = asel(s, ".box-content-news-right")
         if len(contents) > 0:
@@ -872,7 +878,7 @@ class NewsParser:
                 most_read_news.append(self.__parse_news_list_article(article))
         return most_read_news
 
-    def parse_news_list_most_latest_news(self, s):
+    def parse_news_list_most_latest_news(self, s: BeautifulSoup) -> List[dict]:
         most_latest_news = []
         contents = asel(s, ".box-content-news-right")
         if len(contents) > 1:
@@ -881,14 +887,14 @@ class NewsParser:
         return most_latest_news
 
     @staticmethod
-    def parse_news_list_has_prev_page(s):
+    def parse_news_list_has_prev_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-prev") is not None
 
     @staticmethod
-    def parse_news_list_has_next_page(s):
+    def parse_news_list_has_next_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-next") is not None
 
-    def parse_news_list(self, s, page):
+    def parse_news_list(self, s: BeautifulSoup, page: int) -> NewsList:
         return NewsList({
             "page": page,
             "main_news": self.parse_news_list_main_news(s),
@@ -904,7 +910,7 @@ class UsersParser:
     # MOST FAVORITE USERS
 
     @staticmethod
-    def __parse_favorite_users_article(s):
+    def __parse_favorite_users_article(s: BeautifulSoup) -> OtherFavoriteUser:
         img = sel(s, "img")
         left_content = sel(s, ".article-user-content-left")
         right_content = sel(s, ".article-user-content-right")
@@ -919,7 +925,7 @@ class UsersParser:
         })
 
     @staticmethod
-    def parse_favorite_users_most_favorite_users(s):
+    def parse_favorite_users_most_favorite_users(s: BeautifulSoup) -> List[FavoriteUser]:
         section = sel(s, ".row .column:nth-child(1) section")
         most_favorite_users = []
         for article in asel(section, "article"):
@@ -942,7 +948,7 @@ class UsersParser:
             }))
         return most_favorite_users
 
-    def parse_favorite_users_by_regions(self, s):
+    def parse_favorite_users_by_regions(self, s: BeautifulSoup) -> Dict[Origins, List[OtherFavoriteUser]]:
         section = sel(s, ".row .column:nth-child(2) section")
         by_regions = {}
         current_region = None
@@ -956,7 +962,7 @@ class UsersParser:
             by_regions[current_region].append(user)
         return by_regions
 
-    def parse_favorite_users_by_country(self, s):
+    def parse_favorite_users_by_country(self, s: BeautifulSoup) -> Dict[Origins, List[OtherFavoriteUser]]:
         section = sel(s, ".row .column:nth-child(3) section")
         by_country = {}
         current_country = None
@@ -970,7 +976,7 @@ class UsersParser:
             by_country[current_country].append(user)
         return by_country
 
-    def parse_favorite_users(self, s) -> FavoriteUsers:
+    def parse_favorite_users(self, s: BeautifulSoup) -> FavoriteUsers:
         return FavoriteUsers({
             "most_favorite_users": self.parse_favorite_users_most_favorite_users(s),
             "by_regions": self.parse_favorite_users_by_regions(s),
@@ -980,7 +986,7 @@ class UsersParser:
     # MOST ACTIVE USERS
 
     @staticmethod
-    def __parse_active_users_article(s, cls, prop):
+    def __parse_active_users_article(s: BeautifulSoup, cls: Type, prop: str):
         img = sel(s, "img").get("src")
         article_a = sel(s, ".user-title a")
         return cls({
@@ -990,7 +996,7 @@ class UsersParser:
             "image": None if img.startswith("data:image") else url(img),
         })
 
-    def parse_active_users_by_reviews(self, s) -> List[ActiveUserByReviews]:
+    def parse_active_users_by_reviews(self, s: BeautifulSoup) -> List[ActiveUserByReviews]:
         section = sel(s, ".row .column:nth-child(1) section")
         by_reviews = []
         for article in asel(section, "article"):
@@ -998,7 +1004,7 @@ class UsersParser:
             by_reviews.append(user)
         return by_reviews
 
-    def parse_active_users_by_diaries(self, s) -> List[ActiveUserByDiaries]:
+    def parse_active_users_by_diaries(self, s: BeautifulSoup) -> List[ActiveUserByDiaries]:
         section = sel(s, ".row .column:nth-child(2) section")
         by_diaries = []
         for article in asel(section, "article"):
@@ -1006,7 +1012,7 @@ class UsersParser:
             by_diaries.append(user)
         return by_diaries
 
-    def parse_active_users_by_content(self, s) -> List[ActiveUserByContent]:
+    def parse_active_users_by_content(self, s: BeautifulSoup) -> List[ActiveUserByContent]:
         section = sel(s, ".row .column:nth-child(3) section")
         by_content = []
         for article in asel(section, "article"):
@@ -1014,7 +1020,7 @@ class UsersParser:
             by_content.append(user)
         return by_content
 
-    def parse_active_users_by_trivia(self, s) -> List[ActiveUserByTrivia]:
+    def parse_active_users_by_trivia(self, s: BeautifulSoup) -> List[ActiveUserByTrivia]:
         section = sel(s, ".row .column:nth-child(4) section")
         by_trivia = []
         for article in asel(section, "article"):
@@ -1022,7 +1028,7 @@ class UsersParser:
             by_trivia.append(user)
         return by_trivia
 
-    def parse_active_users_by_biography(self, s) -> List[ActiveUserByBiography]:
+    def parse_active_users_by_biography(self, s: BeautifulSoup) -> List[ActiveUserByBiography]:
         section = sel(s, ".row .column:nth-child(5) section")
         by_biography = []
         for article in asel(section, "article"):
@@ -1030,7 +1036,7 @@ class UsersParser:
             by_biography.append(user)
         return by_biography
 
-    def parse_active_users(self, s) -> ActiveUsers:
+    def parse_active_users(self, s: BeautifulSoup) -> ActiveUsers:
         return ActiveUsers({
             "by_reviews": self.parse_active_users_by_reviews(s),
             "by_diaries": self.parse_active_users_by_diaries(s),
@@ -1044,7 +1050,7 @@ class DvdsParser:
     # DVDS MONTHLY
 
     @staticmethod
-    def __parse_dvds_monthly_parse_creators(s, name):
+    def __parse_dvds_monthly_parse_creators(s: BeautifulSoup, name: str) -> List[dict]:
         creators = []
         for p in asel(s, ".film-creators"):
             if text(p).split(":")[0] == name:
@@ -1055,7 +1061,7 @@ class DvdsParser:
                     })
         return creators
 
-    def __parse_dvds_monthly_article(self, s) -> DVDMonthly:
+    def __parse_dvds_monthly_article(self, s: BeautifulSoup) -> DVDMonthly:
         img = sel(s, "img")
         img_src = None if img is None else img.get("src")
         header = sel(s, ".article-header")
@@ -1075,14 +1081,14 @@ class DvdsParser:
         })
 
     @staticmethod
-    def parse_dvds_monthly_has_prev_page(s) -> bool:
+    def parse_dvds_monthly_has_prev_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-prev") is not None
 
     @staticmethod
-    def parse_dvds_monthly_has_next_page(s) -> bool:
+    def parse_dvds_monthly_has_next_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-next") is not None
 
-    def parse_dvds_monthly_by_release_date(self, s) -> DVDSMonthlyByReleaseDate:
+    def parse_dvds_monthly_by_release_date(self, s: BeautifulSoup) -> DVDSMonthlyByReleaseDate:
         content = sel(s, ".box-content.box-content-striped-articles")
         dvds = {}
         current_date = None
@@ -1107,7 +1113,7 @@ class DvdsParser:
             "has_next_page": self.parse_dvds_monthly_has_next_page(s),
         })
 
-    def parse_dvds_monthly_by_rating(self, s) -> DVDSMonthlyByRating:
+    def parse_dvds_monthly_by_rating(self, s: BeautifulSoup) -> DVDSMonthlyByRating:
         content = sel(s, ".box-content.box-content-striped-articles")
         dvds = []
         for article in asel(content, "article"):
@@ -1121,7 +1127,7 @@ class DvdsParser:
     # DVDS YEARLY
 
     @staticmethod
-    def __parse_dvds_yearly_tr(s, date) -> DVDYearly:
+    def __parse_dvds_yearly_tr(s: BeautifulSoup, date: str) -> DVDYearly:
         tr_a = sel(s, ".movies a")
         return DVDYearly({
             "id": extract_id(tr_a.get("href")),
@@ -1130,7 +1136,7 @@ class DvdsParser:
             "date": date,
         })
 
-    def parse_dvds_yearly_by_release_date(self, s) -> DVDSYearlyByReleaseDate:
+    def parse_dvds_yearly_by_release_date(self, s: BeautifulSoup) -> DVDSYearlyByReleaseDate:
         dvds = {}
         for content in asel(s, ".box-content:not(.box-content-striped-articles)"):
             month_name = text(content, ".box-sub-header").split(" ")[0]
@@ -1149,7 +1155,7 @@ class DvdsParser:
 
         return DVDSYearlyByReleaseDate({"dvds": dvds})
 
-    def parse_dvds_yearly_by_rating(self, s) -> DVDSYearlyByRating:
+    def parse_dvds_yearly_by_rating(self, s: BeautifulSoup) -> DVDSYearlyByRating:
         dvds = []
         current_date = None
         for tr in asel(s, "table tbody tr"):
@@ -1167,7 +1173,7 @@ class BluraysParser:
     # BLURAYS MONTHLY
 
     @staticmethod
-    def __parse_blurays_monthly_parse_creators(s, name):
+    def __parse_blurays_monthly_parse_creators(s: BeautifulSoup, name: str) -> List[dict]:
         creators = []
         for p in asel(s, ".film-creators"):
             if text(p).split(":")[0] == name:
@@ -1178,13 +1184,13 @@ class BluraysParser:
                     })
         return creators
 
-    def __parse_blurays_monthly_article(self, s) -> BlurayMonthly:
+    def __parse_blurays_monthly_article(self, s: BeautifulSoup) -> BlurayMonthly:
         img = sel(s, "img")
         img_src = None if img is None else img.get("src")
         header = sel(s, ".article-header")
         header_a = sel(header, "a")
         origins_genres = text(s, ".film-origins-genres .info").split(", ")
-        distributor = clean(text(s, ".article-content > p:last-of-type")).split(": ")
+        distributor = clean(text(s, ".article-content > p:last-of-type", rec_tags=["span"])).split(": ")
 
         return BlurayMonthly({
             "id": extract_id(header_a.get("href")),
@@ -1202,14 +1208,14 @@ class BluraysParser:
         })
 
     @staticmethod
-    def parse_blurays_monthly_has_prev_page(s) -> bool:
+    def parse_blurays_monthly_has_prev_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-prev") is not None
 
     @staticmethod
-    def parse_blurays_monthly_has_next_page(s) -> bool:
+    def parse_blurays_monthly_has_next_page(s: BeautifulSoup) -> bool:
         return sel(s, ".page-next") is not None
 
-    def parse_blurays_monthly_by_release_date(self, s) -> BluraysMonthlyByReleaseDate:
+    def parse_blurays_monthly_by_release_date(self, s: BeautifulSoup) -> BluraysMonthlyByReleaseDate:
         content = sel(s, ".box-content.box-content-striped-articles")
         blurays = {}
         current_date = None
@@ -1234,7 +1240,7 @@ class BluraysParser:
             "has_next_page": self.parse_blurays_monthly_has_next_page(s),
         })
 
-    def parse_blurays_monthly_by_rating(self, s) -> BluraysMonthlyByRating:
+    def parse_blurays_monthly_by_rating(self, s: BeautifulSoup) -> BluraysMonthlyByRating:
         content = sel(s, ".box-content.box-content-striped-articles")
         blurays = []
         for article in asel(content, "article"):
@@ -1248,7 +1254,7 @@ class BluraysParser:
     # BLURAYS YEARLY
 
     @staticmethod
-    def __parse_blurays_yearly_tr(s, date) -> BlurayYearly:
+    def __parse_blurays_yearly_tr(s: BeautifulSoup, date: str) -> BlurayYearly:
         tr_a = sel(s, ".movies a")
         return BlurayYearly({
             "id": extract_id(tr_a.get("href")),
@@ -1258,7 +1264,7 @@ class BluraysParser:
             "date": date,
         })
 
-    def parse_blurays_yearly_by_release_date(self, s) -> BluraysYearlyByReleaseDate:
+    def parse_blurays_yearly_by_release_date(self, s: BeautifulSoup) -> BluraysYearlyByReleaseDate:
         blurays = {}
         for content in asel(s, ".box-content:not(.box-content-striped-articles)"):
             month_name = text(content, ".box-sub-header").split(" ")[0]
@@ -1277,7 +1283,7 @@ class BluraysParser:
 
         return BluraysYearlyByReleaseDate({"blurays": blurays})
 
-    def parse_dvds_yearly_by_rating(self, s) -> BluraysYearlyByRating:
+    def parse_dvds_yearly_by_rating(self, s: BeautifulSoup) -> BluraysYearlyByRating:
         blurays = []
         current_date = None
         for tr in asel(s, "table tbody tr"):
