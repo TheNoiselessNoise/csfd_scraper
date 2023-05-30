@@ -6,9 +6,7 @@ This is a simple scraper for [CSFD.cz](https://www.csfd.cz/), a Czech movie data
 #### I am *NOT* responsible for any misuse of this scraper.
 
 ## Usage
-Here is just sample usage of the scraper.\
-If you want to know what else you can do with it,\
-check out the [LIST OF METHODS](USAGE.md)
+Here is just sample usage of the scraper.
 
 Even though the scraper is OOP, every resulted object is printable.\
 Every printed object is converted to **JSON** string.

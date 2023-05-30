@@ -30,7 +30,7 @@ class Globals:
     USER_REVIEWS_URL = "https://www.csfd.cz/uzivatel/<uid>/recenze/"
 
 def encode_params(params):
-    params_raw = json.dumps(params).replace(" ", "").encode('ascii')
+    params_raw = json.dumps(params, separators=(',', ':')).encode('ascii')
     return codecs.encode(b64encode(params_raw).decode('ascii'), 'rot_13')
 
 def tojson(o):

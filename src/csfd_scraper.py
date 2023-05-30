@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 from typing import List, Optional
 
 class CsfdScraper:
+    DEBUG: bool = False
+
     __LAST_URL: Optional[str]            = None
     __LAST_SOUP: Optional[BeautifulSoup] = None
 
@@ -22,7 +24,8 @@ class CsfdScraper:
         self.__CREATOR_PARSER.reset()
     @staticmethod
     def __request(func: callable, u: str, params: Optional[dict] = None) -> requests.Response:
-        print("Requesting: " + u)
+        if CsfdScraper.DEBUG:
+            print("Requesting: " + u)
         response = func(u, params=params, headers={"User-Agent": "Mozilla/5.0"})
         if response.status_code != 200:
             raise CsfdScraperInvalidRequest("Invalid request at url: " + u)

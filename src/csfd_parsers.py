@@ -282,7 +282,7 @@ class SearchParser:
             users.append(TextSearchedUser({
                 "id": extract_id(articla_a.get("href")),
                 "name": text(articla_a),
-                "real_name": text(article, ".article-content .user-real-name"),
+                "real_name": text(article, ".article-content p:first-of-type"),
                 "points": int(text(article, ".article-content p:last-child").split(" ")[0]),
                 "image": None if img_url.startswith("data:image") else url(img_url)
             }))
