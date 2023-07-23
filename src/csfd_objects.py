@@ -990,7 +990,7 @@ class FavoriteUsers(PrintableObject):
 
     def __str__(self):
         args = self.args
-        args["most_favo;rite_users"] = [u.args for u in self.most_favorite_users]
+        args["most_favorite_users"] = [u.args for u in self.most_favorite_users]
         args["by_regions"] = {k: [u.args for u in v] for k, v in self.by_regions.items()}
         args["by_country"] = {k.value[1]: [u.args for u in v] for k, v in self.by_country.items()}
         return tojson(args)

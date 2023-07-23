@@ -3,6 +3,7 @@ import sys
 import traceback
 from src.csfd_scraper import CsfdScraper
 from src.csfd_objects import *
+from src.csfd_utils import flatten
 from time import sleep
 
 def extract_user_info(user: User):
@@ -43,7 +44,7 @@ tests = {
     ],
     "User reviews": [
         scraper.user_reviews,
-        [447317, MovieTypes.MOVIE, MovieGenres.EROTIC],
+        [447317, MovieTypes.MOVIE, None, MovieGenres.EROTIC],
         lambda x: f"User reviews total: {x.total}"
     ],
     "User ratings": [
@@ -54,22 +55,22 @@ tests = {
     "Blurays monthly by release date": [
         scraper.blurays_monthly_by_release_date,
         [2022, 1, Months.OCTOBER],
-        lambda x: f"Blurays monthly by release date total: {len(list(x.blurays.keys()))}"
+        lambda x: f"Blurays monthly by release date total: {len(flatten([*x.blurays.values()]))}"
     ],
     "Blurays yearly by release date": [
         scraper.blurays_yearly_by_release_date,
         [2023],
-        lambda x: f"Blurays yearly by release date total: {len(list(x.blurays.keys()))}"
+        lambda x: f"Blurays yearly by release date total: {len(flatten([*x.blurays.values()]))}"
     ],
     "Dvds yearly by release date": [
         scraper.dvds_yearly_by_release_date,
         [2023],
-        lambda x: f"Dvds yearly by release date total: {len(list(x.dvds.keys()))}"
+        lambda x: f"Dvds yearly by release date total: {len(flatten([*x.dvds.values()]))}"
     ],
     "Dvds monthly by release date": [
         scraper.dvds_monthly_by_release_date,
         [2014, 2, Months.JANUARY],
-        lambda x: f"Dvds monthly by release date total: {len(list(x.dvds.keys()))}"
+        lambda x: f"Dvds monthly by release date total: {len(flatten([*x.dvds.values()]))}"
     ],
     "Dvds yearly by rating": [
         scraper.dvds_yearly_by_rating,
@@ -137,7 +138,8 @@ tests = {
             ],
             CreatorParams.GENDER: CreatorGenders.FEMALE
         }],
-        lambda x: f"Search creators total: {len(x.creators)}"
+        lambda x: f"Search creators total: {len(x.creators)}\n"
+                  f"First creator: " + (x.creators[0].name if len(x.creators) > 0 else "None")
     ],
     "Search movies": [
         scraper.search_movies,
@@ -159,7 +161,8 @@ tests = {
                 MovieGenreOptions.EXCLUDE: [MovieGenres.DRAMA, MovieGenres.EROTIC]
             }
         }],
-        lambda x: f"Search movies total: {len(x.movies)}"
+        lambda x: f"Search movies total: {len(x.movies)}\n"
+                  f"First movie: " + (x.movies[0].name if len(x.movies) > 0 else "None")
     ],
 }
 
@@ -171,7 +174,8 @@ def main():
         args = test_options[1]
         result_func = test_options[2]
         print(f"{test_name} | {result_func(func(*args))}")
-        sleep(3)
+        input()
+        # sleep(3)
 
     # TODO: add color rating to everywhere it is missing
 

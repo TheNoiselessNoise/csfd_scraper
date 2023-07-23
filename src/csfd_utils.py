@@ -22,7 +22,7 @@ class Globals:
     TEXT_SEARCH_SERIES_URL = "https://www.csfd.cz/hledat/?pageSeries=<page>&q=<search>"
     TEXT_SEARCH_CREATORS_URL = "https://www.csfd.cz/hledat/?pageCreators=<page>&q=<search>"
     TEXT_SEARCH_USERS_URL = "https://www.csfd.cz/hledat/?pageUsers=<page>&q=<search>"
-    DVDS_MONTHLY_URL = "https://www.csfd.cz/dvd/?page=<page>&sort=<sort>&year=<year>&month=<month>"
+    DVDS_MONTHLY_ROOT_URL = "https://www.csfd.cz/dvd/"
     DVDS_YEARLY_URL = "https://www.csfd.cz/dvd/rocne/?sort=<sort>&year=<year>"
     BLURAYS_MONTHLY_URL = "https://www.csfd.cz/bluray/?page=<page>&sort=<sort>&year=<year>&month=<month>"
     BLURAYS_YEARLY_URL = "https://www.csfd.cz/bluray/rocne/?sort=<sort>&year=<year>"
@@ -98,3 +98,6 @@ def text(s, select=None, recursive=False, strip=True, rec_tags=None):
         filtered = [t for t in tag.contents if is_str(t) or is_in_rec_tags(t)]
         tx = "".join([x.text if is_tag(x) else x for x in filtered])
     return tx.strip() if strip else tx
+
+def flatten(a):
+    return [a] if not isinstance(a, list) else sum(map(flatten, a), [])
