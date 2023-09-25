@@ -232,10 +232,28 @@ blurays_yearly_options.add_argument('--by_rating', action='store_true')
 
 class CliDummy:
     __exclude = ["get_dict", "get_filtered_dict", "get_enum_value"]
+
+    # NOTE: Cli<name>OptionsDummy instances holds the optional methods of CsfdScraper
+    # For example: there is a `movie` method, and "option"al methods are `movie_title`, `movie_reviews`, ...
+
+    # order of the arguments into a given CsfdScraper method
+    # List[str] or List[prop_names]
     _order = []
+
+    # when some properties (options) doesn't have it's own CsfdScraper methods
+    # List[str] or List[prop_names]
     _exclude_optionals = []
+
+    # when some properties (options) doesn't take any arguments in it's own CsfdScraper method
+    # List[str] or List[prop_names]
     _method_no_args = []
+
+    # when some properties (options) needs some more arguments in it's own CsfdScraper method
+    # Dict[str, List[str]] or Dict[prop_name, List[prop_names]]
     _method_args_mapping = {}
+
+    # when you need some property conversions
+    # Dict[str, Type] or Dict[prop_name, class_to_convert_to]
     _method_args_conversions = {}
 
     def __init__(self, args) -> None:
@@ -295,7 +313,6 @@ class CliSearchCreatorsDummy(CliDummy):
         }
 
 class CliSearchMoviesDummy(CliDummy):
-    ##_exclude_optionals = ["genres_exclude"]
     _order = ["options", "page", "sort"]
     _method_args_conversions = {
         "sort": MovieSorts,
@@ -481,7 +498,7 @@ class CliCreatorOptionsDummy(CliDummy):
         self.gallery_count = False
         self.gallery = False
         self.filmography = False
-        self.filmography_sort = "year" # default = CreatorFilmographySorts.BY_NEWEST
+        self.filmography_sort = "year"
         self.image = False
 
         super().__init__(args)
@@ -621,8 +638,6 @@ class CliDVDsYearlyOptionsDummy(CliDummy):
 
         super().__init__(args)
 
-# ---------------------
-
 class CliBluraysMonthlyDummy(CliDummy):
     _order = ["year", "page", "month"]
     _method_args_conversions = {
@@ -703,8 +718,6 @@ def print_json(data):
         print(json.dumps(data, indent=4, cls=CsfdJSONEncoder))
 
 def main(cli_args):
-    CsfdScraper.DEBUG = True
-
     cli_mapping = {
         # command: [main_args, optional_args, prefix]
         "search_movies": [CliSearchMoviesDummy, CliDummy, "search_movies"], 
