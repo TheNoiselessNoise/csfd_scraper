@@ -11,6 +11,24 @@ Here is just sample usage of the scraper.
 Even though the scraper is OOP, every resulted object is printable.\
 Every printed object is converted to **JSON** string.
 
+### Now with CLI!
+```bash
+# some help, you will need it
+python3 cli.py --help
+
+# to quickly get a movie
+python3 cli.py movie -m 31881
+
+# or just the title
+python3 cli.py movie -m 31881 --title
+
+# or just the title and duration?
+python3 cli.py movie -m 31881 --title --duration
+
+# need anything else for a movie?
+python3 cli.py movie --help
+```
+
 ### Imports
 ```python
 from src.csfd_scraper import CsfdScraper
