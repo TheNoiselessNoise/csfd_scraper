@@ -74,12 +74,15 @@ class CsfdScraper:
         u = url_prepare(Globals.SEARCH_CREATORS_URL, {"page": page, "sort": sort.value, "params": encode_params(params)})
         return self.__get_soup(u)
     def __get_dvds_monthly_soup(self, year: Optional[int], month: Months, page: int, sort: str) -> BeautifulSoup:
-        params = {"year": year, "month": month.value[0], "page": page}
+        args = {"year": year, "month": month.value[0], "page": page}
         if sort != "release_date":
-            params["sort"] = sort
-        return self.__get_soup(url_params(Globals.DVDS_MONTHLY_ROOT_URL, params))
+            args["sort"] = sort
+        return self.__get_soup(url_params(Globals.DVDS_MONTHLY_ROOT_URL, args))
     def __get_dvds_yearly_soup(self, year: Optional[int], sort: str) -> BeautifulSoup:
-        return self.__get_soup(url_prepare(Globals.DVDS_YEARLY_URL, {"year": year, "sort": sort}))
+        args = {"year": year}
+        if sort != "release_date":
+            args['sort'] = sort
+        return self.__get_soup(url_params(Globals.DVDS_YEARLY_URL, args))
     def __get_blurays_monthly_soup(self, year: Optional[int], month: Months, page: int, sort: str) -> BeautifulSoup:
         args = {"year": year, "month": month.value[0], "page": page}
         if sort != "release_date":

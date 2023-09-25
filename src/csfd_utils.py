@@ -23,7 +23,7 @@ class Globals:
     TEXT_SEARCH_CREATORS_URL = "https://www.csfd.cz/hledat/?pageCreators=<page>&q=<search>"
     TEXT_SEARCH_USERS_URL = "https://www.csfd.cz/hledat/?pageUsers=<page>&q=<search>"
     DVDS_MONTHLY_ROOT_URL = "https://www.csfd.cz/dvd/"
-    DVDS_YEARLY_URL = "https://www.csfd.cz/dvd/rocne/?sort=<sort>&year=<year>"
+    DVDS_YEARLY_URL = "https://www.csfd.cz/dvd/rocne/"
     BLURAYS_MONTHLY_URL = "https://www.csfd.cz/bluray/"
     BLURAYS_YEARLY_URL = "https://www.csfd.cz/bluray/rocne/"
     USER_RATINGS_URL = "https://www.csfd.cz/uzivatel/<uid>/hodnoceni/"
