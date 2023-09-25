@@ -61,8 +61,8 @@ class CreatorParser:
             user_id = -1 if user_a is None else extract_id(user_a.get("href"))
             user_a = user_a or sel(article, ".span-more-small")
             trivia["items"].append({
-                "movie_id": extract_id(a.get("href")),
-                "movie": text(a),
+                "movie_id": extract_id(a.get("href")) if a else None,
+                "movie": text(a) if a else None,
                 "author_id": user_id,
                 "author": text(user_a),
                 "text": clean(text(article, "li", rec_tags=["a", "em"]))
@@ -107,14 +107,19 @@ class CreatorParser:
 
                     filmography[section_name][table_name] = {}
                     for tr in asel(table, "tr:not(:first-child)"):
-                        tr_year = clean(text(tr, "td.year"))
-                        if tr_year.isnumeric():
-                            year = int(tr_year)
+                        td_year = sel(tr, "td.year")
+                        td_name = sel(tr, "td.name")
+
+                        if not td_year and not td_name: # probably ad
+                            continue
+
+                        td_year_content = clean(text(td_year))
+                        if td_year_content.isnumeric():
+                            year = int(td_year_content)
 
                         if year not in filmography[section_name][table_name]:
                             filmography[section_name][table_name][year] = []
 
-                        td_name = sel(tr, "td.name")
                         td_a = sel(td_name, "a")
                         filmography[section_name][table_name][year].append({
                             "id": extract_id(td_a.get("href")),
@@ -124,7 +129,8 @@ class CreatorParser:
         return filmography
 
     def parse_creator_image(self, s: BeautifulSoup) -> Optional[str]:
-        return url(self.parse_movie_ld_json(s).get("image", None))
+        img = sel(s, ".creator-profile-content img")
+        return url(img.get("src")) if img else None
 
     def parse_creator(self, s: BeautifulSoup, cid: int) -> Creator:
         return Creator({
@@ -279,11 +285,13 @@ class SearchParser:
         for article in asel(s, ".main-users article.article"):
             img_url = sel(article, "img").get("src")
             articla_a = sel(article, ".article-content a")
+            points_p = sel(article, ".article-content p:last-child")
+            points = text(points_p)
             users.append(TextSearchedUser({
                 "id": extract_id(articla_a.get("href")),
                 "name": text(articla_a),
                 "real_name": text(article, ".article-content p:first-of-type"),
-                "points": int(text(article, ".article-content p:last-child").split(" ")[0]),
+                "points": int(points.split(" ")[0]) if points else 0,
                 "image": None if img_url.startswith("data:image") else url(img_url)
             }))
         return users
@@ -407,7 +415,7 @@ class MovieParser:
                 "author": text(user_a),
                 "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
                 "date": text(article, ".comment-date time"),
-                "text": clean(text(article, ".article-content p", rec_tags=["a", "em"])),
+                "text": clean(text(article, ".article-content .comment", rec_tags=["a", "em", "span"])),
             })
         return reviews
 
@@ -600,7 +608,7 @@ class UserParser:
                 "year": toint(text(article, ".film-title-info .info:first-child")),
                 "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
                 "date": text(article, "time"),
-                "text": text(article, ".user-reviews-text p", rec_tags=["a", "em"]),
+                "text": text(article, ".user-reviews-text p", rec_tags=["a", "em", "span"]),
                 "image": None if img_href.startswith("data:image") else url(img_href)
             })
         return reviews
@@ -714,7 +722,7 @@ class UserParser:
                 "year": toint(text(article, ".film-title-info .info:first-child")),
                 "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
                 "date": text(article, "time"),
-                "text": text(article, ".user-reviews-text p", rec_tags=["a", "em"]),
+                "text": text(article, ".user-reviews-text p", rec_tags=["a", "em", "span"]),
                 "image": None if img_href.startswith("data:image") else url(img_href)
             }))
         return reviews
@@ -1123,7 +1131,7 @@ class DvdsParser:
             "has_prev_page": self.parse_dvds_monthly_has_prev_page(s),
             "has_next_page": self.parse_dvds_monthly_has_next_page(s),
         })
-
+    
     # DVDS YEARLY
 
     @staticmethod

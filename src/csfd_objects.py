@@ -5,8 +5,11 @@ from src.csfd_utils import tojson
 class PrintableObject:
     args: dict = None
 
+    def to_dict(self):
+        return self.args
+
     def __str__(self):
-        return tojson(self.args)
+        return tojson(self.to_dict())
 
 class CzechEnum(Enum):
     @classmethod
@@ -762,13 +765,13 @@ class TextSearchResult(PrintableObject):
         self.series: List[TextSearchedSeries] = args.get("series", [])
         self.users: List[TextSearchedUser] = args.get("users", [])
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["movies"] = [m.args for m in self.movies]
         args["creators"] = [c.args for c in self.creators]
         args["series"] = [s.args for s in self.series]
         args["users"] = [u.args for u in self.users]
-        return tojson(args)
+        return args
 
 # </editor-fold>
 
@@ -782,8 +785,11 @@ class AutoCompleteSearchJsonWrapper:
         for k, v in json_object.items():
             setattr(self, k, v)
 
+    def to_dict(self):
+        return self.__JSON_OBJECT
+
     def __str__(self):
-        return tojson(self.__JSON_OBJECT)
+        return tojson(self.to_dict())
 
 class FilmCreator(AutoCompleteSearchJsonWrapper):
     def __init__(self, *args):
@@ -828,10 +834,10 @@ class SearchMoviesResult(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["movies"] = [m.args for m in self.movies]
-        return tojson(args)
+        return args
 
 class SearchedCreator(PrintableObject):
     def __init__(self, args: dict):
@@ -852,10 +858,10 @@ class SearchCreatorsResult(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["creators"] = [c.args for c in self.creators]
-        return tojson(args)
+        return args
 
 # </editor-fold>
 
@@ -988,12 +994,12 @@ class FavoriteUsers(PrintableObject):
         self.by_regions: Dict[str, List[OtherFavoriteUser]] = args.get("by_regions", {})
         self.by_country: Dict[Origins, List[OtherFavoriteUser]] = args.get("by_country", {})
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["most_favorite_users"] = [u.args for u in self.most_favorite_users]
         args["by_regions"] = {k: [u.args for u in v] for k, v in self.by_regions.items()}
         args["by_country"] = {k.value[1]: [u.args for u in v] for k, v in self.by_country.items()}
-        return tojson(args)
+        return args
 
 class ActiveUser(PrintableObject):
     def __init__(self, args: dict):
@@ -1036,14 +1042,14 @@ class ActiveUsers(PrintableObject):
         self.by_trivia: List[ActiveUserByTrivia] = args.get("by_trivia", [])
         self.by_biography: List[ActiveUserByBiography] = args.get("by_biography", [])
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["by_reviews"] = [u.args for u in self.by_reviews]
         args["by_diaries"] = [u.args for u in self.by_diaries]
         args["by_content"] = [u.args for u in self.by_content]
         args["by_trivia"] = [u.args for u in self.by_trivia]
         args["by_biography"] = [u.args for u in self.by_biography]
-        return tojson(args)
+        return args
 
 # </editor-fold>
 
@@ -1069,10 +1075,10 @@ class DVDSMonthlyByReleaseDate(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["dvds"] = {k: [d.args for d in v] for k, v in self.dvds.items()}
-        return tojson(args)
+        return args
 
 class DVDSMonthlyByRating(PrintableObject):
     def __init__(self, args: dict):
@@ -1081,10 +1087,10 @@ class DVDSMonthlyByRating(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["dvds"] = [d.args for d in self.dvds]
-        return tojson(args)
+        return args
 
 class DVDYearly(PrintableObject):
     def __init__(self, args: dict):
@@ -1099,20 +1105,20 @@ class DVDSYearlyByReleaseDate(PrintableObject):
         self.args: dict = args
         self.dvds: Dict[Months, List[DVDYearly]] = args.get("dvds", {})
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["dvds"] = {k.value[1]: [d.args for d in v] for k, v in self.dvds.items()}
-        return tojson(args)
+        return args
 
 class DVDSYearlyByRating(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
         self.dvds: List[DVDYearly] = args.get("dvds", [])
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["dvds"] = [d.args for d in self.dvds]
-        return tojson(args)
+        return args
 
 # </editor-fold>
 
@@ -1138,10 +1144,10 @@ class BluraysMonthlyByReleaseDate(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["blurays"] = {k: [d.args for d in v] for k, v in self.blurays.items()}
-        return tojson(args)
+        return args
 
 class BluraysMonthlyByRating(PrintableObject):
     def __init__(self, args: dict):
@@ -1150,10 +1156,10 @@ class BluraysMonthlyByRating(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["blurays"] = [d.args for d in self.blurays]
-        return tojson(args)
+        return args
 
 class BlurayYearly(PrintableObject):
     def __init__(self, args: dict):
@@ -1169,20 +1175,20 @@ class BluraysYearlyByReleaseDate(PrintableObject):
         self.args: dict = args
         self.blurays: Dict[Months, List[BlurayYearly]] = args.get("blurays", {})
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["blurays"] = {k.value[1]: [d.args for d in v] for k, v in self.blurays.items()}
-        return tojson(args)
+        return args
 
 class BluraysYearlyByRating(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
         self.blurays: List[BlurayYearly] = args.get("blurays", [])
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["blurays"] = [d.args for d in self.blurays]
-        return tojson(args)
+        return args
 
 # </editor-fold>
 
@@ -1220,10 +1226,10 @@ class UserRatings(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["ratings"] = [d.args for d in self.ratings]
-        return tojson(args)
+        return args
 
 # </editor-fold>
 
@@ -1263,10 +1269,10 @@ class UserReviews(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def __str__(self):
+    def to_dict(self):
         args = self.args
         args["reviews"] = [d.args for d in self.reviews]
-        return tojson(args)
+        return args
 
 # </editor-fold>
 

@@ -19,6 +19,9 @@ class CsfdScraper:
     __DVDS_PARSER: DvdsParser       = DvdsParser()
     __BLURAYS_PARSER: BluraysParser = BluraysParser()
 
+    def get_last_url(self):
+        return self.__LAST_URL
+
     def __reset(self) -> None:
         self.__MOVIE_PARSER.reset()
         self.__CREATOR_PARSER.reset()
@@ -78,10 +81,16 @@ class CsfdScraper:
     def __get_dvds_yearly_soup(self, year: Optional[int], sort: str) -> BeautifulSoup:
         return self.__get_soup(url_prepare(Globals.DVDS_YEARLY_URL, {"year": year, "sort": sort}))
     def __get_blurays_monthly_soup(self, year: Optional[int], month: Months, page: int, sort: str) -> BeautifulSoup:
-        u = url_prepare(Globals.BLURAYS_MONTHLY_URL, {"year": year, "month": month.value[0], "sort": sort, "page": page})
+        args = {"year": year, "month": month.value[0], "page": page}
+        if sort != "release_date":
+            args['sort'] = sort
+        u = url_params(Globals.BLURAYS_MONTHLY_URL, args)
         return self.__get_soup(u)
     def __get_blurays_yearly_soup(self, year: Optional[int], sort: str) -> BeautifulSoup:
-        return self.__get_soup(url_prepare(Globals.BLURAYS_YEARLY_URL, {"year": year, "sort": sort}))
+        args = {"year": year}
+        if sort != "release_date":
+            args['sort'] = sort
+        return self.__get_soup(url_params(Globals.BLURAYS_YEARLY_URL, args))
     def __get_user_ratings_soup(
             self,
             uid: int,

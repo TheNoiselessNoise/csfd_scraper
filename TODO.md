@@ -2,6 +2,7 @@
 
 ### What else to do?
 - [ ] Make project pip installable
+- [ ] Add color rating
 - [ ] Scraping User
   - [ ] Scraping "Favorites"
   - [ ] Scraping "Film Library"
@@ -23,6 +24,7 @@
 - [ ] Scraping user's diary
 
 ### Completed ✓
+- [x] CLI
 - [x] Scraping User
   - [x] Scraping "Ratings"
   - [x] Scraping "Reviews"
