@@ -29,13 +29,18 @@ class CsfdTest:
         self.args = args
         self.post_init = post_init
 
-def get_test_path(test_name: str):
+def get_tests_path():
     this_path = os.path.dirname(__file__)
-    return os.path.join(this_path, "tests", test_name + ".txt")
+    tests_path = os.path.join(this_path, "tests")
+    if not os.path.exists(tests_path):
+        os.makedirs(tests_path)
+    return tests_path
+
+def get_test_path(test_name: str):
+    return os.path.join(get_tests_path(), test_name + ".txt")
 
 def get_failed_test_path(test_name: str):
-    this_path = os.path.dirname(__file__)
-    return os.path.join(this_path, "tests", test_name + "_failed.txt")
+    return os.path.join(get_tests_path(), test_name + "_failed.txt")
 
 def get_test_result(test: CsfdTest):
     cli_parser = CliParser()
