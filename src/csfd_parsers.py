@@ -160,7 +160,7 @@ class SearchParser:
             movie_a = sel(tr, "a")
             movies.append(SearchedMovie({
                 "id": extract_id(movie_a.get("href")),
-                "name": text(movie_a),
+                "title": text(movie_a),
                 "year": int(text(tr, "span.info")[1:-1]),
                 "origins": text(tr, "td.origin").split(" / "),
                 "genres": text(tr, "td.genre").split(" / "),

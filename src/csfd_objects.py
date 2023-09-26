@@ -815,7 +815,7 @@ class SearchedMovie(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
         self.id: int = args.get("id", -1)
-        self.name: Optional[str] = args.get("name", None)
+        self.title: Optional[str] = args.get("title", None)
         self.year: int = args.get("year", -1)
         self.origins: List[str] = args.get("origins", [])
         self.genres: List[str] = args.get("genres", [])
