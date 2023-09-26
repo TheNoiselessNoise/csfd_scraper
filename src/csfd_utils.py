@@ -88,13 +88,25 @@ def sel(s, select, _all=False):
 def asel(s, select):
     return sel(s, select, _all=True)
 
-def text(s, select=None, recursive=False, strip=True, rec_tags=None):
+def tag_is_not(e, sels):
+    if isinstance(sels, str):
+        sels = [sels]
+    for sel in sels:
+        tags = e.parent.select(sel)
+        if e in tags:
+            return False
+    return True
+
+def text(s, select=None, recursive=False, strip=True, rec_tags=None, is_not=None):
+    is_not = is_not or []
     tag = s if is_tag(s) and not select else sel(s, select)
     if recursive:
         tx = tag.text
     else:
         rec_tags = rec_tags or []
-        is_in_rec_tags = lambda a: is_tag(a) and (rec_tags and a.name in rec_tags)
+        def is_in_rec_tags(a):
+            isnt = True if not is_not else tag_is_not(a, is_not)
+            return is_tag(a) and (rec_tags and a.name in rec_tags) and isnt
         filtered = [t for t in tag.contents if is_str(t) or is_in_rec_tags(t)]
         tx = "".join([x.text if is_tag(x) else x for x in filtered])
     return tx.strip() if strip else tx

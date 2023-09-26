@@ -481,9 +481,26 @@ class MovieParser:
         return premieres
 
     @staticmethod
-    def parse_movie_plot(s: BeautifulSoup) -> Optional[str]:
-        plot = sel(s, ".plot-full > p")
-        return None if plot is None else text(plot, rec_tags=["a"])
+    def parse_movie_plot(s: BeautifulSoup) -> dict:
+        main_plot_tag = sel(s, ".plot-full > p")
+        main_plot_source_tag = sel(main_plot_tag, ".span-more-small a")
+        other_plots_tags = asel(s, ".plots > .plots-item > p")
+        other_plots = []
+        for other_plot_tag in other_plots_tags:
+            main_plot_author_tag = sel(other_plot_tag, ".span-more-small a")
+            other_plots.append({
+                "author_id": extract_id(main_plot_author_tag.get('href')),
+                "author": text(main_plot_author_tag),
+                "text": text(other_plot_tag, rec_tags=["a", "em"], is_not=["em.span-more-small"])
+            })
+        return {
+            "main_plot": {
+                "source_name": text(main_plot_source_tag),
+                "source_url": main_plot_source_tag.get("href"),
+                "text": text(main_plot_tag, rec_tags=["a", "em"], is_not=["em.span-more-small"])
+            },
+            "other_plots": other_plots
+        }
 
     def parse_movie_cover(self, s: BeautifulSoup) -> Optional[str]:
         return self.parse_movie_ld_json(s).get("image", None)

@@ -4,6 +4,7 @@ import argparse
 import datetime
 from src.csfd_scraper import CsfdScraper
 from src.csfd_objects import *
+from src.csfd_utils import *
 
 parser = argparse.ArgumentParser(epilog="by @TheNoiselessNoise")
 
@@ -715,7 +716,7 @@ def print_json(data):
     if isinstance(data, PrintableObject):
         print(str(data))
     else:
-        print(json.dumps(data, indent=4, cls=CsfdJSONEncoder))
+        print(json.dumps(data, indent=4, cls=CsfdJSONEncoder, ensure_ascii=False))
 
 def main(cli_args):
     cli_mapping = {
