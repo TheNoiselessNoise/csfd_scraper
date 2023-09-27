@@ -293,7 +293,22 @@ def main(cli_args):
         CsfdTest("test-creator", "creator", {"creator": 1000}, post_init_creator),
         CsfdTest("test-user", "user", {"user": 1000}, lambda user: str(user)),
         CsfdTest("test-news", "news", {"news": 1000}, lambda news: str(news)),
+        
         # can't really test for news_list
+        
+        # can test for user_ratings, but one day it can fail
+        CsfdTest("test-user-ratings",
+            "user_ratings",
+            {
+                "page": 1,
+                "sort": "inserted_datetime",
+                "user": 1000,
+                "origin": Origins.USA,
+                "genre": MovieGenres.MYSTERY
+            },
+            lambda user_ratings: str(user_ratings)
+        ),
+
         CsfdTest("test-advanced-search-movies",
             "search_movies",
             {
