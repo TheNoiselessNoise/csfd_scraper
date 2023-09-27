@@ -309,6 +309,19 @@ def main(cli_args):
             lambda user_ratings: str(user_ratings)
         ),
 
+        # can test for user_reviews, but one day it can fail
+        CsfdTest("test-user-reviews",
+            "user_reviews",
+            {
+                "page": 1,
+                "sort": "inserted_datetime",
+                "user": 447317,
+                "origin": Origins.USA,
+                "genre": MovieGenres.SPORT
+            },
+            lambda user_reviews: str(user_reviews)
+        ),
+
         CsfdTest("test-advanced-search-movies",
             "search_movies",
             {
