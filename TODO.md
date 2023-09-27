@@ -25,6 +25,7 @@
 
 ### Completed ✓
 - [x] CLI
+- [x] Testing tool
 - [x] Scraping User
   - [x] Scraping "Ratings"
   - [x] Scraping "Reviews"
