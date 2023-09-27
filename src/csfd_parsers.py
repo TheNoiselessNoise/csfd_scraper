@@ -106,11 +106,18 @@ class CreatorParser:
                     table_name = text(table, "th")
 
                     filmography[section_name][table_name] = {}
-                    for tr in asel(table, "tr:not(:first-child)"):
+                    for tr in asel(table, "tr"):
                         td_year = sel(tr, "td.year")
                         td_name = sel(tr, "td.name")
+                        td_name_a = sel(td_name, "a") if td_name else None
+                        td_episode = sel(tr, "td.episode")
+                        td_episode_a = sel(td_episode, "a") if td_episode else None
+                        td_more_episode = sel(tr, ".more-episode")
 
-                        if not td_year and not td_name: # probably ad
+                        if td_more_episode:
+                            continue
+
+                        if not td_year and not td_name and not td_episode: # probably ad
                             continue
 
                         td_year_content = clean(text(td_year))
@@ -120,11 +127,20 @@ class CreatorParser:
                         if year not in filmography[section_name][table_name]:
                             filmography[section_name][table_name][year] = []
 
-                        td_a = sel(td_name, "a")
-                        filmography[section_name][table_name][year].append({
-                            "id": extract_id(td_a.get("href")),
-                            "name": text(td_a)
-                        })
+                        if td_episode:
+                            if "episodes" not in filmography[section_name][table_name][year][-1]:
+                                filmography[section_name][table_name][year][-1]["episodes"] = []
+
+                            filmography[section_name][table_name][year][-1]["episodes"].append({
+                                "id": extract_id(td_episode_a.get("href")),
+                                "name": text(td_episode_a),
+                                "number": text(td_episode, ".film-title-info .info")[1:-1]
+                            })
+                        else:
+                            filmography[section_name][table_name][year].append({
+                                "id": extract_id(td_name_a.get("href")),
+                                "name": text(td_name_a)
+                            })
 
         return filmography
 

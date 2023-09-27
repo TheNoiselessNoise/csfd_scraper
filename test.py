@@ -165,6 +165,12 @@ def update_tests(tests: List[CsfdTest], args: CliTestDummy):
             continue
 
         result = get_test_result(test)
+
+        if not isinstance(result, str):
+            print(f"\nERROR: result of the test `{test.name}` is not a string, but `{type(result).__name__}`")
+            print(f"INFO: maybe you should include a post_init function...")
+            exit(1)
+
         write_test_file_result(test_path, result)
         updated_tests += 1
         print("DONE")
@@ -274,10 +280,17 @@ def post_init_movie(movie: Movie):
 
     return str(movie)
 
+def post_init_creator(creator: Creator):
+    # without gallery main image, because it's randomly chosen
+    creator.args['gallery']['image'] = None
+
+    return str(creator)
+
 def main(cli_args):
     tests = [
         # CsfdTest("<test_name>", "<command>", {<cli_args>}, ?<lambda x: x.prop>)
         CsfdTest("test-movie", "movie", {"movie": 277495}, post_init_movie),
+        CsfdTest("test-creator", "creator", {"creator": 1000}, post_init_creator),
         CsfdTest("test-user", "user", {"user": 1000}, lambda user: str(user)),
         CsfdTest("test-news", "news", {"news": 1000}, lambda news: str(news)),
         # can't really test for news_list
