@@ -347,7 +347,39 @@ def main(cli_args):
                 "gender": CreatorGenders.FEMALE
             },
             lambda search_creators_result: str(search_creators_result)
-        )
+        ),
+
+        CsfdTest("test-dvds-monthly-by-release-date",
+            "dvds_monthly",
+            {
+                "page": 1,
+                "year": 1998,
+                "month": Months.JUNE,
+                "by_release_date": True
+            },
+            lambda dvds_monthly: str(dvds_monthly["by_release_date"])
+        ),
+        CsfdTest("test-dvds-monthly-by-rating",
+            "dvds_monthly",
+            {
+                "page": 1,
+                "year": 1998,
+                "month": Months.JUNE,
+                "by_rating": True
+            },
+            lambda dvds_monthly: str(dvds_monthly["by_rating"])
+        ),
+
+        CsfdTest("test-dvds-yearly-by-release-date",
+            "dvds_yearly",
+            { "year": 1997, "by_release_date": True },
+            lambda dvds_yearly: str(dvds_yearly["by_release_date"])
+        ),
+        CsfdTest("test-dvds-yearly-by-rating",
+            "dvds_yearly",
+            { "year": 1997, "by_rating": True },
+            lambda dvds_yearly: str(dvds_yearly["by_rating"])
+        ),
     ]
 
     cli_args: CliTestDummy = cli_args
