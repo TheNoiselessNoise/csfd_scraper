@@ -380,6 +380,38 @@ def main(cli_args):
             { "year": 1997, "by_rating": True },
             lambda dvds_yearly: str(dvds_yearly["by_rating"])
         ),
+
+        CsfdTest("test-blurays-monthly-by-release-date",
+            "blurays_monthly",
+            {
+                "page": 1,
+                "year": 2007,
+                "month": Months.JUNE,
+                "by_release_date": True
+            },
+            lambda blurays_monthly: str(blurays_monthly["by_release_date"])
+        ),
+        CsfdTest("test-blurays-monthly-by-rating",
+            "blurays_monthly",
+            {
+                "page": 1,
+                "year": 2007,
+                "month": Months.JUNE,
+                "by_rating": True
+            },
+            lambda blurays_monthly: str(blurays_monthly["by_rating"])
+        ),
+
+        CsfdTest("test-blurays-yearly-by-release-date",
+            "blurays_yearly",
+            { "year": 2007, "by_release_date": True },
+            lambda blurays_yearly: str(blurays_yearly["by_release_date"])
+        ),
+        CsfdTest("test-blurays-yearly-by-rating",
+            "blurays_yearly",
+            { "year": 2007, "by_rating": True },
+            lambda blurays_yearly: str(blurays_yearly["by_rating"])
+        ),
     ]
 
     cli_args: CliTestDummy = cli_args
