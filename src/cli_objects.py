@@ -46,6 +46,9 @@ class CliDummy:
             setattr(self, k, value)
 
     def get_enum_value(self, e, value):
+        if isinstance(value, e):
+            return value
+        
         if issubclass(e, Enum):
             try:
                 return e(value)
