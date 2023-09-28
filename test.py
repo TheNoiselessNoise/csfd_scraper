@@ -4,6 +4,7 @@ import difflib
 import argparse
 from time import sleep
 from src.cli_objects import *
+from src.csfd_utils import tojson
 
 parser = argparse.ArgumentParser(epilog="by @TheNoiselessNoise")
 parser.add_argument('--timeout', type=int, default=1, help="How many seconds to wait before running next test? (default=1)")
@@ -58,7 +59,7 @@ def get_test_result(test: CsfdTest):
 
         if test.post_init:
             try:
-                result = test.post_init(result, cli_parser)
+                result = test.post_init(result)
             except Exception as err:
                 print(f"\nERROR: post_init function in test `{test.name}` failed, probably bug in CsfdScraper!")
                 print(f"MESSAGE: {err}")
@@ -68,7 +69,7 @@ def get_test_result(test: CsfdTest):
 
         return result
     
-    print(f"ERROR: Unknown test command {test.command}")
+    print(f"\nERROR: Unknown test command {test.command}")
     exit(1)
 
 def get_test_file_result(test_path: str):
@@ -267,7 +268,7 @@ def delete_removed(tests: List[CsfdTest]):
         "Deleted Diff Files": deleted_diffs
     })
 
-def post_init_movie(movie: Movie, p: CliParser):
+def post_init_movie(movie: Movie):
     # without reviews, because those are randomly chosen
     movie.args['reviews']['items'] = {}
     # without trivia, because those are randomly chosen
@@ -279,7 +280,7 @@ def post_init_movie(movie: Movie, p: CliParser):
 
     return str(movie)
 
-def post_init_creator(creator: Creator, p: CliParser):
+def post_init_creator(creator: Creator):
     # without gallery main image, because it's randomly chosen
     creator.args['gallery']['image'] = None
 
@@ -290,8 +291,8 @@ def main(cli_args):
         # CsfdTest("<test_name>", "<command>", {<cli_args>}, ?<lambda x: x.prop>)
         CsfdTest("test-movie", "movie", {"movie": 277495}, post_init_movie),
         CsfdTest("test-creator", "creator", {"creator": 1000}, post_init_creator),
-        CsfdTest("test-user", "user", {"user": 1000}, lambda user, p: str(user)),
-        CsfdTest("test-news", "news", {"news": 1000}, lambda news, p: str(news)),
+        CsfdTest("test-user", "user", {"user": 1000}, lambda user: str(user)),
+        CsfdTest("test-news", "news", {"news": 1000}, lambda news: str(news)),
         
         # can't really test for news_list
         
@@ -305,7 +306,7 @@ def main(cli_args):
                 "origin": Origins.USA,
                 "genre": MovieGenres.MYSTERY
             },
-            lambda user_ratings, p: str(user_ratings)
+            lambda user_ratings: str(user_ratings)
         ),
 
         # can test for user_reviews, but one day it can fail
@@ -318,7 +319,7 @@ def main(cli_args):
                 "origin": Origins.USA,
                 "genre": MovieGenres.SPORT
             },
-            lambda user_reviews, p: str(user_reviews)
+            lambda user_reviews: str(user_reviews)
         ),
 
         CsfdTest("test-advanced-search-movies",
@@ -333,7 +334,7 @@ def main(cli_args):
                 "genres_filter": MovieGenreFilters.AT_LEAST_ALL_SELECTED,
                 "genres_exclude": [MovieGenres.DRAMA, MovieGenres.EROTIC]
             },
-            lambda search_movies_result, p: str(search_movies_result)
+            lambda search_movies_result: str(search_movies_result)
         ),
         CsfdTest("test-advanced-search-creators",
             "search_creators",
@@ -345,7 +346,7 @@ def main(cli_args):
                 "additional_filters": [CreatorFilters.WITH_BIOGRAPHY, CreatorFilters.WITH_AWARDS, CreatorFilters.WITH_TRIVIA],
                 "gender": CreatorGenders.FEMALE
             },
-            lambda search_creators_result, p: str(search_creators_result)
+            lambda search_creators_result: str(search_creators_result)
         ),
 
         CsfdTest("test-dvds-monthly-by-release-date",
@@ -356,7 +357,7 @@ def main(cli_args):
                 "month": Months.JUNE,
                 "by_release_date": True
             },
-            lambda dvds_monthly, p: str(dvds_monthly["by_release_date"])
+            lambda dvds_monthly: str(dvds_monthly["by_release_date"])
         ),
         CsfdTest("test-dvds-monthly-by-rating",
             "dvds_monthly",
@@ -366,18 +367,18 @@ def main(cli_args):
                 "month": Months.JUNE,
                 "by_rating": True
             },
-            lambda dvds_monthly, p: str(dvds_monthly["by_rating"])
+            lambda dvds_monthly: str(dvds_monthly["by_rating"])
         ),
 
         CsfdTest("test-dvds-yearly-by-release-date",
             "dvds_yearly",
             { "year": 1997, "by_release_date": True },
-            lambda dvds_yearly, p: str(dvds_yearly["by_release_date"])
+            lambda dvds_yearly: str(dvds_yearly["by_release_date"])
         ),
         CsfdTest("test-dvds-yearly-by-rating",
             "dvds_yearly",
             { "year": 1997, "by_rating": True },
-            lambda dvds_yearly, p: str(dvds_yearly["by_rating"])
+            lambda dvds_yearly: str(dvds_yearly["by_rating"])
         ),
 
         CsfdTest("test-blurays-monthly-by-release-date",
@@ -388,7 +389,7 @@ def main(cli_args):
                 "month": Months.JUNE,
                 "by_release_date": True
             },
-            lambda blurays_monthly, p: str(blurays_monthly["by_release_date"])
+            lambda blurays_monthly: str(blurays_monthly["by_release_date"])
         ),
         CsfdTest("test-blurays-monthly-by-rating",
             "blurays_monthly",
@@ -398,42 +399,83 @@ def main(cli_args):
                 "month": Months.JUNE,
                 "by_rating": True
             },
-            lambda blurays_monthly, p: str(blurays_monthly["by_rating"])
+            lambda blurays_monthly: str(blurays_monthly["by_rating"])
         ),
 
         CsfdTest("test-blurays-yearly-by-release-date",
             "blurays_yearly",
             { "year": 2007, "by_release_date": True },
-            lambda blurays_yearly, p: str(blurays_yearly["by_release_date"])
+            lambda blurays_yearly: str(blurays_yearly["by_release_date"])
         ),
         CsfdTest("test-blurays-yearly-by-rating",
             "blurays_yearly",
             { "year": 2007, "by_rating": True },
-            lambda blurays_yearly, p: str(blurays_yearly["by_rating"])
+            lambda blurays_yearly: str(blurays_yearly["by_rating"])
         ),
 
         # can test for leaderboards_movies, but one day it can fail
         CsfdTest("test-leaderboards-movies-best-1",
             "leaderboards_movies",
             { "from": 1, "best": True },
-            lambda leaderboards_movies, p: p.get_json(leaderboards_movies["best"])
+            lambda leaderboards_movies: tojson(leaderboards_movies["best"])
         ),
         CsfdTest("test-leaderboards-movies-best-900",
             "leaderboards_movies",
             { "from": 900, "best": True },
-            lambda leaderboards_movies, p: p.get_json(leaderboards_movies["best"])
+            lambda leaderboards_movies: tojson(leaderboards_movies["best"])
         ),
 
         # can test for leaderboards_serials, but one day it can fail
         CsfdTest("test-leaderboards-serials-best-1",
             "leaderboards_serials",
             { "from": 1, "best": True },
-            lambda leaderboards_serials, p: p.get_json(leaderboards_serials["best"])
+            lambda leaderboards_serials: tojson(leaderboards_serials["best"])
         ),
         CsfdTest("test-leaderboards-serials-best-900",
             "leaderboards_serials",
             { "from": 900, "best": True },
-            lambda leaderboards_serials, p: p.get_json(leaderboards_serials["best"])
+            lambda leaderboards_serials: tojson(leaderboards_serials["best"])
+        ),
+
+        # can test for leaderboards_actors, but one day it can fail
+        CsfdTest("test-leaderboards-actors-100",
+            "leaderboards_actors",
+            { "from_actors": 100, "actors": True },
+            lambda leaderboards_actors: tojson(leaderboards_actors["actors"])
+        ),
+        CsfdTest("test-leaderboards-actresses-100",
+            "leaderboards_actors",
+            { "from_actresses": 100, "actresses": True },
+            lambda leaderboards_actresses: tojson(leaderboards_actresses["actresses"])
+        ),
+
+        # can test for leaderboards_directors, but one day it can fail
+        CsfdTest("test-leaderboards-directors-100",
+            "leaderboards_directors",
+            { "from_directors": 100, "directors": True },
+            lambda leaderboards_directors: tojson(leaderboards_directors["directors"])
+        ),
+        CsfdTest("test-leaderboards-with-best-movie-100",
+            "leaderboards_directors",
+            { "from_with_best_movie": 100, "with_best_movie": True },
+            lambda leaderboards_with_best_movie: tojson(leaderboards_with_best_movie["with_best_movie"])
+        ),
+
+        # can test for leaderboards_others, but one day it can fail
+        CsfdTest("test-leaderboards-others-screenwriters-100",
+            "leaderboards_others",
+            { "from_screenwriters": 100, "screenwriters": True },
+            lambda leaderboards_screenwriters: tojson(leaderboards_screenwriters["screenwriters"])
+        ),
+        CsfdTest("test-leaderboards-others-cinematographers-100",
+            "leaderboards_others",
+            { "from_cinematographers": 100, "cinematographers": True },
+            lambda leaderboards_cinematographers: tojson(leaderboards_cinematographers["cinematographers"])
+        ),
+        CsfdTest("test-leaderboards-others-composers-100",
+            "leaderboards_others",
+            { "from_composers": 100, "composers": True },
+            lambda leaderboards_composers: tojson(leaderboards_composers["composers"])
         ),
     ]
 

@@ -1403,7 +1403,6 @@ class LeaderboardsParser:
         articla_a = sel(s, ".article-content a")
         origin_and_movie_count = sel(s, ".article-content p .info")
         origin_and_movie_count = text(origin_and_movie_count, recursive=True) if origin_and_movie_count else None
-        print(origin_and_movie_count)
         p_rating = sel(s, ".article-content .p-rating strong")
         return LeaderboardPersonBestMovie({
             "id": extract_id(articla_a.get("href")),
