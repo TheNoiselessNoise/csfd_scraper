@@ -88,7 +88,7 @@ class CreatorParser:
         img = sel(s, ".gallery-item picture img")
         return {
             "total": self.parse_creator_gallery_count(s),
-            "image": None if img is None else url(img.get("src"))
+            "image": url(img.get("src")) if img else None
         }
 
     @staticmethod
@@ -253,13 +253,13 @@ class SearchParser:
             origins_genres = text(article, ".film-origins-genres .info").split(", ")
             movies.append(TextSearchedMovie({
                 "id": extract_id(articla_a.get("href")),
-                "name": text(articla_a),
+                "title": text(articla_a),
                 "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
                 "origins": origins_genres[0].split(" / ") if len(origins_genres) > 1 else [],
                 "directors": self.__parse_text_search_parse_creators(article, "Režie"),
                 "actors": self.__parse_text_search_parse_creators(article, "Hrají"),
                 "performers": self.__parse_text_search_parse_creators(article, "Účinkují"),
-                "image": None if img_url.startswith("data:image") else url(img_url)
+                "image": url(img_url)
             }))
         return movies
 
@@ -273,7 +273,7 @@ class SearchParser:
                 "id": extract_id(articla_a.get("href")),
                 "name": text(articla_a),
                 "types": text(article, ".article-content .info").split(" / "),
-                "image": None if img_url.startswith("data:image") else url(img_url)
+                "image": url(img_url)
             }))
         return creators
 
@@ -285,13 +285,13 @@ class SearchParser:
             origins_genres = text(article, ".film-origins-genres .info").split(", ")
             series.append(TextSearchedSeries({
                 "id": extract_id(articla_a.get("href")),
-                "name": text(articla_a),
+                "title": text(articla_a),
                 "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
                 "origins": origins_genres[:-1],
                 "directors": self.__parse_text_search_parse_creators(article, "Režie"),
                 "actors": self.__parse_text_search_parse_creators(article, "Hrají"),
                 "performers": self.__parse_text_search_parse_creators(article, "Účinkují"),
-                "image": None if img_url.startswith("data:image") else url(img_url)
+                "image": url(img_url)
             }))
         return series
 
@@ -308,7 +308,7 @@ class SearchParser:
                 "name": text(articla_a),
                 "real_name": text(article, ".article-content p:first-of-type"),
                 "points": int(points.split(" ")[0]) if points else 0,
-                "image": None if img_url.startswith("data:image") else url(img_url)
+                "image": url(img_url)
             }))
         return users
 
@@ -446,7 +446,7 @@ class MovieParser:
         img = sel(s, ".gallery-item picture img")
         return {
             "total": self.parse_movie_gallery_count(s),
-            "image": None if img is None else url(img.get("src"))
+            "image": url(img.get("src")) if img else None
         }
 
     @staticmethod
@@ -632,8 +632,8 @@ class UserParser:
             "last": []
         }
         for article in asel(s, ".user-reviews article.article"):
+            img = sel(article, "img")
             article_a = sel(article, "header a")
-            img_href = sel(article, "img").get("src")
             stars = sel(article, ".stars").get("class")
             reviews["last"].append({
                 "id": extract_id(article_a.get("href")),
@@ -642,7 +642,7 @@ class UserParser:
                 "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
                 "date": text(article, "time"),
                 "text": text(article, ".user-reviews-text p", rec_tags=["a", "em", "span"]),
-                "image": None if img_href.startswith("data:image") else url(img_href)
+                "image": url(img.get("src")) if img else None
             })
         return reviews
 
@@ -673,8 +673,8 @@ class UserParser:
 
     @staticmethod
     def parse_user_image(s: BeautifulSoup) -> Optional[str]:
-        img_href = sel(s, ".user-profile-content img").get("src")
-        return None if img_href.startswith("data:image") else url(img_href)
+        img = sel(s, ".user-profile-content img")
+        return url(img.get("src")) if img else None
 
     def parse_user(self, s: BeautifulSoup, uid: int):
         return User({
@@ -746,8 +746,8 @@ class UserParser:
     def parse_user_reviews_reviews_list(s: BeautifulSoup) -> List[UserReview]:
         reviews = []
         for article in asel(s, ".user-reviews article.article"):
+            img = sel(article, "img")
             article_a = sel(article, "header a")
-            img_href = sel(article, "img").get("src")
             stars = sel(article, ".stars").get("class")
             reviews.append(UserReview({
                 "id": extract_id(article_a.get("href")),
@@ -756,7 +756,7 @@ class UserParser:
                 "rating": 0 if stars[1] == "trash" else int(stars[1][-1]),
                 "date": text(article, "time"),
                 "text": text(article, ".user-reviews-text p", rec_tags=["a", "em", "span"]),
-                "image": None if img_href.startswith("data:image") else url(img_href)
+                "image": url(img.get("src")) if img else None
             }))
         return reviews
 
@@ -847,8 +847,8 @@ class NewsParser:
 
     @staticmethod
     def parse_news_image(s: BeautifulSoup) -> Optional[str]:
-        image = sel(s, ".box-news-detail img")
-        return None if image is None else url(image.get("src"))
+        img = sel(s, ".box-news-detail img")
+        return url(img.get("src")) if img else None
 
     @staticmethod
     def parse_news_prev_news_id(s: BeautifulSoup) -> int:
@@ -962,7 +962,7 @@ class UsersParser:
             "name": text(article_a),
             "real_name": None if real_name is None else text(real_name),
             "points": toint(text(right_content, "p")),
-            "image": None if img is None else url(img.get("src")),
+            "image": url(img.get("src")) if img else None,
         })
 
     @staticmethod
@@ -985,7 +985,7 @@ class UsersParser:
                 "points": toint(text(right_content, "p:nth-child(1)")),
                 "ratings": toint(text(right_content, "p:nth-child(2) a")),
                 "reviews": toint(text(right_content, "p:nth-child(3) a")),
-                "image": None if img is None else url(img.get("src")),
+                "image": url(img.get("src")) if img else None,
             }))
         return most_favorite_users
 
@@ -1028,13 +1028,13 @@ class UsersParser:
 
     @staticmethod
     def __parse_active_users_article(s: BeautifulSoup, cls: Type, prop: str):
-        img = sel(s, "img").get("src")
+        img = sel(s, "img")
         article_a = sel(s, ".user-title a")
         return cls({
             "id": extract_id(article_a.get("href")),
             "name": text(article_a),
             prop: toint(text(s, ".article-content > p")),
-            "image": None if img.startswith("data:image") else url(img),
+            "image": url(img.get("src")) if img else None,
         })
 
     def parse_active_users_by_reviews(self, s: BeautifulSoup) -> List[ActiveUserByReviews]:
@@ -1104,7 +1104,6 @@ class DvdsParser:
 
     def __parse_dvds_monthly_article(self, s: BeautifulSoup) -> DVDMonthly:
         img = sel(s, "img")
-        img_src = None if img is None else img.get("src")
         header = sel(s, ".article-header")
         header_a = sel(header, "a")
         origins_genres = text(s, ".film-origins-genres .info").split(", ")
@@ -1118,7 +1117,7 @@ class DvdsParser:
             "directors": self.__parse_dvds_monthly_parse_creators(s, "Režie"),
             "actors": self.__parse_dvds_monthly_parse_creators(s, "Hrají"),
             "distributor": clean(text(s, ".article-content > p:last-of-type")).split(": ")[-1],
-            "image": None if img_src.startswith("data:image") else url(img_src),
+            "image": url(img.get("src")) if img else None,
         })
 
     @staticmethod
@@ -1227,7 +1226,6 @@ class BluraysParser:
 
     def __parse_blurays_monthly_article(self, s: BeautifulSoup) -> BlurayMonthly:
         img = sel(s, "img")
-        img_src = None if img is None else img.get("src")
         header = sel(s, ".article-header")
         header_a = sel(header, "a")
         origins_genres = text(s, ".film-origins-genres .info").split(", ")
@@ -1245,7 +1243,7 @@ class BluraysParser:
                 "name": distributor[1],
                 "types": distributor[2].split(" / "),
             },
-            "image": None if img_src.startswith("data:image") else url(img_src),
+            "image": url(img.get("src")) if img else None,
         })
 
     @staticmethod
@@ -1336,3 +1334,139 @@ class BluraysParser:
             blurays.append(self.__parse_blurays_yearly_tr(tr, current_date))
 
         return BluraysYearlyByRating({"blurays": blurays})
+
+class LeaderboardsParser:
+
+    # GENERICS
+
+    @staticmethod
+    def __parse_leaderboards_parse_creators(s: BeautifulSoup, name: str) -> List[dict]:
+        creators = []
+        for p in asel(s, ".film-creators"):
+            if text(p).split(":")[0] == name:
+                for a in asel(p, "a"):
+                    creators.append({
+                        "id": extract_id(a.get("href")),
+                        "name": text(a),
+                    })
+        return creators
+
+    @staticmethod
+    def __parse_leaderboards_parse_rating(s: BeautifulSoup) -> dict:
+        rating_average = sel(s, ".article-toplist-rating .rating-average")
+        rating_total = sel(s, ".article-toplist-rating .rating-total")
+
+        if rating_average and rating_total:
+            return {
+                "percentage": float(text(rating_average).replace(",", ".")[:-1]),
+                "rating_count": toint(text(rating_total))
+            }
+
+        return {
+            "fan_count": toint(text(rating_total))
+        }
+
+    def parse_leaderboards_article(self, s: BeautifulSoup, cls: Type):
+        img = sel(s, "img")
+        articla_a = sel(s, ".article-content a")
+        origins_genres = text(s, ".film-origins-genres .info").split(", ")
+        return cls({
+            "id": extract_id(articla_a.get("href")),
+            "position": toint(text(s, ".article-content .film-title-user")),
+            "title": text(articla_a),
+            "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
+            "origins": origins_genres[0].split(" / ") if len(origins_genres) > 1 else [],
+            "directors": self.__parse_leaderboards_parse_creators(s, "Režie"),
+            "actors": self.__parse_leaderboards_parse_creators(s, "Hrají"),
+            "rating": self.__parse_leaderboards_parse_rating(s),
+            "image": url(img.get("src")) if img else None
+        })
+    
+    def parse_leaderboards_person(self, s: BeautifulSoup) -> LeaderboardPerson:
+        img = sel(s, "img")
+        position = sel(s, ".article-content .user-title-position")
+        articla_a = sel(s, ".article-content a")
+        origin = sel(s, ".article-content p .info")
+        p_rating = sel(s, ".article-content .p-rating a")
+        return LeaderboardPerson({
+            "id": extract_id(articla_a.get("href")),
+            "position": toint(text(position)) if position else -1,
+            "name": text(articla_a),
+            "origin": text(origin) if origin else None,
+            "fan_count": toint(text(p_rating)) if p_rating else -1,
+            "image": url(img.get("src")) if img else None
+        })
+    
+    def parse_leaderboards_person_best_movie(self, s: BeautifulSoup) -> LeaderboardPersonBestMovie:
+        img = sel(s, "img")
+        position = sel(s, ".article-content .user-title-position")
+        articla_a = sel(s, ".article-content a")
+        origin_and_movie_count = sel(s, ".article-content p .info")
+        origin_and_movie_count = text(origin_and_movie_count, recursive=True) if origin_and_movie_count else None
+        print(origin_and_movie_count)
+        p_rating = sel(s, ".article-content .p-rating strong")
+        return LeaderboardPersonBestMovie({
+            "id": extract_id(articla_a.get("href")),
+            "position": toint(text(position)) if position else -1,
+            "name": text(articla_a),
+            "origin": origin_and_movie_count.split(", ")[0] if origin_and_movie_count else None,
+            "movie_count": toint(origin_and_movie_count.split(", ")[1]) if origin_and_movie_count else -1,
+            "avg_rating": float(text(p_rating).replace(",", ".")[:-1]) if p_rating else -1,
+            "image": url(img.get("src")) if img else None
+        })
+    
+    # MOVIES
+
+    def parse_leaderboards_movies(self, s: BeautifulSoup) -> List[LeaderboardMovie]:
+        return [
+            self.parse_leaderboards_article(article, LeaderboardMovie)
+            for article in asel(s, "section.box article[id^='highlight-']")
+        ]
+
+    # SERIALS
+
+    def parse_leaderboards_serials(self, s: BeautifulSoup) -> List[LeaderboardSerial]:
+        return [
+            self.parse_leaderboards_article(article, LeaderboardSerial)
+            for article in asel(s, "section.box article[id^='highlight-']")
+        ]
+    
+    # ACTORS & ACTRESSES
+
+    def parse_leaderboards_actors(self, s: BeautifulSoup) -> List[LeaderboardPerson]:
+        return [
+            self.parse_leaderboards_person(article)
+            for article in asel(asel(s, "section.box")[0], "article[id^='highlight-']")
+        ]
+
+    def parse_leaderboards_actresses(self, s: BeautifulSoup) -> List[LeaderboardPerson]:
+        return [
+            self.parse_leaderboards_person(article)
+            for article in asel(asel(s, "section.box")[1], "article[id^='highlight-']")
+        ]
+
+    def parse_leaderboards_all_actors(self, s: BeautifulSoup) -> LeaderboardActors:
+        return LeaderboardActors({
+            "actors": self.parse_leaderboards_actors(s),
+            "actresses": self.parse_leaderboards_actresses(s)
+        })
+    
+    # DIRECTORS
+
+    def parse_leaderboards_directors(self, s: BeautifulSoup) -> List[LeaderboardPerson]:
+        return [
+            self.parse_leaderboards_person(article)
+            for article in asel(asel(s, "section.box")[0], "article[id^='highlight-']")
+        ]
+    
+    def parse_leaderboards_directors_with_best_movie(self, s: BeautifulSoup) -> List[LeaderboardPersonBestMovie]:
+        return [
+            self.parse_leaderboards_person_best_movie(article)
+            for article in asel(asel(s, "section.box")[1], "article[id^='highlight-']")
+        ]
+
+    def parse_leaderboards_all_directors(self, s: BeautifulSoup) -> LeaderboardDirectors:
+        return LeaderboardDirectors({
+            "directors": self.parse_leaderboards_directors(s),
+            "with_best_movie": self.parse_leaderboards_directors_best_movie(s)
+        })

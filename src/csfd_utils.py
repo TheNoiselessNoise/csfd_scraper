@@ -28,15 +28,35 @@ class Globals:
     BLURAYS_YEARLY_URL = "https://www.csfd.cz/bluray/rocne/"
     USER_RATINGS_URL = "https://www.csfd.cz/uzivatel/<uid>/hodnoceni/"
     USER_REVIEWS_URL = "https://www.csfd.cz/uzivatel/<uid>/recenze/"
+    LEADERBOARDS_MOVIES_BEST = "https://www.csfd.cz/zebricky/filmy/nejlepsi/"
+    LEADERBOARDS_MOVIES_MOST_POPULAR = "https://www.csfd.cz/zebricky/filmy/nejoblibenejsi/"
+    LEADERBOARDS_MOVIES_MOST_CONTROVERSIAL = "https://www.csfd.cz/zebricky/filmy/nejrozporuplnejsi/"
+    LEADERBOARDS_MOVIES_WORST = "https://www.csfd.cz/zebricky/filmy/nejhorsi/"
+    LEADERBOARDS_SERIALS_BEST = "https://www.csfd.cz/zebricky/serialy/nejlepsi/"
+    LEADERBOARDS_SERIALS_MOST_POPULAR = "https://www.csfd.cz/zebricky/serialy/nejoblibenejsi/"
+    LEADERBOARDS_SERIALS_MOST_CONTROVERSIAL = "https://www.csfd.cz/zebricky/serialy/nejrozporuplnejsi/"
+    LEADERBOARDS_SERIALS_WORST = "https://www.csfd.cz/zebricky/serialy/nejhorsi/"
+    LEADERBOARDS_ACTORS = "https://www.csfd.cz/zebricky/herci-a-herecky/"
+    LEADERBOARDS_DIRECTORS = "https://www.csfd.cz/zebricky/reziseri/"
+
+class CsfdJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if getattr(o, 'to_dict', None):
+            return o.to_dict()
 
 def encode_params(params):
     params_raw = json.dumps(params, separators=(',', ':')).encode('ascii')
     return codecs.encode(b64encode(params_raw).decode('ascii'), 'rot_13')
 
 def tojson(o):
-    if type(o) not in [dict, list]:
-        return o
-    return json.dumps(o, indent=4, ensure_ascii=False)
+    try:
+        if type(o) not in [dict, list]:
+            return o
+        return json.dumps(o, indent=4, cls=CsfdJSONEncoder, ensure_ascii=False)
+    except TypeError as err:
+        print(f"ERROR: {err}")
+        print(f"Maybe you forgot to create 'to_dict' method somewhere.")
+        exit(1)
 
 def toint(s):
     if type(s) is str:
@@ -59,6 +79,8 @@ def url_params(s, params):
 
 def url(s):
     if not s:
+        return None
+    if s.startswith("data:image"):
         return None
     if s.startswith("//"):
         return "https:" + s
@@ -91,8 +113,8 @@ def asel(s, select):
 def tag_is_not(e, sels):
     if isinstance(sels, str):
         sels = [sels]
-    for sel in sels:
-        tags = e.parent.select(sel)
+    for s in sels:
+        tags = e.parent.select(s)
         if e in tags:
             return False
     return True

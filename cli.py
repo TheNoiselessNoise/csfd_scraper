@@ -231,6 +231,40 @@ blurays_yearly_options = blurays_yearly_parser.add_mutually_exclusive_group(requ
 blurays_yearly_options.add_argument('--by_release_date', action='store_true')
 blurays_yearly_options.add_argument('--by_rating', action='store_true')
 
+leaderboards_movies_froms = [(x * 100) + (not x) for x in range(0, 10)]
+leaderboards_movies_parser = subparsers.add_parser('leaderboards_movies', help='Commands for Leaderboards Movies')
+leaderboards_movies_parser.add_argument('--from', type=int, choices=leaderboards_movies_froms, help="(default=1)", default=1)
+leaderboards_movies_options = leaderboards_movies_parser.add_mutually_exclusive_group(required=True)
+leaderboards_movies_options.add_argument('--best', action='store_true')
+leaderboards_movies_options.add_argument('--most_popular', action='store_true')
+leaderboards_movies_options.add_argument('--most_controversial', action='store_true')
+leaderboards_movies_options.add_argument('--worst', action='store_true')
+
+leaderboards_serials_froms = [(x * 100) + (not x) for x in range(0, 10)]
+leaderboards_serials_parser = subparsers.add_parser('leaderboards_serials', help='Commands for Leaderboards Serials')
+leaderboards_serials_parser.add_argument('--from', type=int, choices=leaderboards_serials_froms, help="(default=1)", default=1)
+leaderboards_serials_options = leaderboards_serials_parser.add_mutually_exclusive_group(required=True)
+leaderboards_serials_options.add_argument('--best', action='store_true')
+leaderboards_serials_options.add_argument('--most_popular', action='store_true')
+leaderboards_serials_options.add_argument('--most_controversial', action='store_true')
+leaderboards_serials_options.add_argument('--worst', action='store_true')
+
+leaderboards_actors_froms = [(x * 100) + (not x) for x in range(0, 3)]
+leaderboards_actors_parser = subparsers.add_parser('leaderboards_actors', help='Commands for Leaderboards Actors')
+leaderboards_actors_parser.add_argument('--from_actors', type=int, choices=leaderboards_actors_froms, help="(default=1)", default=1)
+leaderboards_actors_parser.add_argument('--from_actresses', type=int, choices=leaderboards_actors_froms, help="(default=1)", default=1)
+leaderboards_actors_options = leaderboards_actors_parser.add_mutually_exclusive_group()
+leaderboards_actors_options.add_argument('--actors', action='store_true')
+leaderboards_actors_options.add_argument('--actresses', action='store_true')
+
+leaderboards_directors_froms = [(x * 100) + (not x) for x in range(0, 3)]
+leaderboards_directors_parser = subparsers.add_parser('leaderboards_directors', help='Commands for Leaderboards Actors')
+leaderboards_directors_parser.add_argument('--from_directors', type=int, choices=leaderboards_directors_froms, help="(default=1)", default=1)
+leaderboards_directors_parser.add_argument('--from_with_best_movie', type=int, choices=leaderboards_directors_froms, help="(default=1)", default=1)
+leaderboards_directors_options = leaderboards_directors_parser.add_mutually_exclusive_group()
+leaderboards_directors_options.add_argument('--directors', action='store_true')
+leaderboards_directors_options.add_argument('--with_best_movie', action='store_true')
+
 def main(cli_args):
     cli_parser = CliParser()
     if cli_args.command in CSFD_CLI_MAPPING:

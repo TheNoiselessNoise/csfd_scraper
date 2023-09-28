@@ -10,14 +10,15 @@ class CsfdScraper:
     __LAST_URL: Optional[str]            = None
     __LAST_SOUP: Optional[BeautifulSoup] = None
 
-    __MOVIE_PARSER: MovieParser     = MovieParser()
-    __CREATOR_PARSER: CreatorParser = CreatorParser()
-    __SEARCH_PARSER: SearchParser   = SearchParser()
-    __USER_PARSER: UserParser       = UserParser()
-    __NEWS_PARSER: NewsParser       = NewsParser()
-    __USERS_PARSER: UsersParser     = UsersParser()
-    __DVDS_PARSER: DvdsParser       = DvdsParser()
-    __BLURAYS_PARSER: BluraysParser = BluraysParser()
+    __MOVIE_PARSER: MovieParser               = MovieParser()
+    __CREATOR_PARSER: CreatorParser           = CreatorParser()
+    __SEARCH_PARSER: SearchParser             = SearchParser()
+    __USER_PARSER: UserParser                 = UserParser()
+    __NEWS_PARSER: NewsParser                 = NewsParser()
+    __USERS_PARSER: UsersParser               = UsersParser()
+    __DVDS_PARSER: DvdsParser                 = DvdsParser()
+    __BLURAYS_PARSER: BluraysParser           = BluraysParser()
+    __LEADERBOARDS_PARSER: LeaderboardsParser = LeaderboardsParser()
 
     def get_last_url(self):
         return self.__LAST_URL
@@ -129,6 +130,50 @@ class CsfdScraper:
             "sort": sort.value,
             "page": page
         })
+        return self.__get_soup(u)
+    def __get_leaderboards_movies_best_soup(self, _from: int):
+        args = {} if _from == 1 else {"from": _from}
+        u = url_params(Globals.LEADERBOARDS_MOVIES_BEST, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_movies_most_popular_soup(self, _from: int):
+        args = {} if _from == 1 else {"from": _from}
+        u = url_params(Globals.LEADERBOARDS_MOVIES_MOST_POPULAR, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_movies_most_controversial_soup(self, _from: int):
+        args = {} if _from == 1 else {"from": _from}
+        u = url_params(Globals.LEADERBOARDS_MOVIES_MOST_CONTROVERSIAL, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_movies_worst_soup(self, _from: int):
+        args = {} if _from == 1 else {"from": _from}
+        u = url_params(Globals.LEADERBOARDS_MOVIES_WORST, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_serials_best_soup(self, _from: int):
+        args = {} if _from == 1 else {"from": _from}
+        u = url_params(Globals.LEADERBOARDS_SERIALS_BEST, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_serials_most_popular_soup(self, _from: int):
+        args = {} if _from == 1 else {"from": _from}
+        u = url_params(Globals.LEADERBOARDS_SERIALS_MOST_POPULAR, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_serials_most_controversial_soup(self, _from: int):
+        args = {} if _from == 1 else {"from": _from}
+        u = url_params(Globals.LEADERBOARDS_SERIALS_MOST_CONTROVERSIAL, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_serials_worst_soup(self, _from: int):
+        args = {} if _from == 1 else {"from": _from}
+        u = url_params(Globals.LEADERBOARDS_SERIALS_WORST, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_actors_and_actresses_soup(self, from_actors: int, from_actresses: int):
+        args = {} if from_actors == 1 else {"fromLeft": from_actors}
+        if from_actresses != 1:
+            args.update({"fromRight": from_actresses})
+        u = url_params(Globals.LEADERBOARDS_ACTORS, args)
+        return self.__get_soup(u)
+    def __get_leaderboards_directors_soup(self, from_directors: int, from_with_best_movie: int):
+        args = {} if from_directors == 1 else {"fromLeft": from_directors}
+        if from_with_best_movie != 1:
+            args.update({"fromRight": from_with_best_movie})
+        u = url_params(Globals.LEADERBOARDS_DIRECTORS, args)
         return self.__get_soup(u)
 
     # </editor-fold>
@@ -347,7 +392,7 @@ class CsfdScraper:
         return self.__MOVIE_PARSER.parse_movie_trivia(self.__get_movie_soup(mid))
     def movie_premieres(self, mid: int) -> List[dict]:
         return self.__MOVIE_PARSER.parse_movie_premieres(self.__get_movie_soup(mid))
-    def movie_plot(self, mid: int) -> Optional[str]:
+    def movie_plot(self, mid: int) -> dict:
         return self.__MOVIE_PARSER.parse_movie_plot(self.__get_movie_soup(mid))
     def movie_cover(self, mid: int) -> Optional[str]:
         return self.__MOVIE_PARSER.parse_movie_cover(self.__get_movie_soup(mid))
@@ -534,5 +579,77 @@ class CsfdScraper:
         if year is None:
             year = datetime.now().year
         return self.__BLURAYS_PARSER.parse_dvds_yearly_by_rating(self.__get_blurays_yearly_soup(year, "rating"))
+
+    # </editor-fold>
+
+    # <editor-fold desc="Leaderboards Movies">
+
+    def leaderboards_movies_best(self, _from: int = 1) -> List[LeaderboardMovie]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_movies(
+            self.__get_leaderboards_movies_best_soup(_from))
+
+    def leaderboards_movies_most_popular(self, _from: int = 1) -> List[LeaderboardMovie]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_movies(
+            self.__get_leaderboards_movies_most_popular_soup(_from))
+
+    def leaderboards_movies_most_controversial(self, _from: int = 1) -> List[LeaderboardMovie]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_movies(
+            self.__get_leaderboards_movies_most_controversial_soup(_from))
+
+    def leaderboards_movies_worst(self, _from: int = 1) -> List[LeaderboardMovie]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_movies(
+            self.__get_leaderboards_movies_worst_soup(_from))
+
+    # </editor-fold>
+
+    # <editor-fold desc="Leaderboards Serials">
+
+    def leaderboards_serials_best(self, _from: int = 1) -> List[LeaderboardSerial]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_serials(
+            self.__get_leaderboards_serials_best_soup(_from))
+
+    def leaderboards_serials_most_popular(self, _from: int = 1) -> List[LeaderboardSerial]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_serials(
+            self.__get_leaderboards_serials_most_popular_soup(_from))
+
+    def leaderboards_serials_most_controversial(self, _from: int = 1) -> List[LeaderboardSerial]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_serials(
+            self.__get_leaderboards_serials_most_controversial_soup(_from))
+
+    def leaderboards_serials_worst(self, _from: int = 1) -> List[LeaderboardSerial]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_serials(
+            self.__get_leaderboards_serials_worst_soup(_from))
+
+    # </editor-fold>
+
+    # <editor-fold desc="Leaderboards Actors & Actresses">
+
+    def leaderboards_actors(self, from_actors: int = 1, from_actresses: int = 1) -> LeaderboardActors:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_all_actors(
+            self.__get_leaderboards_actors_and_actresses_soup(from_actors, from_actresses))
+
+    def leaderboards_actors_actors(self, from_actors: int = 1, from_actresses: int = 1) -> List[LeaderboardPerson]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_actors(
+            self.__get_leaderboards_actors_and_actresses_soup(from_actors, from_actresses))
+
+    def leaderboards_actors_actresses(self, from_actors: int = 1, from_actresses: int = 1) -> List[LeaderboardPerson]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_actresses(
+            self.__get_leaderboards_actors_and_actresses_soup(from_actors, from_actresses))
+
+    # </editor-fold>
+
+    # <editor-fold desc="Leaderboards Directors">
+
+    def leaderboards_directors(self, from_directors: int = 1, from_with_best_movie: int = 1) -> LeaderboardDirectors:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_all_directors(
+            self.__get_leaderboards_directors_soup(from_directors, from_with_best_movie))
+
+    def leaderboards_directors_directors(self, from_directors: int = 1, from_with_best_movie: int = 1) -> List[LeaderboardPerson]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_directors(
+            self.__get_leaderboards_directors_soup(from_directors, from_with_best_movie))
+
+    def leaderboards_directors_with_best_movie(self, from_directors: int = 1, from_with_best_movie: int = 1) -> List[LeaderboardPersonBestMovie]:
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_directors_with_best_movie(
+            self.__get_leaderboards_directors_soup(from_directors, from_with_best_movie))
 
     # </editor-fold>

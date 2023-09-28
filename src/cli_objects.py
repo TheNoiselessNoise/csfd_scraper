@@ -1,6 +1,7 @@
 import json
 from src.csfd_scraper import CsfdScraper
 from src.csfd_objects import *
+from src.csfd_utils import CsfdJSONEncoder
 
 class CliDummy:
     __exclude = ["get_dict", "get_filtered_dict", "get_enum_value"]
@@ -10,23 +11,27 @@ class CliDummy:
 
     # order of the arguments into a given CsfdScraper method
     # List[str] or List[prop_names]
-    _order = []
+    _dummy_argument_order = []
 
     # when some properties (options) doesn't have it's own CsfdScraper methods
     # List[str] or List[prop_names]
-    _exclude_optionals = []
+    _dummy_argument_exclude = []
 
     # when some properties (options) doesn't take any arguments in it's own CsfdScraper method
     # List[str] or List[prop_names]
-    _method_no_args = []
+    _dummy_method_no_args = []
 
     # when some properties (options) needs some more arguments in it's own CsfdScraper method
     # Dict[str, List[str]] or Dict[prop_name, List[prop_names]]
-    _method_args_mapping = {}
+    _dummy_method_args_mapping = {}
 
     # when you need some property conversions
     # Dict[str, Type] or Dict[prop_name, class_to_convert_to]
-    _method_args_conversions = {}
+    _dummy_method_args_conversions = {}
+
+    # when you need some argument (from given args) to be set into different property
+    # Dict[str, str] or Dict[arg_name, prop_name]
+    _dummy_args_tunnel = {}
 
     def __init__(self, args) -> None:
         for k, v in self.get_dict().items():
@@ -35,37 +40,41 @@ class CliDummy:
             else:
                 value = getattr(args, k, None)
 
-            if k in self._method_args_conversions and value:
-                conv = self._method_args_conversions[k]
+            if k in self._dummy_method_args_conversions and value:
+                conv = self._dummy_method_args_conversions[k]
 
                 if type(value) is list:
                     value = [self.get_enum_value(conv, x) for x in value]
                 else:
                     value = self.get_enum_value(conv, value)
 
+            setattr(self, self._dummy_args_tunnel.get(k, k), value)
             setattr(self, k, value)
 
-    def get_enum_value(self, e, value):
+    @staticmethod
+    def get_enum_value(e, value):
         if isinstance(value, e):
             return value
-        
+
         if issubclass(e, Enum):
             try:
                 return e(value)
             except ValueError: # probably name
                 return e[value]
-        return None                
+        return None
 
     def get_dict(self) -> dict:
-        keys = [x for x in dir(self) if not x.startswith("_") and not x.endswith("_") and x not in self.__exclude]
+        keys = [x for x in dir(self)]
+        keys += list(self._dummy_args_tunnel.keys())
+        keys = [x for x in keys if not x.startswith("_") and not x.endswith("_") and x not in self.__exclude]
         return {k: getattr(self, k, None) for k in keys}
-    
+
     def get_filtered_dict(self) -> dict:
-        return {k: getattr(self, k, None) for k in self.get_dict() if getattr(self, k, None) and k not in self._exclude_optionals}
+        return {k: getattr(self, k, None) for k in self.get_dict() if getattr(self, k, None) and k not in self._dummy_argument_exclude}
 
 class CliSearchCreatorsDummy(CliDummy):
-    _order = ["options", "page", "sort"]
-    _method_args_conversions = {
+    _dummy_argument_order = ["options", "page", "sort"]
+    _dummy_method_args_conversions = {
         "sort": CreatorSorts,
         "types": CreatorTypes,
         "birth_country": Origins,
@@ -91,8 +100,8 @@ class CliSearchCreatorsDummy(CliDummy):
         }
 
 class CliSearchMoviesDummy(CliDummy):
-    _order = ["options", "page", "sort"]
-    _method_args_conversions = {
+    _dummy_argument_order = ["options", "page", "sort"]
+    _dummy_method_args_conversions = {
         "sort": MovieSorts,
         "types": MovieTypes,
         "origins": Origins,
@@ -128,7 +137,7 @@ class CliSearchMoviesDummy(CliDummy):
         }
 
 class CliTextSearchDummy(CliDummy):
-    _order = ["search", "page"]
+    _dummy_argument_order = ["search", "page"]
 
     def __init__(self, args) -> None:
         self.search = None
@@ -199,7 +208,7 @@ class CliNewsListDummy(CliDummy):
         super().__init__(args)
 
 class CliNewsListOptionsDummy(CliDummy):
-    _method_no_args = ["main_news", "most_read_news", "most_latest_news"]
+    _dummy_method_no_args = ["main_news", "most_read_news", "most_latest_news"]
 
     def __init__(self, args) -> None:
         self.url = False
@@ -252,13 +261,13 @@ class CliCreatorDummy(CliDummy):
         super().__init__(args)
 
 class CliCreatorOptionsDummy(CliDummy):
-    _exclude_optionals = ["filmography_sort"]
+    _dummy_argument_exclude = ["filmography_sort"]
 
-    _method_args_mapping = {
+    _dummy_method_args_mapping = {
         "filmography": ["filmography_sort"]
     }
 
-    _method_args_conversions = {
+    _dummy_method_args_conversions = {
         "filmography_sort": CreatorFilmographySorts
     }
 
@@ -311,8 +320,8 @@ class CliUserOptionsDummy(CliDummy):
         super().__init__(args)
 
 class CliUserRatingsDummy(CliDummy):
-    _order = ["user", "movie_type", "origin", "genre", "sort", "page"]
-    _method_args_conversions = {
+    _dummy_argument_order = ["user", "movie_type", "origin", "genre", "sort", "page"]
+    _dummy_method_args_conversions = {
         "movie_type": MovieTypes,
         "origin": Origins,
         "genre": MovieGenres,
@@ -330,8 +339,8 @@ class CliUserRatingsDummy(CliDummy):
         super().__init__(args)
 
 class CliUserReviewsDummy(CliDummy):
-    _order = ["user", "movie_type", "origin", "genre", "sort", "page"]
-    _method_args_conversions = {
+    _dummy_argument_order = ["user", "movie_type", "origin", "genre", "sort", "page"]
+    _dummy_method_args_conversions = {
         "movie_type": MovieTypes,
         "origin": Origins,
         "genre": MovieGenres,
@@ -361,8 +370,8 @@ class CliFavoriteUsersOptionsDummy(CliDummy):
         super().__init__(args)
 
 class CliActiveUsersDummy(CliDummy):
-    _order = ["origin", "sort"]
-    _method_args_conversions = {
+    _dummy_argument_order = ["origin", "sort"]
+    _dummy_method_args_conversions = {
         "origin": Origins,
         "sort": ActiveUsersSorts
     }
@@ -384,8 +393,8 @@ class CliActiveUsersOptionsDummy(CliDummy):
         super().__init__(args)
 
 class CliDVDsMonthlyDummy(CliDummy):
-    _order = ["year", "page", "month"]
-    _method_args_conversions = {
+    _dummy_argument_order = ["year", "page", "month"]
+    _dummy_method_args_conversions = {
         "month": Months
     }
 
@@ -417,8 +426,8 @@ class CliDVDsYearlyOptionsDummy(CliDummy):
         super().__init__(args)
 
 class CliBluraysMonthlyDummy(CliDummy):
-    _order = ["year", "page", "month"]
-    _method_args_conversions = {
+    _dummy_argument_order = ["year", "page", "month"]
+    _dummy_method_args_conversions = {
         "month": Months
     }
 
@@ -449,6 +458,74 @@ class CliBluraysYearlyOptionsDummy(CliDummy):
 
         super().__init__(args)
 
+class CliLeaderBoardsMoviesDummy(CliDummy):
+    _dummy_args_tunnel = { "from": "_from" }
+    _dummy_argument_order = ["_from"]
+
+    def __init__(self, args) -> None:
+        self._from = 1
+
+        super().__init__(args)
+
+class CliLeaderBoardsMoviesOptionsDummy(CliDummy):
+    def __init__(self, args) -> None:
+        self.best = False
+        self.most_popular = False
+        self.most_controversial = False
+        self.worst = False
+
+        super().__init__(args)
+
+class CliLeaderBoardsSerialsDummy(CliDummy):
+    _dummy_args_tunnel = { "from": "_from" }
+    _dummy_argument_order = ["_from"]
+
+    def __init__(self, args) -> None:
+        self._from = 1
+
+        super().__init__(args)
+
+class CliLeaderBoardsSerialsOptionsDummy(CliDummy):
+    def __init__(self, args) -> None:
+        self.best = False
+        self.most_popular = False
+        self.most_controversial = False
+        self.worst = False
+
+        super().__init__(args)
+
+class CliLeaderBoardsActorsDummy(CliDummy):
+    _dummy_argument_order = ["from_actors", "from_actresses"]
+
+    def __init__(self, args) -> None:
+        self.from_actors = 1
+        self.from_actresses = 1
+
+        super().__init__(args)
+
+class CliLeaderBoardsActorsOptionsDummy(CliDummy):
+    def __init__(self, args) -> None:
+        self.actors = False
+        self.actresses = False
+
+        super().__init__(args)
+
+class CliLeaderBoardsDirectorsDummy(CliDummy):
+    _dummy_argument_order = ["from_directors", "from_with_best_movie"]
+
+    def __init__(self, args) -> None:
+        self.from_directors = 1
+        self.from_with_best_movie = 1
+
+        super().__init__(args)
+
+class CliLeaderBoardsDirectorsOptionsDummy(CliDummy):
+    def __init__(self, args) -> None:
+        self.directors = False
+        self.with_best_movie = False
+
+        super().__init__(args)
+
 class CliParser:
     def __init__(self):
         self.csfd_scraper = CsfdScraper()
@@ -456,17 +533,20 @@ class CliParser:
     def run(self, main_args, option_args, prop_name, whole_func_name):
         method = getattr(self.csfd_scraper, whole_func_name, None)
         assert method is not None, f"Couldn't find a `{whole_func_name}` parser."
-        
+
         more_args = []
-        if prop_name not in option_args._method_no_args:
-            main_args_d = main_args.get_dict()
+        if prop_name not in option_args._dummy_method_no_args:
+            more_args = main_args.get_dict().values()
+            if main_args._dummy_argument_order:
+                more_args = [
+                    getattr(main_args, main_args._dummy_args_tunnel[x])
+                    if x in main_args._dummy_args_tunnel else
+                    getattr(main_args, x)
+                    for x in main_args._dummy_argument_order
+                ]
 
-            more_args = main_args_d.values()
-            if main_args._order:
-                more_args = [main_args_d[x] for x in main_args._order]
-
-            if prop_name in option_args._method_args_mapping:
-                for arg in option_args._method_args_mapping[prop_name]:
+            if prop_name in option_args._dummy_method_args_mapping:
+                for arg in option_args._dummy_method_args_mapping[prop_name]:
                     arg_value = getattr(option_args, arg, None)
                     more_args.append(arg_value)
 
@@ -478,22 +558,19 @@ class CliParser:
 
         data = {}
         for k, v in option_args.get_dict().items():
-            if v and k not in option_args._exclude_optionals:
+            if v and k not in option_args._dummy_argument_exclude:
                 data[k] = self.run(main_args, option_args, k, f"{prefix}_{k}")
         return data
-    
-    def print_json(self, data):
+
+    @staticmethod
+    def get_json(data):
         if isinstance(data, PrintableObject):
-            print(str(data))
+            return str(data)
         else:
-            print(json.dumps(data, indent=4, cls=CsfdJSONEncoder, ensure_ascii=False))
-    
-class CsfdJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, PrintableObject):
-            return o.to_dict()
-        if isinstance(o, AutoCompleteSearchJsonWrapper):
-            return o.to_dict()
+            return json.dumps(data, indent=4, cls=CsfdJSONEncoder, ensure_ascii=False)
+
+    def print_json(self, data):
+        print(self.get_json(data))
         
 CSFD_CLI_MAPPING = {
     # command: [main_args, optional_args, prefix]
@@ -514,4 +591,8 @@ CSFD_CLI_MAPPING = {
     "dvds_yearly": [CliDVDsYearlyDummy, CliDVDsYearlyOptionsDummy, "dvds_yearly"],
     "blurays_monthly": [CliBluraysMonthlyDummy, CliBluraysMonthlyOptionsDummy, "blurays_monthly"],
     "blurays_yearly": [CliBluraysYearlyDummy, CliBluraysYearlyOptionsDummy, "blurays_yearly"],
+    "leaderboards_movies": [CliLeaderBoardsMoviesDummy, CliLeaderBoardsMoviesOptionsDummy, "leaderboards_movies"],
+    "leaderboards_serials": [CliLeaderBoardsSerialsDummy, CliLeaderBoardsSerialsOptionsDummy, "leaderboards_serials"],
+    "leaderboards_actors": [CliLeaderBoardsActorsDummy, CliLeaderBoardsActorsOptionsDummy, "leaderboards_actors"],
+    "leaderboards_directors": [CliLeaderBoardsDirectorsDummy, CliLeaderBoardsDirectorsOptionsDummy, "leaderboards_directors"],
 }

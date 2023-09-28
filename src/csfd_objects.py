@@ -39,6 +39,15 @@ class CzechEnum(Enum):
 
 # <editor-fold desc="GLOBAL TYPES">
 
+class Continents(CzechEnum):
+    """Kontinenty (původy) filmů pro vyhledávání v žebříčcích"""
+
+    EUROPE                = "continent-1", "Evropa"
+    AMERICA               = "continent-2", "Amerika"
+    ASIA                  = "continent-3", "Asie"
+    AFRICA                = "continent-4", "Afrika"
+    AUSTRALIA_AND_OCEANIA = "continent-5", "Austrálie a Oceánie"
+
 class Origins(CzechEnum):
     """Původy filmů/místa narození tvůrců pro vyhledávání"""
 
@@ -765,14 +774,6 @@ class TextSearchResult(PrintableObject):
         self.series: List[TextSearchedSeries] = args.get("series", [])
         self.users: List[TextSearchedUser] = args.get("users", [])
 
-    def to_dict(self):
-        args = self.args
-        args["movies"] = [m.args for m in self.movies]
-        args["creators"] = [c.args for c in self.creators]
-        args["series"] = [s.args for s in self.series]
-        args["users"] = [u.args for u in self.users]
-        return args
-
 # </editor-fold>
 
 # <editor-fold desc="AUTOCOMPLETE SEARCH TYPES">
@@ -834,11 +835,6 @@ class SearchMoviesResult(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def to_dict(self):
-        args = self.args
-        args["movies"] = [m.args for m in self.movies]
-        return args
-
 class SearchedCreator(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
@@ -857,11 +853,6 @@ class SearchCreatorsResult(PrintableObject):
         self.creators: List[SearchedCreator] = args.get("creators", [])
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
-
-    def to_dict(self):
-        args = self.args
-        args["creators"] = [c.args for c in self.creators]
-        return args
 
 # </editor-fold>
 
@@ -994,13 +985,6 @@ class FavoriteUsers(PrintableObject):
         self.by_regions: Dict[str, List[OtherFavoriteUser]] = args.get("by_regions", {})
         self.by_country: Dict[Origins, List[OtherFavoriteUser]] = args.get("by_country", {})
 
-    def to_dict(self):
-        args = self.args
-        args["most_favorite_users"] = [u.args for u in self.most_favorite_users]
-        args["by_regions"] = {k: [u.args for u in v] for k, v in self.by_regions.items()}
-        args["by_country"] = {k.value[1]: [u.args for u in v] for k, v in self.by_country.items()}
-        return args
-
 class ActiveUser(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
@@ -1042,15 +1026,6 @@ class ActiveUsers(PrintableObject):
         self.by_trivia: List[ActiveUserByTrivia] = args.get("by_trivia", [])
         self.by_biography: List[ActiveUserByBiography] = args.get("by_biography", [])
 
-    def to_dict(self):
-        args = self.args
-        args["by_reviews"] = [u.args for u in self.by_reviews]
-        args["by_diaries"] = [u.args for u in self.by_diaries]
-        args["by_content"] = [u.args for u in self.by_content]
-        args["by_trivia"] = [u.args for u in self.by_trivia]
-        args["by_biography"] = [u.args for u in self.by_biography]
-        return args
-
 # </editor-fold>
 
 # <editor-fold desc="DVDS TYPES">
@@ -1075,22 +1050,12 @@ class DVDSMonthlyByReleaseDate(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def to_dict(self):
-        args = self.args
-        args["dvds"] = {k: [d.args for d in v] for k, v in self.dvds.items()}
-        return args
-
 class DVDSMonthlyByRating(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
         self.dvds: List[DVDMonthly] = args.get("dvds", [])
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
-
-    def to_dict(self):
-        args = self.args
-        args["dvds"] = [d.args for d in self.dvds]
-        return args
 
 class DVDYearly(PrintableObject):
     def __init__(self, args: dict):
@@ -1105,20 +1070,10 @@ class DVDSYearlyByReleaseDate(PrintableObject):
         self.args: dict = args
         self.dvds: Dict[Months, List[DVDYearly]] = args.get("dvds", {})
 
-    def to_dict(self):
-        args = self.args
-        args["dvds"] = {k.value[1]: [d.args for d in v] for k, v in self.dvds.items()}
-        return args
-
 class DVDSYearlyByRating(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
         self.dvds: List[DVDYearly] = args.get("dvds", [])
-
-    def to_dict(self):
-        args = self.args
-        args["dvds"] = [d.args for d in self.dvds]
-        return args
 
 # </editor-fold>
 
@@ -1144,22 +1099,12 @@ class BluraysMonthlyByReleaseDate(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def to_dict(self):
-        args = self.args
-        args["blurays"] = {k: [d.args for d in v] for k, v in self.blurays.items()}
-        return args
-
 class BluraysMonthlyByRating(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
         self.blurays: List[BlurayMonthly] = args.get("blurays", [])
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
-
-    def to_dict(self):
-        args = self.args
-        args["blurays"] = [d.args for d in self.blurays]
-        return args
 
 class BlurayYearly(PrintableObject):
     def __init__(self, args: dict):
@@ -1175,20 +1120,10 @@ class BluraysYearlyByReleaseDate(PrintableObject):
         self.args: dict = args
         self.blurays: Dict[Months, List[BlurayYearly]] = args.get("blurays", {})
 
-    def to_dict(self):
-        args = self.args
-        args["blurays"] = {k.value[1]: [d.args for d in v] for k, v in self.blurays.items()}
-        return args
-
 class BluraysYearlyByRating(PrintableObject):
     def __init__(self, args: dict):
         self.args: dict = args
         self.blurays: List[BlurayYearly] = args.get("blurays", [])
-
-    def to_dict(self):
-        args = self.args
-        args["blurays"] = [d.args for d in self.blurays]
-        return args
 
 # </editor-fold>
 
@@ -1225,11 +1160,6 @@ class UserRatings(PrintableObject):
         self.ratings: List[UserRating] = args.get("ratings", [])
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
-
-    def to_dict(self):
-        args = self.args
-        args["ratings"] = [d.args for d in self.ratings]
-        return args
 
 # </editor-fold>
 
@@ -1269,11 +1199,89 @@ class UserReviews(PrintableObject):
         self.has_prev_page: bool = args.get("has_prev_page", False)
         self.has_next_page: bool = args.get("has_next_page", False)
 
-    def to_dict(self):
-        args = self.args
-        args["reviews"] = [d.args for d in self.reviews]
-        return args
+# </editor-fold>
 
+# <editor-fold desc="LEADERBOARDS TYPES">
+
+class LeaderboardMovie(PrintableObject):
+    def __init__(self, args: dict) -> None:
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.position: int = args.get("position", -1)
+        self.title: Optional[str] = args.get("title", None)
+        self.year: int = args.get("year", -1)
+        self.origins: List[str] = args.get("origins", [])
+        self.genres: List[str] = args.get("genres", [])
+        self.directors: List[dict] = args.get("directors", [])
+        self.actors: List[dict] = args.get("actors", [])
+        self.rating: dict = args.get("rating", {})
+        self.image: Optional[str] = args.get("image", None)
+
+    def get_genres(self):
+        return [MovieGenres.get_by_czech_name(g) for g in self.genres]
+
+    def get_origins(self):
+        return [Origins.get_by_czech_name(o) for o in self.origins]
+    
+class LeaderboardSerial(PrintableObject):
+    def __init__(self, args: dict) -> None:
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.position: int = args.get("position", -1)
+        self.title: Optional[str] = args.get("title", None)
+        self.year: int = args.get("year", -1)
+        self.origins: List[str] = args.get("origins", [])
+        self.genres: List[str] = args.get("genres", [])
+        self.directors: List[dict] = args.get("directors", [])
+        self.actors: List[dict] = args.get("actors", [])
+        self.rating: dict = args.get("rating", {})
+        self.image: Optional[str] = args.get("image", None)
+
+    def get_genres(self):
+        return [MovieGenres.get_by_czech_name(g) for g in self.genres]
+
+    def get_origins(self):
+        return [Origins.get_by_czech_name(o) for o in self.origins]
+    
+class LeaderboardPerson(PrintableObject):
+    def __init__(self, args: dict) -> None:
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.position: int = args.get("position", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.origin: Optional[str] = args.get("origin", None)
+        self.fan_count: int = args.get("fan_count", -1)
+        self.image: Optional[str] = args.get("image", None)
+
+    def get_origin(self):
+        return Origins.get_by_czech_name(self.origin)
+    
+class LeaderboardActors(PrintableObject):
+    def __init__(self, args: dict) -> None:
+        self.args: dict = args
+        self.actors: List[LeaderboardPerson] = args.get("actors", [])
+        self.actresses: List[LeaderboardPerson] = args.get("actresses", [])
+
+class LeaderboardPersonBestMovie(PrintableObject):
+    def __init__(self, args: dict) -> None:
+        self.args: dict = args
+        self.id: int = args.get("id", -1)
+        self.position: int = args.get("position", -1)
+        self.name: Optional[str] = args.get("name", None)
+        self.origin: Optional[str] = args.get("origin", None)
+        self.movie_count: int = args.get("movie_count", -1)
+        self.avg_rating: float = args.get("avg_rating", -1)
+        self.image: Optional[str] = args.get("image", None)
+
+    def get_origin(self):
+        return Origins.get_by_czech_name(self.origin)
+
+class LeaderboardDirectors(PrintableObject):
+    def __init__(self, args: dict) -> None:
+        self.args: dict = args
+        self.directors: List[LeaderboardPerson] = args.get("directors", [])
+        self.with_best_movie: List[LeaderboardPersonBestMovie] = args.get("with_best_movie", [])
+    
 # </editor-fold>
 
 # <editor-fold desc="EXCEPTIONS">
