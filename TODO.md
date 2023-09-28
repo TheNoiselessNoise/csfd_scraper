@@ -9,13 +9,6 @@
   - [ ] Scraping "Trivia"
   - [ ] Scraping "Contents"
   - [ ] Scraping "Biography"
-- [ ] Scraping Leaderboards
-  - [ ] Scraping "Movies"
-  - [ ] Scraping "Series"
-  - [ ] Scraping "Own Selection"
-  - [ ] Scraping "Actors"
-  - [ ] Scraping "Directors"
-  - [ ] Scraping "Screenwriters, Cinematographers, Composers"
 
 ### Maybe later... or never
 - [ ] Scraping VODS
@@ -26,6 +19,13 @@
 ### Completed ✓
 - [x] CLI
 - [x] Testing tool
+- [x] Scraping Leaderboards
+  - [x] Scraping "Movies"
+  - [x] Scraping "Series"
+  - [x] Scraping "Own Selection"
+  - [x] Scraping "Actors"
+  - [x] Scraping "Directors"
+  - [x] Scraping "Screenwriters, Cinematographers, Composers"
 - [x] Scraping User
   - [x] Scraping "Ratings"
   - [x] Scraping "Reviews"
