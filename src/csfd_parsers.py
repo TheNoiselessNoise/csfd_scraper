@@ -1470,3 +1470,30 @@ class LeaderboardsParser:
             "directors": self.parse_leaderboards_directors(s),
             "with_best_movie": self.parse_leaderboards_directors_best_movie(s)
         })
+    
+    # OTHERS (SCREENWRITERS, CINEMATOGRAPHERS & COMPOSERS)
+
+    def parse_leaderboards_screenwriters(self, s: BeautifulSoup) -> List[LeaderboardPerson]:
+        return [
+            self.parse_leaderboards_person(article)
+            for article in asel(asel(s, "section.box")[0], "article[id^='highlight-']")
+        ]
+
+    def parse_leaderboards_cinematographers(self, s: BeautifulSoup) -> List[LeaderboardPerson]:
+        return [
+            self.parse_leaderboards_person(article)
+            for article in asel(asel(s, "section.box")[1], "article[id^='highlight-']")
+        ]
+
+    def parse_leaderboards_composers(self, s: BeautifulSoup) -> List[LeaderboardPerson]:
+        return [
+            self.parse_leaderboards_person(article)
+            for article in asel(asel(s, "section.box")[2], "article[id^='highlight-']")
+        ]
+    
+    def parse_leaderboards_others(self, s: BeautifulSoup) -> LeaderboardOthers:
+        return LeaderboardOthers({
+            "screenwriters": self.parse_leaderboards_screenwriters(s),
+            "cinematographers": self.parse_leaderboards_cinematographers(s),
+            "composers": self.parse_leaderboards_composers(s)
+        })

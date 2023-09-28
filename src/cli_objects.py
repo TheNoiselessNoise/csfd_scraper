@@ -526,6 +526,24 @@ class CliLeaderBoardsDirectorsOptionsDummy(CliDummy):
 
         super().__init__(args)
 
+class CliLeaderBoardsOthersDummy(CliDummy):
+    _dummy_argument_order = ["from_screenwriters", "from_cinematographers", "from_composers"]
+
+    def __init__(self, args) -> None:
+        self.from_screenwriters = 1
+        self.from_cinematographers = 1
+        self.from_composers = 1
+
+        super().__init__(args)
+
+class CliLeaderBoardsOthersOptionsDummy(CliDummy):
+    def __init__(self, args) -> None:
+        self.screenwriters = False
+        self.cinematographers = False
+        self.composers = False
+
+        super().__init__(args)
+
 class CliParser:
     def __init__(self):
         self.csfd_scraper = CsfdScraper()
@@ -595,4 +613,5 @@ CSFD_CLI_MAPPING = {
     "leaderboards_serials": [CliLeaderBoardsSerialsDummy, CliLeaderBoardsSerialsOptionsDummy, "leaderboards_serials"],
     "leaderboards_actors": [CliLeaderBoardsActorsDummy, CliLeaderBoardsActorsOptionsDummy, "leaderboards_actors"],
     "leaderboards_directors": [CliLeaderBoardsDirectorsDummy, CliLeaderBoardsDirectorsOptionsDummy, "leaderboards_directors"],
+    "leaderboards_others": [CliLeaderBoardsOthersDummy, CliLeaderBoardsOthersOptionsDummy, "leaderboards_others"],
 }

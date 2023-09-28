@@ -175,6 +175,15 @@ class CsfdScraper:
             args.update({"fromRight": from_with_best_movie})
         u = url_params(Globals.LEADERBOARDS_DIRECTORS, args)
         return self.__get_soup(u)
+    def __get_leaderboards_others_soup(self, from_screenwriters: int, from_cinematographers: int, from_composers: int):
+        args = {} if from_screenwriters == 1 else {"fromLeft": from_screenwriters}
+        if from_cinematographers != 1:
+            args.update({"fromMiddle": from_cinematographers})
+        if from_composers != 1:
+            args.update({"fromRight": from_composers})
+        u = url_params(Globals.LEADERBOARDS_OTHERS, args)
+        return self.__get_soup(u)
+
 
     # </editor-fold>
 
@@ -651,5 +660,29 @@ class CsfdScraper:
     def leaderboards_directors_with_best_movie(self, from_directors: int = 1, from_with_best_movie: int = 1) -> List[LeaderboardPersonBestMovie]:
         return self.__LEADERBOARDS_PARSER.parse_leaderboards_directors_with_best_movie(
             self.__get_leaderboards_directors_soup(from_directors, from_with_best_movie))
+
+    # </editor-fold>
+
+    # <editor-fold desc="Leaderboards Directors">
+
+    def leaderboards_others(self, from_screenwriters: int = 1, from_cinematographers: int = 1, from_composers: int = 1):
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_others(
+            self.__get_leaderboards_others_soup(from_screenwriters, from_cinematographers, from_composers)
+        )
+    
+    def leaderboards_others_screenwriters(self, from_screenwriters: int = 1, from_cinematographers: int = 1, from_composers: int = 1):
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_screenwriters(
+            self.__get_leaderboards_others_soup(from_screenwriters, from_cinematographers, from_composers)
+        )
+
+    def leaderboards_others_cinematographers(self, from_screenwriters: int = 1, from_cinematographers: int = 1, from_composers: int = 1):
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_cinematographers(
+            self.__get_leaderboards_others_soup(from_screenwriters, from_cinematographers, from_composers)
+        )
+
+    def leaderboards_others_composers(self, from_screenwriters: int = 1, from_cinematographers: int = 1, from_composers: int = 1):
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_composers(
+            self.__get_leaderboards_others_soup(from_screenwriters, from_cinematographers, from_composers)
+        )
 
     # </editor-fold>

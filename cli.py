@@ -265,6 +265,16 @@ leaderboards_directors_options = leaderboards_directors_parser.add_mutually_excl
 leaderboards_directors_options.add_argument('--directors', action='store_true')
 leaderboards_directors_options.add_argument('--with_best_movie', action='store_true')
 
+leaderboards_others_froms = [(x * 100) + (not x) for x in range(0, 3)]
+leaderboards_others_parser = subparsers.add_parser('leaderboards_others', help='Commands for Leaderboards Others')
+leaderboards_others_parser.add_argument('--from_screenwriters', type=int, choices=leaderboards_others_froms, help="(default=1)", default=1)
+leaderboards_others_parser.add_argument('--from_cinematographers', type=int, choices=leaderboards_others_froms, help="(default=1)", default=1)
+leaderboards_others_parser.add_argument('--from_composers', type=int, choices=leaderboards_others_froms, help="(default=1)", default=1)
+leaderboards_others_options = leaderboards_others_parser.add_mutually_exclusive_group()
+leaderboards_others_options.add_argument('--screenwriters', action='store_true')
+leaderboards_others_options.add_argument('--cinematographers', action='store_true')
+leaderboards_others_options.add_argument('--composers', action='store_true')
+
 def main(cli_args):
     cli_parser = CliParser()
     if cli_args.command in CSFD_CLI_MAPPING:

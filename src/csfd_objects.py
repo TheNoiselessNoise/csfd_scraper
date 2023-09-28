@@ -1281,6 +1281,13 @@ class LeaderboardDirectors(PrintableObject):
         self.args: dict = args
         self.directors: List[LeaderboardPerson] = args.get("directors", [])
         self.with_best_movie: List[LeaderboardPersonBestMovie] = args.get("with_best_movie", [])
+
+class LeaderboardOthers(PrintableObject):
+    def __init__(self, args: dict) -> None:
+        self.args: dict = args
+        self.screenwriters: List[LeaderboardPerson] = args.get("screenwriters", [])
+        self.cinematographers: List[LeaderboardPerson] = args.get("cinematographers", [])
+        self.composers: List[LeaderboardPerson] = args.get("composers", [])
     
 # </editor-fold>
 

@@ -38,6 +38,7 @@ class Globals:
     LEADERBOARDS_SERIALS_WORST = "https://www.csfd.cz/zebricky/serialy/nejhorsi/"
     LEADERBOARDS_ACTORS = "https://www.csfd.cz/zebricky/herci-a-herecky/"
     LEADERBOARDS_DIRECTORS = "https://www.csfd.cz/zebricky/reziseri/"
+    LEADERBOARDS_OTHERS = "https://www.csfd.cz/zebricky/scenariste-kameramani-skladatele/"
 
 class CsfdJSONEncoder(json.JSONEncoder):
     def default(self, o):
