@@ -1373,6 +1373,7 @@ class LeaderboardsParser:
         return cls({
             "id": extract_id(articla_a.get("href")),
             "position": toint(text(s, ".article-content .film-title-user")),
+            "year": int(text(s, "span.info")[1:-1]),
             "title": text(articla_a),
             "genres": [] if len(origins_genres) == 1 else origins_genres[-1].split(" / "),
             "origins": origins_genres[0].split(" / ") if len(origins_genres) > 1 else [],
@@ -1495,4 +1496,28 @@ class LeaderboardsParser:
             "screenwriters": self.parse_leaderboards_screenwriters(s),
             "cinematographers": self.parse_leaderboards_cinematographers(s),
             "composers": self.parse_leaderboards_composers(s)
+        })
+    
+    # CUSTOM
+
+    def parse_leaderboards_custom_records(self, s: BeautifulSoup) -> List[LeaderboardMovie]:
+        return [
+            self.parse_leaderboards_article(article, LeaderboardMovie)
+            for article in asel(s, "section.box article[id^='highlight-']")
+        ]
+
+    @staticmethod
+    def parse_leaderboards_custom_has_prev_page(s: BeautifulSoup) -> bool:
+        return sel(s, ".page-prev") is not None
+
+    @staticmethod
+    def parse_leaderboards_custom_has_next_page(s: BeautifulSoup) -> bool:
+        return sel(s, ".page-next") is not None
+
+    def parse_leaderboards_custom(self, s: BeautifulSoup, page: int) -> LeaderboardCustom:
+        return LeaderboardCustom({
+            "page": page,
+            "records": self.parse_leaderboards_custom_records(s),
+            "has_prev_page": self.parse_leaderboards_custom_has_prev_page(s),
+            "has_next_page": self.parse_leaderboards_custom_has_next_page(s)
         })

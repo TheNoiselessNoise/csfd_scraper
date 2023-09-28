@@ -131,51 +131,51 @@ class CsfdScraper:
             "page": page
         })
         return self.__get_soup(u)
-    def __get_leaderboards_movies_best_soup(self, _from: int):
+    def __get_leaderboards_movies_best_soup(self, _from: int) -> BeautifulSoup:
         args = {} if _from == 1 else {"from": _from}
         u = url_params(Globals.LEADERBOARDS_MOVIES_BEST, args)
         return self.__get_soup(u)
-    def __get_leaderboards_movies_most_popular_soup(self, _from: int):
+    def __get_leaderboards_movies_most_popular_soup(self, _from: int) -> BeautifulSoup:
         args = {} if _from == 1 else {"from": _from}
         u = url_params(Globals.LEADERBOARDS_MOVIES_MOST_POPULAR, args)
         return self.__get_soup(u)
-    def __get_leaderboards_movies_most_controversial_soup(self, _from: int):
+    def __get_leaderboards_movies_most_controversial_soup(self, _from: int) -> BeautifulSoup:
         args = {} if _from == 1 else {"from": _from}
         u = url_params(Globals.LEADERBOARDS_MOVIES_MOST_CONTROVERSIAL, args)
         return self.__get_soup(u)
-    def __get_leaderboards_movies_worst_soup(self, _from: int):
+    def __get_leaderboards_movies_worst_soup(self, _from: int) -> BeautifulSoup:
         args = {} if _from == 1 else {"from": _from}
         u = url_params(Globals.LEADERBOARDS_MOVIES_WORST, args)
         return self.__get_soup(u)
-    def __get_leaderboards_serials_best_soup(self, _from: int):
+    def __get_leaderboards_serials_best_soup(self, _from: int) -> BeautifulSoup:
         args = {} if _from == 1 else {"from": _from}
         u = url_params(Globals.LEADERBOARDS_SERIALS_BEST, args)
         return self.__get_soup(u)
-    def __get_leaderboards_serials_most_popular_soup(self, _from: int):
+    def __get_leaderboards_serials_most_popular_soup(self, _from: int) -> BeautifulSoup:
         args = {} if _from == 1 else {"from": _from}
         u = url_params(Globals.LEADERBOARDS_SERIALS_MOST_POPULAR, args)
         return self.__get_soup(u)
-    def __get_leaderboards_serials_most_controversial_soup(self, _from: int):
+    def __get_leaderboards_serials_most_controversial_soup(self, _from: int) -> BeautifulSoup:
         args = {} if _from == 1 else {"from": _from}
         u = url_params(Globals.LEADERBOARDS_SERIALS_MOST_CONTROVERSIAL, args)
         return self.__get_soup(u)
-    def __get_leaderboards_serials_worst_soup(self, _from: int):
+    def __get_leaderboards_serials_worst_soup(self, _from: int) -> BeautifulSoup:
         args = {} if _from == 1 else {"from": _from}
         u = url_params(Globals.LEADERBOARDS_SERIALS_WORST, args)
         return self.__get_soup(u)
-    def __get_leaderboards_actors_and_actresses_soup(self, from_actors: int, from_actresses: int):
+    def __get_leaderboards_actors_and_actresses_soup(self, from_actors: int, from_actresses: int) -> BeautifulSoup:
         args = {} if from_actors == 1 else {"fromLeft": from_actors}
         if from_actresses != 1:
             args.update({"fromRight": from_actresses})
         u = url_params(Globals.LEADERBOARDS_ACTORS, args)
         return self.__get_soup(u)
-    def __get_leaderboards_directors_soup(self, from_directors: int, from_with_best_movie: int):
+    def __get_leaderboards_directors_soup(self, from_directors: int, from_with_best_movie: int) -> BeautifulSoup:
         args = {} if from_directors == 1 else {"fromLeft": from_directors}
         if from_with_best_movie != 1:
             args.update({"fromRight": from_with_best_movie})
         u = url_params(Globals.LEADERBOARDS_DIRECTORS, args)
         return self.__get_soup(u)
-    def __get_leaderboards_others_soup(self, from_screenwriters: int, from_cinematographers: int, from_composers: int):
+    def __get_leaderboards_others_soup(self, from_screenwriters: int, from_cinematographers: int, from_composers: int) -> BeautifulSoup:
         args = {} if from_screenwriters == 1 else {"fromLeft": from_screenwriters}
         if from_cinematographers != 1:
             args.update({"fromMiddle": from_cinematographers})
@@ -183,7 +183,9 @@ class CsfdScraper:
             args.update({"fromRight": from_composers})
         u = url_params(Globals.LEADERBOARDS_OTHERS, args)
         return self.__get_soup(u)
-
+    def __get_leaderboards_custom_soup(self, params: dict, page: int) -> BeautifulSoup:
+        u = url_prepare(Globals.LEADERBOARDS_CUSTOM, {"page": page, "filter": encode_params(params)})
+        return self.__get_soup(u)
 
     # </editor-fold>
 
@@ -684,5 +686,30 @@ class CsfdScraper:
         return self.__LEADERBOARDS_PARSER.parse_leaderboards_composers(
             self.__get_leaderboards_others_soup(from_screenwriters, from_cinematographers, from_composers)
         )
+
+    # </editor-fold>
+
+    # <editor-fold desc="Leaderboards Custom">
+
+    def leaderboards_custom(self, options: dict, page: int = 1) -> LeaderboardCustom:
+        params = {}
+        for key, param in LeaderboardCustomParams.__members__.items():
+            name = param.value[0]
+            default = param.value[1]
+
+            opt = LeaderboardCustomOptions.__members__[key]
+            opt_value = options.get(param, default)
+
+            if opt == LeaderboardCustomOptions.TYPE:
+                params[name] = opt_value.value
+            elif opt == LeaderboardCustomOptions.ORIGIN:
+                params[name] = opt_value.value[0] if opt_value else None
+            elif opt == LeaderboardCustomOptions.GENRES:
+                params[name] = [x.value[0] for x in opt_value]
+            else:
+                params[name] = opt_value
+
+        s = self.__get_leaderboards_custom_soup(params, page)
+        return self.__LEADERBOARDS_PARSER.parse_leaderboards_custom(s, page)
 
     # </editor-fold>

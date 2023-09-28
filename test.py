@@ -477,6 +477,21 @@ def main(cli_args):
             { "from_composers": 100, "composers": True },
             lambda leaderboards_composers: tojson(leaderboards_composers["composers"])
         ),
+
+        CsfdTest("test-leaderboards-custom",
+            "leaderboards_custom",
+            {
+                "page": 1,
+                "type": MovieTypes.MOVIE,
+                "origin": Origins.GREAT_BRITAIN,
+                "year_from": 2000,
+                "year_to": 2002,
+                "actors": [556], # Angelina Jolie
+                "directors": [3120], # Simon West
+                "genres": [MovieGenres.ACTION, MovieGenres.ADVENTURE, MovieGenres.FANTASY]
+            },
+            lambda leaderboards_custom: str(leaderboards_custom)
+        ),
     ]
 
     cli_args: CliTestDummy = cli_args

@@ -544,6 +544,36 @@ class CliLeaderBoardsOthersOptionsDummy(CliDummy):
 
         super().__init__(args)
 
+class CliLeaderBoardsCustomDummy(CliDummy):
+    _dummy_argument_order = ["options", "page"]
+    _dummy_method_args_conversions = {
+        "type": MovieTypes,
+        "genres": MovieGenres,
+        "origin": Origins # TODO: add Continents
+    }
+
+    def __init__(self, args) -> None:
+        self.page = 1
+        self.type = None
+        self.genres = []
+        self.origin = None
+        self.year_from = None
+        self.year_to = None
+        self.actors = []
+        self.directors = []
+
+        super().__init__(args)
+
+        self.options = {
+            LeaderboardCustomParams.TYPE: self.type,
+            LeaderboardCustomParams.ORIGIN: self.origin,
+            LeaderboardCustomParams.GENRES: self.genres,
+            LeaderboardCustomParams.YEAR_FROM: self.year_from,
+            LeaderboardCustomParams.YEAR_TO: self.year_to,
+            LeaderboardCustomParams.ACTORS: self.actors,
+            LeaderboardCustomParams.DIRECTORS: self.directors
+        }
+
 class CliParser:
     def __init__(self):
         self.csfd_scraper = CsfdScraper()
@@ -614,4 +644,5 @@ CSFD_CLI_MAPPING = {
     "leaderboards_actors": [CliLeaderBoardsActorsDummy, CliLeaderBoardsActorsOptionsDummy, "leaderboards_actors"],
     "leaderboards_directors": [CliLeaderBoardsDirectorsDummy, CliLeaderBoardsDirectorsOptionsDummy, "leaderboards_directors"],
     "leaderboards_others": [CliLeaderBoardsOthersDummy, CliLeaderBoardsOthersOptionsDummy, "leaderboards_others"],
+    "leaderboards_custom": [CliLeaderBoardsCustomDummy, CliDummy, "leaderboards_custom"], 
 }

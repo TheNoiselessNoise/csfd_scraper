@@ -1288,6 +1288,47 @@ class LeaderboardOthers(PrintableObject):
         self.screenwriters: List[LeaderboardPerson] = args.get("screenwriters", [])
         self.cinematographers: List[LeaderboardPerson] = args.get("cinematographers", [])
         self.composers: List[LeaderboardPerson] = args.get("composers", [])
+
+class LeaderboardCustom(PrintableObject):
+    def __init__(self, args: dict) -> None:
+        self.args: dict = args
+        self.page: int = args.get("page", -1)
+        self.records: List[LeaderboardMovie] = args.get("records", [])
+        self.has_prev_page: bool = args.get("has_prev_page", False)
+        self.has_next_page: bool = args.get("has_next_page", False)
+
+class LeaderboardCustomOptions(Enum):
+    """Možnosti pro vyhledávání filmů"""
+
+    TYPE      = 0
+    """Typ filmu, podle kterých se má vyhledávat"""
+
+    GENRES    = 1
+    """Žánry, podle kterých se má vyhledávat"""
+
+    ORIGIN    = 2
+    """Původ, podle kterých se má vyhledávat"""
+
+    YEAR_FROM = 3
+    """Rok od kterého se má vyhledávat"""
+
+    YEAR_TO   = 4
+    """Rok do kterého se má vyhledávat"""
+
+    ACTORS    = 5
+    """ID herců, podle kterých se má vyhledávat"""
+
+    DIRECTORS = 6
+    """ID režisérů, podle kterých se má vyhledávat"""
+
+class LeaderboardCustomParams(Enum):
+    TYPE      = "type",      None
+    GENRES    = "genre",     {}
+    ORIGIN    = "origin",    {}
+    YEAR_FROM = "year_from", None
+    YEAR_TO   = "year_to",   None
+    ACTORS    = "actor",     []
+    DIRECTORS = "director",  []
     
 # </editor-fold>
 

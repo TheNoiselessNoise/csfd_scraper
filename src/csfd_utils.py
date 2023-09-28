@@ -39,6 +39,7 @@ class Globals:
     LEADERBOARDS_ACTORS = "https://www.csfd.cz/zebricky/herci-a-herecky/"
     LEADERBOARDS_DIRECTORS = "https://www.csfd.cz/zebricky/reziseri/"
     LEADERBOARDS_OTHERS = "https://www.csfd.cz/zebricky/scenariste-kameramani-skladatele/"
+    LEADERBOARDS_CUSTOM = "https://www.csfd.cz/zebricky/vlastni-vyber/?page=<page>&filter=<filter>"
 
 class CsfdJSONEncoder(json.JSONEncoder):
     def default(self, o):

@@ -275,6 +275,16 @@ leaderboards_others_options.add_argument('--screenwriters', action='store_true')
 leaderboards_others_options.add_argument('--cinematographers', action='store_true')
 leaderboards_others_options.add_argument('--composers', action='store_true')
 
+leaderboards_custom_parser = subparsers.add_parser('leaderboards_custom', help='Commands for Leaderboards Custom')
+leaderboards_custom_parser.add_argument('--page', type=int, help='Page of the search (default=1)', default=1)
+leaderboards_custom_parser.add_argument('--type', choices=all_movie_types, default='MOVIE')
+leaderboards_custom_parser.add_argument('--origin', choices=all_origins)
+leaderboards_custom_parser.add_argument('--genres', nargs='*', choices=all_movie_genres, default=[])
+leaderboards_custom_parser.add_argument('--year_from', type=int, help="From 1878 to 2030")
+leaderboards_custom_parser.add_argument('--year_to', type=int, help="From 1878 to 2030")
+leaderboards_custom_parser.add_argument('--actors', type=int, nargs='*', default=[])
+leaderboards_custom_parser.add_argument('--directors', type=int, nargs='*', default=[])
+
 def main(cli_args):
     cli_parser = CliParser()
     if cli_args.command in CSFD_CLI_MAPPING:
