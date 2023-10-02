@@ -1323,8 +1323,8 @@ class LeaderboardCustomOptions(Enum):
 
 class LeaderboardCustomParams(Enum):
     TYPE      = "type",      None
-    GENRES    = "genre",     {}
-    ORIGIN    = "origin",    {}
+    GENRES    = "genre",     []
+    ORIGIN    = "origin",    None
     YEAR_FROM = "year_from", None
     YEAR_TO   = "year_to",   None
     ACTORS    = "actor",     []
