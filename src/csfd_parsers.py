@@ -351,7 +351,7 @@ class MovieParser:
     @staticmethod
     def parse_movie_genres(s: BeautifulSoup) -> List[str]:
         genres = sel(s, ".genres")
-        return [] if genres is None else text(genres).split(" / ")
+        return [] if genres is None else genres.get_text().split(" / ")
 
     @staticmethod
     def parse_movie_origins(s: BeautifulSoup) -> List[str]:
