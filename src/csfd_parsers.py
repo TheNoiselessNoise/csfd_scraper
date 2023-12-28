@@ -509,10 +509,15 @@ class MovieParser:
                 "author": text(main_plot_author_tag),
                 "text": text(other_plot_tag, rec_tags=["a", "em"], is_not=["em.span-more-small"])
             })
+        main_plot_source_name = ""
+        main_plot_source_url = ""
+        if main_plot_source_tag != None:
+            main_plot_source_name = text(main_plot_source_tag)
+            main_plot_source_url = main_plot_source_tag.get("href")
         return {
             "main_plot": {
-                "source_name": text(main_plot_source_tag),
-                "source_url": main_plot_source_tag.get("href"),
+                "source_name": main_plot_source_name,
+                "source_url": main_plot_source_url,
                 "text": text(main_plot_tag, rec_tags=["a", "em"], is_not=["em.span-more-small"])
             },
             "other_plots": other_plots
