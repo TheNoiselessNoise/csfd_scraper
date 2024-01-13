@@ -1,7 +1,7 @@
 import json
-from src.csfd_scraper import CsfdScraper
-from src.csfd_objects import *
-from src.csfd_utils import CsfdJSONEncoder
+from .csfd_scraper import CsfdScraper
+from .csfd_objects import *
+from .csfd_utils import CsfdJSONEncoder
 
 class CliDummy:
     __exclude = ["get_dict", "get_filtered_dict", "get_enum_value"]

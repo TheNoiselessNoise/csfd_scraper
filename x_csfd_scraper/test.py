@@ -3,8 +3,8 @@ import sys
 import difflib
 import argparse
 from time import sleep
-from src.cli_objects import *
-from src.csfd_utils import tojson
+from .src.cli_objects import *
+from .src.csfd_utils import tojson
 
 parser = argparse.ArgumentParser(epilog="by @TheNoiselessNoise")
 parser.add_argument('--timeout', type=int, default=1, help="How many seconds to wait before running next test? (default=1)")

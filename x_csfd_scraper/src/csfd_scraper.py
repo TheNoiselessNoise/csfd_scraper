@@ -1,8 +1,8 @@
 import requests
 from datetime import datetime
-from src.csfd_parsers import *
 from bs4 import BeautifulSoup
 from typing import List, Optional
+from .csfd_parsers import *
 
 class CsfdScraper:
     DEBUG: bool = False

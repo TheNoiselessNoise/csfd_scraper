@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List, Dict, Optional
-from src.csfd_utils import tojson
+from .csfd_utils import tojson
 
 class PrintableObject:
     args: dict = None
