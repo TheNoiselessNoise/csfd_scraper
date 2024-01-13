@@ -1,7 +1,6 @@
 # CSFD.cz Scraper
 
 ### What else to do?
-- [ ] Make project pip installable
 - [ ] Add color rating
 - [ ] Scraping User
   - [ ] Scraping "Favorites"
@@ -17,6 +16,7 @@
 - [ ] Scraping user's diary
 
 ### Completed ✓
+- [x] Make project pip installable ([x-csfd-scraper](https://pypi.org/project/x-csfd-scraper/))
 - [x] CLI
 - [x] Testing tool
 - [x] Scraping Leaderboards
