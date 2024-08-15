@@ -6,8 +6,10 @@ setup(
     url='https://github.com/TheNoiselessNoise/csfd_scraper',
 
     name='x-csfd-scraper',
-    version='1.0.1',
+    version='1.0.2',
     description='Simple scraper for CSFD.cz, a Czech movie database.',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
 
     install_requires=[
         'beautifulsoup4>=4.12.2',

@@ -2,9 +2,6 @@
 
 This is a simple scraper for [CSFD.cz](https://www.csfd.cz/), a Czech movie database.
 
-#### This scraper is not meant to be used for any illegal purposes.
-#### I am *NOT* responsible for any misuse of this scraper.
-
 ## Usage
 Here is just sample usage of the scraper.
 
